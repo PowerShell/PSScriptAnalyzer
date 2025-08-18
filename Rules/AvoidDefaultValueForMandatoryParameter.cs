@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Language;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -27,57 +28,105 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Finds all functionAst
-            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            // Find all ParameterAst which are children of a ParamBlockAst. This
+            // doesn't pick up where they appear as children of a
+            // FunctionDefinitionAst. i.e.
+            //
+            // function foo ($a,$b){} -> $a and $b are `ParameterAst`
+            //
+            // Include only parameters which have a default value (as without
+            // one this rule would never alert)
+            // Include only parameters where ALL parameter attributes have the
+            // mandatory named argument set to true (implicitly or explicitly)
 
-            foreach (FunctionDefinitionAst funcAst in functionAsts)
+            var mandatoryParametersWithDefaultValues =
+                ast.FindAll(testAst => testAst is ParamBlockAst, true)
+                    .Cast<ParamBlockAst>()
+                    .Where(pb => pb.Parameters?.Count > 0) // Add null safety
+                    .SelectMany(pb => pb.Parameters)
+                    .Where(paramAst =>
+                        paramAst.DefaultValue != null &&
+                        HasMandatoryInAllParameterAttributes(
+                            paramAst,
+                            StringComparer.OrdinalIgnoreCase
+                        )
+                    );
+
+            // Report diagnostics for each parameter that violates the rule
+            foreach (var parameter in mandatoryParametersWithDefaultValues)
             {
-                if (funcAst.Body != null && funcAst.Body.ParamBlock != null
-                    && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
-                {
-                    foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
-                    {
-                        bool mandatory = false;
-
-                        // check that param is mandatory
-                        foreach (var paramAstAttribute in paramAst.Attributes)
-                        {
-                            if (paramAstAttribute is AttributeAst)
-                            {
-                                var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
-                                if (namedArguments != null)
-                                {
-                                    foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
-                                    {
-                                        if (String.Equals(namedArgument.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            // 3 cases: [Parameter(Mandatory)], [Parameter(Mandatory=$true)] and [Parameter(Mandatory=value)] where value is not equal to 0.
-                                            if (namedArgument.ExpressionOmitted
-                                                || (String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
-                                                || (int.TryParse(namedArgument.Argument.Extent.Text, out int mandatoryValue) && mandatoryValue != 0))
-                                            {
-                                                mandatory = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!mandatory)
-                        {
-                            break;
-                        }
-
-                        if (paramAst.DefaultValue != null)
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterError, paramAst.Name.VariablePath.UserPath),
-                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
-                        }
-                    }
-                }
+                yield return new DiagnosticRecord(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.AvoidDefaultValueForMandatoryParameterError,
+                            parameter.Name.VariablePath.UserPath
+                        ),
+                        parameter.Name.Extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName,
+                        parameter.Name.VariablePath.UserPath
+                    );
             }
+        }
+
+        /// <summary>
+        /// Determines if a parameter is mandatory in all of its Parameter attributes.
+        /// A parameter may have multiple [Parameter] attributes for different parameter sets.
+        /// This method returns true only if ALL [Parameter] attributes have Mandatory=true.
+        /// </summary>
+        /// <param name="paramAst">The parameter AST to examine</param>
+        /// <param name="comparer">String comparer for case-insensitive attribute name matching</param>
+        /// <returns>
+        /// True if the parameter has at least one [Parameter] attribute and ALL of them 
+        /// have the Mandatory named argument set to true (explicitly or implicitly).
+        /// False if the parameter has no [Parameter] attributes or if any [Parameter] 
+        /// attribute does not have Mandatory=true.
+        /// </returns>
+        private static bool HasMandatoryInAllParameterAttributes(ParameterAst paramAst, StringComparer comparer)
+        {
+            var parameterAttributes = paramAst.Attributes.OfType<AttributeAst>()
+                .Where(attr => IsParameterAttribute(attr.TypeName?.Name, comparer))
+                .ToList();
+
+            return parameterAttributes.Count > 0 &&
+                   parameterAttributes.All(attr => HasMandatoryArgument(attr, comparer));
+        }
+
+        /// <summary>
+        /// Determines if an attribute type name represents a PowerShell Parameter attribute.
+        /// Checks for both the short form "Parameter" and full form "ParameterAttribute".
+        /// </summary>
+        /// <param name="typeName">The attribute type name to check</param>
+        /// <param name="comparer">String comparer for case-insensitive matching</param>
+        /// <returns>
+        /// True if the type name is "Parameter" or "ParameterAttribute" (case-insensitive).
+        /// False otherwise.
+        /// </returns>
+        private static bool IsParameterAttribute(string typeName, StringComparer comparer)
+        {
+            return comparer.Equals(typeName, "parameter");
+        }
+
+        /// <summary>
+        /// Determines if a Parameter attribute has the Mandatory named argument set to true.
+        /// Handles both explicit (Mandatory=$true) and implicit (Mandatory) cases.
+        /// Uses the Helper.Instance.GetNamedArgumentAttributeValue method to evaluate
+        /// the mandatory argument value.
+        /// </summary>
+        /// <param name="attr">The Parameter attribute AST to examine</param>
+        /// <param name="comparer">String comparer for case-insensitive argument name matching</param>
+        /// <returns>
+        /// True if the attribute has a "Mandatory" named argument that evaluates to true.
+        /// False if there is no "Mandatory" argument or if it evaluates to false.
+        /// </returns>
+        private static bool HasMandatoryArgument(AttributeAst attr, StringComparer comparer)
+        {
+            return attr.NamedArguments?.OfType<NamedAttributeArgumentAst>()
+                .Any(namedArg =>
+                    comparer.Equals(namedArg?.ArgumentName, "mandatory") &&
+                    Helper.Instance.GetNamedArgumentAttributeValue(namedArg)
+                ) == true;
         }
 
         /// <summary>
@@ -133,7 +182,3 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
-
-
-
