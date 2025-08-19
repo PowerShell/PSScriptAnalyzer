@@ -162,7 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The localized name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseFullyQualifiedCmdletNamesName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseFullyQualifiedCmdletNamesName);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The source name of this rule</returns>
         public string GetSourceName()
         {
-            return AnalyzerName;
+            return "PS";
         }
 
         /// <summary>
