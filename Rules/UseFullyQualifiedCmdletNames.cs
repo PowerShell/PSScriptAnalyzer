@@ -207,7 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The severity of this rule</returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Error;
+            return RuleSeverity.Warning;
         }
     }
 }
