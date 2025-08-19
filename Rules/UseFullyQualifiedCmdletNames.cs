@@ -43,7 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseFullyQualifiedCmdletNames : IScriptRule
     {
-        private Dictionary<string, string> resolutionCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private ConcurrentDictionary<string, string> resolutionCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         internal const string AnalyzerName = "Microsoft.Windows.PowerShell.ScriptAnalyzer";
 
