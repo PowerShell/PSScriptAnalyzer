@@ -14,9 +14,65 @@ PowerShell cmdlets and functions can be called with or without their module name
 
 This rule identifies cmdlet and function calls that are not fully qualified and suggests adding the appropriate module qualifier.
 
+# Configuration
+
+```powershell
+Rules = @{ 
+    PSUseFullyQualifiedCmdletNames = @{ 
+        Enable = $true 
+        IgnoredModules = @() 
+    } 
+}
+```
+
+
 ## How to Fix
 
 Use the fully qualified cmdlet name in the format `ModuleName\CmdletName` instead of just `CmdletName`.
+
+## Configuration Examples
+
+### Enable the rule and enforce fully qualified names for all modules
+
+```powershell
+Rules = @{ 
+    PSUseFullyQualifiedCmdletNames = @{ 
+        Enable = $true
+        IgnoredModules = @() 
+    } 
+}
+```
+
+### Enable the rule but ignore specific modules
+
+```powershell
+Rules = @{ 
+    PSUseFullyQualifiedCmdletNames = @{ 
+        Enable = $true
+        IgnoredModules = @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility') 
+    } 
+}
+```
+
+### Disable the rule
+
+```powershell
+Rules = @{ 
+    PSUseFullyQualifiedCmdletNames = @{ 
+        Enable = $false
+    } 
+}
+```
+	
+### Parameters
+
+#### Enable: bool (Default value is `$false`)
+
+Enable or disable the rule during ScriptAnalyzer invocation. By default, this rule is disabled and must be explicitly enabled.
+
+#### IgnoredModules: string[] (Default value is `@()`)
+
+Modules to ignore when applying this rule. Commands from these modules will not be flagged for expansion to their fully qualified names. By default, this is empty so all modules are checked.
 
 ## Examples
 
@@ -34,7 +90,6 @@ ls -Force
 ```
 
 ### Correct
-
 ```powershell
 # Fully qualified cmdlet calls
 Microsoft.PowerShell.Core\Get-Command
@@ -106,6 +161,7 @@ Microsoft.PowerShell.Management\Get-ChildItem
 - Native commands (like `cmd.exe`) and user-defined functions without modules are not flagged
 - Already qualified cmdlet calls are not flagged
 - Variables and string literals containing cmdlet names are not flagged
+- By default, all modules are checked; use `IgnoredModules` to exclude specific modules
 
 ## Related Rules
 

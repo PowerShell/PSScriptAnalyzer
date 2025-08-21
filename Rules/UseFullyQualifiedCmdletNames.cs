@@ -42,11 +42,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseFullyQualifiedCmdletNames : IScriptRule
+    public class UseFullyQualifiedCmdletNames : ConfigurableRule
     {
         private ConcurrentDictionary<string, string> resolutionCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         internal const string AnalyzerName = "Microsoft.Windows.PowerShell.ScriptAnalyzer";
+
+        /// <summary>
+        /// Modules to ignore when applying this rule.
+        /// Commands from these modules will not be expanded to their fully qualified names.
+        /// Default is empty array (no modules ignored - all cmdlets are processed).
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: new string[] { })]
+        public string[] IgnoredModules { get; protected set; }  
 
         /// <summary>
         /// Analyzes the given ast to find cmdlet invocations that are not fully qualified.
@@ -54,7 +62,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
         /// <returns>The diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
@@ -76,6 +84,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     var resolvedCommand = ResolveCommand(commandName);
                     if (resolvedCommand == null)
                     {
+                        // Cache null results to avoid repeated lookups
+                        resolutionCache[commandName] = null;
                         continue;
                     }
 
@@ -83,6 +93,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         resolvedCommand.CommandType != CommandTypes.Function &&
                         resolvedCommand.CommandType != CommandTypes.Alias)
                     {
+                        // Cache null results for non-cmdlet/function/alias commands
+                        resolutionCache[commandName] = null;
                         continue;
                     }
 
@@ -93,6 +105,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         if (aliasInfo.ResolvedCommand == null)
                         {
+                            resolutionCache[commandName] = null;
                             continue;
                         }
 
@@ -102,11 +115,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (string.IsNullOrEmpty(moduleName) || string.IsNullOrEmpty(actualCmdletName))
                     {
+                        resolutionCache[commandName] = null;
+                        continue;
+                    }
+
+                    // Check if the module is in the ignored list
+                    if (IgnoredModules != null && IgnoredModules.Contains(moduleName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // Cache null for ignored modules to avoid re-checking
+                        resolutionCache[commandName] = null;
                         continue;
                     }
 
                     fullyQualifiedName = $"{moduleName}\\{actualCmdletName}";
                     resolutionCache[commandName] = fullyQualifiedName;
+                }
+                else
+                {
+                    // If we have a cached result but it's null/empty, it means we should skip this command
+                    if (string.IsNullOrEmpty(fullyQualifiedName))
+                    {
+                        continue;
+                    }
+
+                    // Re-check ignored modules for cached results (in case IgnoredModules was changed)
+                    var moduleName = fullyQualifiedName.Split('\\')[0];
+                    if (IgnoredModules != null && IgnoredModules.Contains(moduleName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
                 }
 
                 var extent = commandAst.CommandElements[0].Extent;
@@ -140,7 +177,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     message,
                     extent,
                     GetName(),
-                    (DiagnosticSeverity)GetSeverity(),
+                    DiagnosticSeverity.Warning,
                     fileName,
                     null,
                     suggestedCorrections);
@@ -161,7 +198,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the localized name of this rule.
         /// </summary>
         /// <returns>The localized name of this rule</returns>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseFullyQualifiedCmdletNamesName);
         }
@@ -170,7 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseFullyQualifiedCmdletNamesCommonName);
         }
@@ -179,7 +216,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the localized description of this rule.
         /// </summary>
         /// <returns>The localized description of this rule</returns>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseFullyQualifiedCmdletNamesDescription);
         }
@@ -188,7 +225,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the source type of this rule.
         /// </summary>
         /// <returns>The source type of this rule</returns>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
@@ -197,7 +234,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the source name of this rule.
         /// </summary>
         /// <returns>The source name of this rule</returns>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return "PS";
         }
@@ -206,7 +243,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Retrieves the severity of this rule.
         /// </summary>
         /// <returns>The severity of this rule</returns>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Warning;
         }
