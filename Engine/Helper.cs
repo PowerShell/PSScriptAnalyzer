@@ -761,8 +761,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 token =>
                 ContainsExtent(functionDefinitionAst.Extent, token.Extent)
                 && token.Text.Equals(functionDefinitionAst.Name));
-            var funcNameToken = funcNameTokens.FirstOrDefault();
-            return funcNameToken == null ? null : funcNameToken.Extent;
+
+            // If the functions name is 'function' then the first token in the
+            // list is the function keyword itself, so we need to skip it
+            if (functionDefinitionAst.Name.Equals("function"))
+            {
+                var funcNameToken = funcNameTokens.Skip(1).FirstOrDefault() ?? funcNameTokens.FirstOrDefault();
+                return funcNameToken?.Extent;
+            }
+            return funcNameTokens.FirstOrDefault()?.Extent;
         }
 
         /// <summary>
