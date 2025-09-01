@@ -30,6 +30,20 @@ $randomCasedReservedWords = @(
     'uNtIl','UsInG','VaR','wHiLe','wOrKfLoW'
 )
 
+$functionScopes = @(
+	"global", "local", "script", "private"
+)
+
+# Generate all combinations of reserved words and function scopes
+$scopedReservedWordCases = foreach ($scope in $functionScopes) {
+    foreach ($word in $reservedWords) {
+        @{
+            Scope = $scope
+            Name  = $word
+        }
+    }
+}
+
 $substringReservedWords = $reservedWords | ForEach-Object {
     "$($_)Func"
 }
@@ -57,6 +71,22 @@ Describe 'AvoidReservedWordsAsFunctionNames' {
 			# Extent should ideally capture only the function name
 			$violations[0].Extent.Text | Should -Be $_
 		}
+
+		# Functions can have scopes. So function global:function {} should still
+		# alert.
+		It 'flags reserved word "<Name>" with scope "<Scope>" as a violation' -TestCases $scopedReservedWordCases {
+			param($Scope, $Name)
+
+			$scriptDefinition = "function $($Scope):$($Name) { 'test' }"
+			$violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+
+			$violations.Count | Should -Be 1
+			$violations[0].Severity | Should -Be 'Warning'
+			$violations[0].RuleName | Should -Be $ruleName
+			$violations[0].Message | Should -Be "The reserved word '$Name' was used as a function name. This should be avoided."
+			$violations[0].Extent.Text | Should -Be "$($Scope):$($Name)"
+		}
+
 
 		It 'detects case-insensitively for "<_>"' -TestCases $randomCasedReservedWords {
 			$scriptDefinition = "function $_ { }"

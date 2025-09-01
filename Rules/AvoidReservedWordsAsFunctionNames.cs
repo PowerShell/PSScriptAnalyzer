@@ -65,13 +65,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (var function in functionDefinitions)
             {
-                if (reservedWords.Contains(function.Name))
+                if (reservedWords.Contains(
+                    Helper.Instance.FunctionNameWithoutScope(function.Name)
+                ))
                 {
                     yield return new DiagnosticRecord(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.AvoidReservedWordsAsFunctionNamesError,
-                            function.Name),
+                            Helper.Instance.FunctionNameWithoutScope(function.Name)),
                         Helper.Instance.GetScriptExtentForFunctionName(function) ?? function.Extent,
                         GetName(),
                         DiagnosticSeverity.Warning,
