@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 # Keep in sync with the rule's reserved words list in
 # Rules/AvoidReservedWordsAsFunctionNames.cs
 $reservedWords = @(
