@@ -51,6 +51,25 @@ Invoke-ScriptAnalyzer [-ScriptDefinition] <string> [-CustomRulePath <string[]>]
  [<CommonParameters>]
 ```
 
+### ScriptBlock_IncludeSuppressed
+
+```
+Invoke-ScriptAnalyzer [-ScriptBlock] <ScriptBlock> -IncludeSuppressed [-CustomRulePath <string[]>]
+ [-RecurseCustomRulePath] [-IncludeDefaultRules] [-ExcludeRule <string[]>]
+ [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-EnableExit] [-Settings <Object>]
+ [-SaveDscDependency] [-ReportSummary] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### ScriptBlock_SuppressedOnly
+
+```
+Invoke-ScriptAnalyzer [-ScriptBlock] <ScriptBlock> [-CustomRulePath <string[]>]
+ [-RecurseCustomRulePath] [-IncludeDefaultRules] [-ExcludeRule <string[]>]
+ [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-SuppressedOnly] [-EnableExit]
+ [-Settings <Object>] [-SaveDscDependency] [-ReportSummary] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
 ## DESCRIPTION
 
 `Invoke-ScriptAnalyzer` evaluates scripts or module files (`.ps1`, `.psm1`, and `.psd1` files) based
@@ -156,9 +175,9 @@ Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1
 ```
 
 ```Output
-RuleName                            Severity     FileName   Line  Message
---------                            --------     --------   ----  -------
-PSProvideCommentHelp                Information  ManageProf 14    The cmdlet 'Get-Widget' does not have a help comment.
+RuleName                            Severity     ScriptName   Line  Message
+--------                            --------     --------     ----  -------
+PSProvideCommentHelp                Information  ManageProf   14    The cmdlet 'Get-Widget' does not have a help comment.
                                                  iles.psm1
 ```
 
@@ -167,11 +186,11 @@ Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1 -SuppressedOnly
 ```
 
 ```Output
-Rule Name                           Severity     File Name  Line  Justification
----------                           --------     ---------  ----  -------------
-PSAvoidUsingCmdletAliases           Warning      ManageProf 21    Resolution in progress.
+Rule Name                           Severity     ScriptName  Line  Justification
+---------                           --------     ---------   ----  -------------
+PSAvoidUsingCmdletAliases           Warning      ManageProf  21    Resolution in progress.
                                                  iles.psm1
-PSUseSingularNouns                  Warning      ManageProf 14
+PSUseSingularNouns                  Warning      ManageProf  14
                                                  iles.psm1
 ```
 
@@ -208,18 +227,49 @@ Invoke-ScriptAnalyzer -ScriptDefinition "function Get-Widgets {Write-Host 'Hello
 ```
 
 ```Output
-RuleName                            Severity     FileName   Line  Message
---------                            --------     --------   ----  -------
-PSAvoidUsingWriteHost               Warning                 1     Script
-                                                                  because
-                                                                  there i
-                                                                  suppres
-                                                                  Write-O
-PSUseSingularNouns                  Warning                 1     The cmd
-                                                                  noun sh
+RuleName                            Severity     ScriptName   Line  Message
+--------                            --------     --------     ----  -------
+PSAvoidUsingWriteHost               Warning                   1     Script
+                                                                    because
+                                                                    there i
+                                                                    suppres
+                                                                    Write-O
+PSUseSingularNouns                  Warning                   1     The cmd
+                                                                    noun sh
 ```
 
 When you use the **ScriptDefinition** parameter, the **FileName** property of the
+**DiagnosticRecord** object is `$null`.
+
+### EXAMPLE 10 - Analyze a script block
+
+This example uses the **ScriptBlock** parameter to analyze a function at the command line. The
+function is defined within a script block.
+
+```powershell
+Invoke-ScriptAnalyzer -ScriptBlock {function Get-Widgets {Write-Host 'Hello'}}
+```
+
+```Output
+
+RuleName                            Severity     ScriptName Line  Message
+--------                            --------     ---------- ----  -------
+PSUseSingularNouns                  Warning                 1     The cmdlet 'Get-Widgets' uses a plural
+                                                                  noun. A singular noun should be used
+                                                                  instead.
+PSAvoidUsingWriteHost               Warning                 1     Script definition uses Write-Host.
+                                                                  Avoid using Write-Host because it might
+                                                                  not work in all hosts, does not work
+                                                                  when there is no host, and (prior to PS
+                                                                  5.0) cannot be suppressed, captured, or
+                                                                  redirected. Instead, use Write-Output,
+                                                                  Write-Verbose, or Write-Information.
+
+
+
+```
+
+When you use the **ScriptBlock** parameter, the **ScriptName** property of the
 **DiagnosticRecord** object is `$null`.
 
 ## PARAMETERS
@@ -362,7 +412,7 @@ Include suppressed diagnostics in output.
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Path_IncludeSuppressed, ScriptDefinition_IncludeSuppressed
+Parameter Sets: Path_IncludeSuppressed, ScriptBlock_IncludeSuppressed, ScriptDefinition_IncludeSuppressed
 Aliases:
 
 Required: True
@@ -472,6 +522,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ScriptBlock
+
+Runs the analysis on commands, functions, or expressions on a scriptblock. You can use this feature to
+analyze statements, expressions, and functions, independent of their script context.
+
+```yaml
+Type: ScriptBlock
+Parameter Sets: ScriptBlock_IncludeSuppressed, ScriptBlock_SuppressedOnly
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
 ### -ScriptDefinition
 
 Runs the analysis on commands, functions, or expressions in a string. You can use this feature to
@@ -569,7 +636,7 @@ To suppress a rule, use the **SuppressMessageAttribute**. For help, see the exam
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Path_SuppressedOnly, ScriptDefinition_SuppressedOnly
+Parameter Sets: Path_SuppressedOnly, ScriptBlock_SuppressedOnly, ScriptDefinition_SuppressedOnly
 Aliases:
 
 Required: False

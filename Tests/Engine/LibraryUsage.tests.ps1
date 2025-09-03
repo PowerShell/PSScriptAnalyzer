@@ -18,6 +18,10 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 				[parameter(Mandatory = $true, ParameterSetName="ScriptDefinition_IncludeSuppressed")]
 				[string] $ScriptDefinition,
 
+				[parameter(Mandatory = $true, ParameterSetName="ScriptBlock_SuppressedOnly")]
+				[parameter(Mandatory = $true, ParameterSetName="ScriptBlock_IncludeSuppressed")]
+				[scriptblock] $ScriptBlock,
+
 				[Parameter(Mandatory = $false)]
 				[Alias("CustomizedRulePath")]
 				[string[]] $CustomRulePath = $null,
@@ -43,10 +47,12 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 
 				[Parameter(Mandatory = $false, ParameterSetName = "Path_SuppressedOnly")]
 				[Parameter(Mandatory = $false, ParameterSetName = "ScriptDefinition_SuppressedOnly")]
+				[Parameter(Mandatory = $false, ParameterSetName = "ScriptBlock_SuppressedOnly")]
 				[switch] $SuppressedOnly,
 
 				[Parameter(Mandatory, ParameterSetName = "Path_IncludeSuppressed")]
 				[Parameter(Mandatory, ParameterSetName = "ScriptDefinition_IncludeSuppressed")]
+				[Parameter(Mandatory, ParameterSetName = "ScriptBlock_IncludeSuppressed")]
 				[switch] $IncludeSuppressed,
 
 				[Parameter(Mandatory = $false)]
@@ -97,6 +103,9 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 			}
 			else
 			{
+				if ($null -ne $ScriptBlock) {
+					$ScriptDefinition = $ScriptBlock.ToString()
+				}
 				$results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
 			}
 

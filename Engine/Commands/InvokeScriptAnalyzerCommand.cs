@@ -31,6 +31,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private const string ParameterSet_Path_IncludeSuppressed = nameof(Path) + "_" + nameof(IncludeSuppressed);
         private const string ParameterSet_ScriptDefinition_SuppressedOnly = nameof(ScriptDefinition) + "_" + nameof(SuppressedOnly);
         private const string ParameterSet_ScriptDefinition_IncludeSuppressed = nameof(ScriptDefinition) + "_" + nameof(IncludeSuppressed);
+        private const string ParameterSet_ScriptBlock_SuppressedOnly = nameof(ScriptBlock) + "_" + nameof(SuppressedOnly);
+        private const string ParameterSet_ScriptBlock_IncludeSuppressed = nameof(ScriptBlock) + "_" + nameof(IncludeSuppressed);
 
         #region Private variables
         List<string> processedPaths;
@@ -82,6 +84,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { scriptDefinition = value; }
         }
         private string scriptDefinition;
+
+        /// <summary>
+        /// ScriptBlock: a script block to run rules on.
+        /// </summary>
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_ScriptBlock_IncludeSuppressed,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_ScriptBlock_SuppressedOnly,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNull]
+        public ScriptBlock ScriptBlock
+        {
+            get { return scriptBlock; }
+            set
+            {
+                scriptBlock = value;
+                scriptDefinition = value?.ToString();
+            }
+        }
+        private ScriptBlock scriptBlock;
 
         /// <summary>
         /// CustomRulePath: The path to the file containing custom rules to run.
@@ -179,6 +206,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
         [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptBlock_SuppressedOnly)]
         public SwitchParameter SuppressedOnly { get; set; }
 
         /// <summary>
@@ -186,6 +214,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed, Mandatory = true)]
         [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed, Mandatory = true)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptBlock_IncludeSuppressed, Mandatory = true)]
         public SwitchParameter IncludeSuppressed { get; set; }
 
         /// <summary>

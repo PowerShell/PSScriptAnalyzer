@@ -27,13 +27,23 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "Path parameter" {
+    Context "ScriptDefinition parameter" {
         It "has a ScriptDefinition parameter" {
             $params.ContainsKey("ScriptDefinition") | Should -BeTrue
         }
 
         It "accepts string" {
             $params["ScriptDefinition"].ParameterType.FullName | Should -Be "System.String"
+        }
+    }
+
+    Context "ScriptBlock parameter" {
+        It "has a ScriptBlock parameter" {
+            $params.ContainsKey("ScriptBlock") | Should -BeTrue
+        }
+
+        It "accepts ScriptBlock" {
+            $params["ScriptBlock"].ParameterType.FullName | Should -Be "System.Management.Automation.ScriptBlock"
         }
     }
 
@@ -85,10 +95,12 @@ Describe "Test available parameters" {
         }
     }
 
-    It "Has 4 parameter sets" {
+    It "Has 6 parameter sets" {
         $parameterSets = @(
             'Path_IncludeSuppressed'
             'Path_SuppressedOnly'
+            'ScriptBlock_IncludeSuppressed'
+            'ScriptBlock_SuppressedOnly'
             'ScriptDefinition_IncludeSuppressed'
             'ScriptDefinition_SuppressedOnly'
         )
@@ -104,6 +116,16 @@ Describe "Test ScriptDefinition" {
             $script = ');' * 12
             $moreThanTenErrors = Invoke-ScriptAnalyzer -ScriptDefinition $script
             $moreThanTenErrors.Count | Should -Be 12
+        }
+    }
+}
+
+Describe "Test ScriptBlock" {
+    Context "When given a script block" {
+        It "Runs rules on script with 1 warning" {
+            # this is a script with 1 error (var declared but not used)
+            $violations = Invoke-ScriptAnalyzer {$var = 1}
+            $violations.Count | Should -Be 1
         }
     }
 }
