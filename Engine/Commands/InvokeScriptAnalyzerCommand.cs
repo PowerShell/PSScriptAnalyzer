@@ -67,15 +67,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// ScriptDefinition: a script definition in the form of a string to run rules on.
         /// </summary>
-        [Parameter(Position = 0,
+        [Parameter(
             ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed,
             Mandatory = true,
-            ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
-        [Parameter(Position = 0,
+        [Parameter(
             ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly,
             Mandatory = true,
-            ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         public string ScriptDefinition

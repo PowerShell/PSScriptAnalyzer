@@ -240,8 +240,9 @@ Describe 'Cmdlet parameter help' {
 
 				$parameterHelpPipelineInput = if ($parameterHelp.pipelineInput -eq 'True (ByPropertyName, ByValue)') {
 					$true
-				}
-				else {
+				} elseif ($parameterHelp.pipelineInput -eq 'True (ByPropertyName)') {
+					$true
+				} else {
 					[System.Boolean]::Parse($parameterHelp.pipelineInput)
 				}
 

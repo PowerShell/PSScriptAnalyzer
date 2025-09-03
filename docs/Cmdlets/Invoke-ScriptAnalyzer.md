@@ -550,9 +550,9 @@ Parameter Sets: ScriptDefinition_IncludeSuppressed, ScriptDefinition_SuppressedO
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName, ByValue)
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
@@ -687,9 +687,13 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
+### String
 
-You cannot pipe input to this cmdlet.
+You can pipe a string representing a script path to this cmdlet. The string is bound to the `-Path` parameter by value.
+
+### ScriptBlock
+
+You can pipe a script block to this cmdlet. The script block is bound to the `-ScriptBlock` parameter by value.
 
 ## OUTPUTS
 
