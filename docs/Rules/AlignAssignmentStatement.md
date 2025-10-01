@@ -76,7 +76,7 @@ Configuration. There is only one setting for hashtable and DSC configuration
 because the property value pairs in a DSC configuration are parsed as key-value
 pairs of a hashtable.
 
-#### AlignHashtableKvpWithInterveningComment: bool (Default value is `$false`)
+#### AlignHashtableKvpWithInterveningComment: bool (Default value is `$true`)
 
 Include key-value pairs in the alignment that have an intervening comment - that
 is to say a comment between the key name and the equals sign.
@@ -116,7 +116,7 @@ $hashtable = @{
 
 Enforce alignment of assignment statements of an Enum definition.
 
-#### AlignEnumMemberWithInterveningComment: bool (Default value is `$false`)
+#### AlignEnumMemberWithInterveningComment: bool (Default value is `$true`)
 
 Include enum members in the alignment that have an intervening comment - that
 is to say a comment between the member name and the equals sign.

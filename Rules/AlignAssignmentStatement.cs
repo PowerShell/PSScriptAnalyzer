@@ -32,7 +32,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Whether to include hashtable key-value pairs where there is a comment
         /// between the key and the equals sign in alignment.
         /// </summary>
-        [ConfigurableRuleProperty(defaultValue: false)]
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool AlignHashtableKvpWithInterveningComment { get; set; }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Whether to include enum members where there is a comment
         /// between the name and the equals sign in alignment.
         /// </summary>
-        [ConfigurableRuleProperty(defaultValue: false)]
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool AlignEnumMemberWithInterveningComment { get; set; }
 
         /// <summary>
