@@ -46,10 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .SelectMany(pb => pb.Parameters)
                     .Where(paramAst =>
                         paramAst.DefaultValue != null &&
-                        HasMandatoryInAllParameterAttributes(
-                            paramAst,
-                            StringComparer.OrdinalIgnoreCase
-                        )
+                        HasMandatoryInAllParameterAttributes(paramAst)
                     );
 
             // Report diagnostics for each parameter that violates the rule
@@ -83,50 +80,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// False if the parameter has no [Parameter] attributes or if any [Parameter] 
         /// attribute does not have Mandatory=true.
         /// </returns>
-        private static bool HasMandatoryInAllParameterAttributes(ParameterAst paramAst, StringComparer comparer)
+        private static bool HasMandatoryInAllParameterAttributes(ParameterAst paramAst)
         {
             var parameterAttributes = paramAst.Attributes.OfType<AttributeAst>()
-                .Where(attr => IsParameterAttribute(attr.TypeName?.Name, comparer))
+                .Where(attr => string.Equals(attr.TypeName?.Name, "parameter", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return parameterAttributes.Count > 0 &&
-                   parameterAttributes.All(attr => HasMandatoryArgument(attr, comparer));
-        }
-
-        /// <summary>
-        /// Determines if an attribute type name represents a PowerShell Parameter attribute.
-        /// Checks for both the short form "Parameter" and full form "ParameterAttribute".
-        /// </summary>
-        /// <param name="typeName">The attribute type name to check</param>
-        /// <param name="comparer">String comparer for case-insensitive matching</param>
-        /// <returns>
-        /// True if the type name is "Parameter" or "ParameterAttribute" (case-insensitive).
-        /// False otherwise.
-        /// </returns>
-        private static bool IsParameterAttribute(string typeName, StringComparer comparer)
-        {
-            return comparer.Equals(typeName, "parameter");
-        }
-
-        /// <summary>
-        /// Determines if a Parameter attribute has the Mandatory named argument set to true.
-        /// Handles both explicit (Mandatory=$true) and implicit (Mandatory) cases.
-        /// Uses the Helper.Instance.GetNamedArgumentAttributeValue method to evaluate
-        /// the mandatory argument value.
-        /// </summary>
-        /// <param name="attr">The Parameter attribute AST to examine</param>
-        /// <param name="comparer">String comparer for case-insensitive argument name matching</param>
-        /// <returns>
-        /// True if the attribute has a "Mandatory" named argument that evaluates to true.
-        /// False if there is no "Mandatory" argument or if it evaluates to false.
-        /// </returns>
-        private static bool HasMandatoryArgument(AttributeAst attr, StringComparer comparer)
-        {
-            return attr.NamedArguments?.OfType<NamedAttributeArgumentAst>()
-                .Any(namedArg =>
-                    comparer.Equals(namedArg?.ArgumentName, "mandatory") &&
-                    Helper.Instance.GetNamedArgumentAttributeValue(namedArg)
-                ) == true;
+                parameterAttributes.All(attr =>
+                    attr.NamedArguments?.OfType<NamedAttributeArgumentAst>()
+                    .Any(namedArg =>
+                        string.Equals(namedArg?.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase) &&
+                        Helper.Instance.GetNamedArgumentAttributeValue(namedArg)
+                    ) == true
+                );
         }
 
         /// <summary>
