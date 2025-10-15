@@ -83,16 +83,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static bool HasMandatoryInAllParameterAttributes(ParameterAst paramAst)
         {
             var parameterAttributes = paramAst.Attributes.OfType<AttributeAst>()
-                .Where(attr => string.Equals(attr.TypeName?.Name, "parameter", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                .Where(attr => string.Equals(attr.TypeName?.Name, "parameter", StringComparison.OrdinalIgnoreCase));
 
-            return parameterAttributes.Count > 0 &&
+            return parameterAttributes.Any() &&
                 parameterAttributes.All(attr =>
-                    attr.NamedArguments?.OfType<NamedAttributeArgumentAst>()
+                    attr.NamedArguments.OfType<NamedAttributeArgumentAst>()
                     .Any(namedArg =>
-                        string.Equals(namedArg?.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(namedArg.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase) &&
                         Helper.Instance.GetNamedArgumentAttributeValue(namedArg)
-                    ) == true
+                    )
                 );
         }
 
