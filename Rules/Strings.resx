@@ -1225,7 +1225,7 @@
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
   </data>
   <data name="AvoidReservedWordsAsFunctionNamesCommonName" xml:space="preserve">
-    <value>Avoid Reserved Words as function names</value>
+    <value>Avoid reserved words as function names</value>
   </data>
   <data name="AvoidReservedWordsAsFunctionNamesDescription" xml:space="preserve">
     <value>Avoid using reserved words as function names. Using reserved words as function names can cause errors or unexpected behavior in scripts.</value>
