@@ -764,7 +764,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // If the functions name is 'function' then the first token in the
             // list is the function keyword itself, so we need to skip it
-            if (functionDefinitionAst.Name.Equals("function"))
+            if (functionDefinitionAst.Name.Equals("function", StringComparison.OrdinalIgnoreCase))
             {
                 var funcNameToken = funcNameTokens.Skip(1).FirstOrDefault() ?? funcNameTokens.FirstOrDefault();
                 return funcNameToken?.Extent;

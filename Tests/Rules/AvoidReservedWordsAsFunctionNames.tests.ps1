@@ -78,6 +78,24 @@ Describe 'AvoidReservedWordsAsFunctionNames' {
 			$violations[0].Extent.Text | Should -Be $_
 		}
 
+		It 'flags the correct extent for a function named Function' {
+
+			$scriptDefinition = "Function Function { 'test' }"
+			$violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+
+			$violations.Count | Should -Be 1
+			$violations[0].Severity | Should -Be 'Warning'
+			$violations[0].RuleName | Should -Be $ruleName
+			# Message text should include the function name as used
+			$violations[0].Message | Should -Be "The reserved word 'Function' was used as a function name. This should be avoided."
+			# Extent should ideally capture only the function name
+			$violations[0].Extent.Text | Should -Be 'Function'
+
+			# Make sure the extent is the correct `Function` (not the one at the
+			# very start)
+			$violations[0].Extent.StartOffset | Should -not -Be 0
+		}
+
 		# Functions can have scopes. So function global:function {} should still
 		# alert.
 		It 'flags reserved word "<Name>" with scope "<Scope>" as a violation' -TestCases $scopedReservedWordCases {
