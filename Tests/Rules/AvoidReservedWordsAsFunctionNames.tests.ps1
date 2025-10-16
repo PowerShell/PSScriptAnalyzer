@@ -47,8 +47,11 @@ $scopedReservedWordCases = foreach ($scope in $functionScopes) {
     }
 }
 
+# Build variants of reserved words where the reserverd word:
+# appearing at the start and end of a function
+# name.
 $substringReservedWords = $reservedWords | ForEach-Object {
-    "$($_)Func"
+    "$($_)A", "A$($_)", $_.Substring(0, $_.Length - 1)
 }
 
 $safeFunctionNames = @(
