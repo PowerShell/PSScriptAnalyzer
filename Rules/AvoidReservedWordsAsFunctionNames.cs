@@ -26,18 +26,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         // The list of PowerShell reserved words.
         // https://learn.microsoft.com/en-gb/powershell/module/microsoft.powershell.core/about/about_reserved_words
+        // 
+        // The Below are omitted as they don't pose an issue being a function
+        // name:
+        // assembly, base, command, hidden, in, inlinescript, interface, module,
+        // namespace, private, public, static
         static readonly HashSet<string> reservedWords = new HashSet<string>(
             new[] {
-                "assembly", "base", "begin", "break",
-                "catch", "class", "command", "configuration",
+                "begin", "break", "catch", "class", "configuration",
                 "continue", "data", "define", "do",
                 "dynamicparam", "else", "elseif", "end",
                 "enum", "exit", "filter", "finally",
                 "for", "foreach", "from", "function",
-                "hidden", "if", "in", "inlinescript",
-                "interface", "module", "namespace", "parallel",
-                "param", "private", "process", "public",
-                "return", "sequence", "static", "switch",
+                "if", "parallel", "param", "process",
+                "return", "sequence", "switch",
                 "throw", "trap", "try", "type",
                 "until", "using","var", "while", "workflow"
             },

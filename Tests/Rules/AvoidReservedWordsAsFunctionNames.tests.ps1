@@ -4,31 +4,25 @@
 # Keep in sync with the rule's reserved words list in
 # Rules/AvoidReservedWordsAsFunctionNames.cs
 $reservedWords = @(
-    'assembly','base','begin','break',
-    'catch','class','command','configuration',
+    'begin','break','catch','class','configuration',
     'continue','data','define','do',
     'dynamicparam','else','elseif','end',
     'enum','exit','filter','finally',
     'for','foreach','from','function',
-    'hidden','if','in','inlinescript',
-    'interface','module','namespace','parallel',
-    'param','private','process','public',
-    'return','sequence','static','switch',
+    'if','parallel','param','process',
+    'return','sequence','switch',
     'throw','trap','try','type',
     'until','using','var','while','workflow'
 )
 
 $randomCasedReservedWords = @(
-    'aSSeMbLy','bASe','bEgIN','bReAk',
-    'cAtCh','CLasS','cOMmAnD','cONfiGuRaTioN',
+    'bEgIN','bReAk','cAtCh','CLasS','cONfiGuRaTioN',
     'cONtiNuE','dAtA','dEFInE','Do',
     'DyNaMiCpArAm','eLsE','eLsEiF','EnD',
     'EnUm','eXiT','fIlTeR','fINaLLy',
     'FoR','fOrEaCh','fROm','fUnCtIoN',
-    'hIdDeN','iF','IN','iNlInEsCrIpT',
-    'InTeRfAcE','mOdUlE','nAmEsPaCe','pArAlLeL',
-    'PaRaM','pRiVaTe','pRoCeSs','pUbLiC',
-    'ReTuRn','sEqUeNcE','StAtIc','SwItCh',
+    'iF','pArAlLeL','PaRaM','pRoCeSs',
+    'ReTuRn','sEqUeNcE','SwItCh',
     'tHrOw','TrAp','tRy','TyPe',
     'uNtIl','UsInG','VaR','wHiLe','wOrKfLoW'
 )
