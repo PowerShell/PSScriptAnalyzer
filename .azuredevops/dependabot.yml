@@ -1,0 +1,3 @@
+version: 2
+enable-security-updates: false
+enable-campaigned-updates: false
