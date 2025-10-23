@@ -3,6 +3,15 @@
 
 BeforeAll {
     $ruleName = 'PSUseSingleValueFromPipelineParameter'
+
+    $settings = @{
+        IncludeRules = @($ruleName)
+        Rules        = @{
+            $ruleName = @{
+                Enable = $true
+            }
+        }
+    }
 }
 
 Describe 'UseSingleValueFromPipelineParameter' {
@@ -21,7 +30,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations[0].Message | Should -Match "Multiple parameters \(InputObject, AnotherParam\) in parameter set 'default'"
         }
@@ -38,7 +47,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
         }
 
@@ -54,7 +63,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
         }
 
@@ -70,7 +79,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations[0].Message | Should -Match "parameter set 'MySet'"
         }
@@ -90,7 +99,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 3
             $violations[0].Message | Should -Match 'Multiple parameters \(First, Second, Third\)'
         }
@@ -110,7 +119,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -126,7 +135,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -145,7 +154,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -164,7 +173,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -183,7 +192,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -203,7 +212,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -220,7 +229,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -236,7 +245,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -252,7 +261,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -277,7 +286,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 4  # 2 violations per parameter set, each parameter gets flagged
 
             # Check that both parameter sets are mentioned in violations
@@ -298,7 +307,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations[0].Message | Should -Match "parameter set 'default'"
         }
@@ -319,7 +328,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }

@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// the same parameter set that are marked as ValueFromPipeline=true, which
     /// can cause undefined behavior.
     /// </summary>
-    public class UseSingleValueFromPipelineParameter : IScriptRule
+    public class UseSingleValueFromPipelineParameter : ConfigurableRule
     {
         private const string AllParameterSetsName = "__AllParameterSets";
 
@@ -32,7 +32,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
         /// <returns>A collection of diagnostic records for each violating parameter.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
@@ -169,20 +169,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
         }
 
-        public string GetCommonName() => Strings.UseSingleValueFromPipelineParameterCommonName;
+        public override string GetCommonName() => Strings.UseSingleValueFromPipelineParameterCommonName;
 
-        public string GetDescription() => Strings.UseSingleValueFromPipelineParameterDescription;
+        public override string GetDescription() => Strings.UseSingleValueFromPipelineParameterDescription;
 
-        public string GetName() => string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseSingleValueFromPipelineParameterName);
 
-        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
-        public string GetSourceName() => Strings.SourceName;
+        public override string GetSourceName() => Strings.SourceName;
 
-        public SourceType GetSourceType() => SourceType.Builtin;
+        public override SourceType GetSourceType() => SourceType.Builtin;
     }
 }
