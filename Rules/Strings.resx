@@ -1236,4 +1236,16 @@
   <data name="AvoidReservedWordsAsFunctionNamesError" xml:space="preserve">
     <value>The reserved word '{0}' was used as a function name. This should be avoided.</value>
   </data>
+  <data name="UseSingleValueFromPipelineParameterCommonName" xml:space="preserve">
+    <value>Use a single ValueFromPipeline parameter per parameter set</value>
+  </data>
+  <data name="UseSingleValueFromPipelineParameterDescription" xml:space="preserve">
+    <value>Use at most a single ValueFromPipeline parameter per parameter set to avoid undefined or unexpected behaviour.</value>
+  </data>
+  <data name="UseSingleValueFromPipelineParameterError" xml:space="preserve">
+    <value>Multiple parameters ({0}) in parameter set '{1}' are marked as ValueFromPipeline. Only one parameter per parameter set should accept pipeline input.</value>
+  </data>
+  <data name="UseSingleValueFromPipelineParameterName" xml:space="preserve">
+    <value>UseSingleValueFromPipelineParameter</value>
+  </data>
 </root>
