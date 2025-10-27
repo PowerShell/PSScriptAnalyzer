@@ -34,6 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private static readonly List<ISettingsParser> s_parsers = new()
         {
+            new JsonSettingsParser(),
             new Psd1SettingsParser()
         };
 

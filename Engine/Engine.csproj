@@ -71,12 +71,15 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8'">
     <PackageReference Include="System.Management.Automation" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
+
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
    
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" />
   </ItemGroup>
 
