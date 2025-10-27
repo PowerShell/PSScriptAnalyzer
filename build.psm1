@@ -251,7 +251,7 @@ function Start-ScriptAnalyzerBuild
         }
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\SettingsPresets" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         $rulesProjectOutputDir = if ($env:TF_BUILD) {
