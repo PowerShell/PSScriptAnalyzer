@@ -254,6 +254,9 @@ function Start-ScriptAnalyzerBuild
         $settingsFiles = Get-Childitem "$projectRoot\Engine\SettingsPresets" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\CommandDataFiles" | ForEach-Object -MemberName FullName
+        Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath CommandDataFiles)
+
         $rulesProjectOutputDir = if ($env:TF_BUILD) {
             "$projectRoot\bin\${buildConfiguration}\${framework}" }
         else {
