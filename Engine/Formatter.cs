@@ -83,7 +83,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private static SettingsData GetCurrentSettings(SettingsData settings, string rule)
         {
-            return HashtableSettingsConverter.Convert(new Hashtable()
+            return Settings.Create(new Hashtable()
             {
                 {"IncludeRules", new string[] {rule}},
                 {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }
