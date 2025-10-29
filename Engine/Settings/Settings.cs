@@ -32,7 +32,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// The first matching parser "wins" for auto discovery and presets when multiple
         /// files of the same base name, but different supported extensions, exist.
         /// </summary>
-        private static readonly List<ISettingsParser> s_parsers = new()
+        private static readonly ISettingsParser[] s_parsers =
         {
             new JsonSettingsParser(),
             new Psd1SettingsParser()
@@ -281,7 +281,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <exception cref="NotSupportedException">If no parser can handle the file.</exception>
         private static SettingsData ParseFile(string path)
         {
-            var parser = s_parsers.Find(p => p.CanParse(path)) ??
+            var parser = Array.Find(s_parsers, p => p.CanParse(path)) ??
                 throw new NotSupportedException($"No parser registered for settings file '{path}'.");
             using var fs = File.OpenRead(path);
             var data = parser.Parse(fs, path);
