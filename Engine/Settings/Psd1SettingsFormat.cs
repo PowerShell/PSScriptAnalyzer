@@ -24,7 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// Throws <see cref="InvalidDataException"/> for structural issues (missing hashtable, invalid
     /// values).
     /// </summary>
-    internal sealed class Psd1SettingsParser : ISettingsParser
+    internal sealed class Psd1SettingsFormat : ISettingsFormat
     {
         public string FormatName => "psd1";
 
@@ -33,30 +33,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="pathOrExtension">Full path or just an extension string.</param>
         /// <returns>True if the extension is .psd1 (case-insensitive).</returns>
-        public bool CanParse(string pathOrExtension) =>
+        public bool Supports(string pathOrExtension) =>
             string.Equals(Path.GetExtension(pathOrExtension), ".psd1", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Parses a .psd1 settings file into <see cref="SettingsData"/>.
+        /// Deserializes a .psd1 settings file into <see cref="SettingsData"/>.
         /// </summary>
         /// <param name="content">
-        /// Stream for API symmetry; not directly consumed (PowerShell parser reads from file path).
+        /// The content of the .psd1 file as a string.
         /// </param>
         /// <param name="sourcePath">Absolute or relative path to the .psd1 file.</param>
         /// <returns>Normalized <see cref="SettingsData"/> instance.</returns>
-        /// <exception cref="FileNotFoundException">If the file does not exist.</exception>
         /// <exception cref="InvalidDataException">
         /// If no top-level hashtable is found or conversion yields invalid data.
         /// </exception>
-        public SettingsData Parse(Stream content, string sourcePath)
+        public SettingsData Deserialize(string content, string sourcePath)
         {
-            // Need file path for PowerShell Parser.ParseFile
-            if (!File.Exists(sourcePath))
-            {
-                throw new FileNotFoundException("Settings file not found.", sourcePath);
-            }
-
-            Ast ast = Parser.ParseFile(sourcePath, out Token[] tokens, out ParseError[] errors);
+            Ast ast = Parser.ParseInput(content, out Token[] tokens, out ParseError[] errors);
 
             if (ast.FindAll(a => a is HashtableAst, false).FirstOrDefault() is not HashtableAst hashTableAst)
             {
@@ -87,7 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="settingsData">Settings to serialize.</param>
         /// <returns>Formatted .psd1 content as a string.</returns>
-        public string Serialise(SettingsData settingsData)
+        public string Serialize(SettingsData settingsData)
         {
             if (settingsData == null) throw new ArgumentNullException(nameof(settingsData));
 
@@ -124,9 +117,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 };
             }
 
+            string FormatValue(object value)
+            {
+                // Non-string enumerable -> PowerShell array literal
+                if (value is System.Collections.IEnumerable en && value is not string)
+                {
+                    var items = new List<string>();
+                    foreach (var item in en)
+                    {
+                        // Treat nested enumerable of strings similarly; else fall back to scalar
+                        items.Add(FormatScalar(item));
+                    }
+                    return items.Count == 0
+                        ? "@()"
+                        : "@(" + string.Join(", ", items) + ")";
+                }
+                return FormatScalar(value);
+            }
+
             sb.AppendLine("@{");
 
-            // Ordered sections
             AppendStringList("IncludeRules", settingsData.IncludeRules);
             AppendStringList("ExcludeRules", settingsData.ExcludeRules);
             AppendStringList("Severity", settingsData.Severities);
@@ -134,14 +144,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (settingsData.IncludeDefaultRules)
             {
-                sb.Append(indent).Append("IncludeDefaultRules = ").AppendLine("$true").AppendLine();
+                sb.Append(indent).Append("IncludeDefaultRules = $true").AppendLine().AppendLine();
             }
             if (settingsData.RecurseCustomRulePath)
             {
-                sb.Append(indent).Append("RecurseCustomRulePath = ").AppendLine("$true").AppendLine();
+                sb.Append(indent).Append("RecurseCustomRulePath = $true").AppendLine().AppendLine();
             }
 
-            // Rules block
             if (settingsData.RuleArguments != null && settingsData.RuleArguments.Count > 0)
             {
                 sb.Append(indent).AppendLine("Rules = @{");
@@ -154,7 +163,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             sb.Append(indent).Append(indent).Append(indent)
                               .Append(argKvp.Key).Append(" = ")
-                              .AppendLine(FormatScalar(argKvp.Value));
+                              .AppendLine(FormatValue(argKvp.Value));
                         }
                     }
                     sb.Append(indent).Append(indent).AppendLine("}").AppendLine();

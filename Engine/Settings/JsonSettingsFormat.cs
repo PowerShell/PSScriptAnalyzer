@@ -11,7 +11,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
 
     /// <summary>
-    /// Parses JSON settings files (extension .json) into <see cref="SettingsData"/>.
+    /// Handles JSON settings files (extension .json).
     /// Expected top-level properties:
     ///   Severity              : string or string array
     ///   IncludeRules          : string or string array
@@ -20,15 +20,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     ///   IncludeDefaultRules   : bool
     ///   RecurseCustomRulePath : bool
     ///   Rules                 : object with ruleName -> { argumentName : value } mapping
-    /// Parsing logic:
-    /// 1. Read entire stream into a string.
-    /// 2. Deserialize to DTO with Newtonsoft.Json (case-insensitive by default).
-    /// 3. Validate null result -> invalid data.
-    /// 4. Normalize each collection to empty lists when absent.
-    /// 5. Rebuild rule arguments as case-insensitive dictionaries.
-    /// Throws <see cref="InvalidDataException"/> on malformed JSON or missing structure.
     /// </summary>
-    internal sealed class JsonSettingsParser : ISettingsParser
+    internal sealed class JsonSettingsFormat : ISettingsFormat
     {
 
         /// <summary>
@@ -48,12 +41,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public string FormatName => "json";
 
         /// <summary>
-        /// Determines if this parser can handle the supplied path by checking for .json extension.
+        /// Determines if this format can handle the supplied path by checking for .json extension.
         /// </summary>
-        /// <param name="pathOrExtension">File path or extension string.</param>
+        /// <param name="path">File path</param>
         /// <returns>True if extension is .json.</returns>
-        public bool CanParse(string pathOrExtension) =>
-            string.Equals(Path.GetExtension(pathOrExtension), ".json", StringComparison.OrdinalIgnoreCase);
+        public bool Supports(string path) =>
+            string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Parses a JSON settings file stream into <see cref="SettingsData"/>.
@@ -64,14 +57,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <exception cref="InvalidDataException">
         /// Thrown on JSON deserialization error or invalid/empty root object.
         /// </exception>
-        public SettingsData Parse(Stream content, string sourcePath)
+        public SettingsData Deserialize(string content, string sourcePath)
         {
-            using var reader = new StreamReader(content);
-            string json = reader.ReadToEnd();
             JsonSettingsDto dto;
             try
             {
-                dto = JsonConvert.DeserializeObject<JsonSettingsDto>(json);
+                dto = JsonConvert.DeserializeObject<JsonSettingsDto>(content);
             }
             catch (JsonException je)
             {
@@ -112,7 +103,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="pretty">True for indented JSON, false for minified.</param>
         /// <returns>JSON string suitable for saving as PSScriptAnalyzerSettings.json.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="data"/> is null.</exception>
-        public string Serialise(SettingsData data)
+        public string Serialize(SettingsData data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
 
