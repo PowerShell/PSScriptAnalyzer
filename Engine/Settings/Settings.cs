@@ -288,6 +288,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return data;
         }
 
+        public static string Serialise(SettingsData data, string format)
+        {
+            // Check each parser to see if the format matches
+            // and use it to serialize the data
+            var parser = Array.Find(s_parsers, p => string.Equals(p.FormatName, format, StringComparison.OrdinalIgnoreCase)) ??
+                throw new NotSupportedException($"No parser registered for format '{format}'.");
+            return parser.Serialise(data);
+        }
+
         /// <summary>
         /// Retrieves the Settings directory from the Module directory structure
         /// </summary>

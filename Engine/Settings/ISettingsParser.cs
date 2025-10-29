@@ -31,5 +31,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="sourcePath">The source path of the settings file.</param>
         /// <returns>The parsed SettingsData.</returns>
         SettingsData Parse(Stream content, string sourcePath);
+
+        /// <summary>
+        /// Serialises the SettingsData into a string representation.
+        /// </summary>
+        /// <param name="settingsData">The SettingsData to serialise.</param>
+        /// <returns>The string representation of the settings.</returns>
+        string Serialise(SettingsData settingsData);
+
     }
 }

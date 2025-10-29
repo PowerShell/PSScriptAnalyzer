@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -101,6 +102,66 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 RecurseCustomRulePath = dto.RecurseCustomRulePath.GetValueOrDefault(),
                 RuleArguments = ruleArgs
             };
+        }
+
+        /// <summary>
+        /// Serializes a <see cref="SettingsData"/> instance into a PSScriptAnalyzerSettings.json
+        /// formatted string. Omits empty collections and false boolean flags for brevity.
+        /// </summary>
+        /// <param name="data">Settings snapshot to serialize.</param>
+        /// <param name="pretty">True for indented JSON, false for minified.</param>
+        /// <returns>JSON string suitable for saving as PSScriptAnalyzerSettings.json.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="data"/> is null.</exception>
+        public string Serialise(SettingsData data)
+        {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
+            var root = new JObject();
+            var serializer = JsonSerializer.CreateDefault();
+
+            void AddArray(string name, IList<string> list)
+            {
+                if (list != null && list.Count > 0)
+                {
+                    root[name] = new JArray(list);
+                }
+            }
+
+            AddArray("IncludeRules", data.IncludeRules);
+            AddArray("ExcludeRules", data.ExcludeRules);
+            AddArray("Severity", data.Severities);
+            AddArray("CustomRulePath", data.CustomRulePath);
+
+            if (data.IncludeDefaultRules)
+            {
+                root["IncludeDefaultRules"] = true;
+            }
+            if (data.RecurseCustomRulePath)
+            {
+                root["RecurseCustomRulePath"] = true;
+            }
+
+            if (data.RuleArguments != null && data.RuleArguments.Count > 0)
+            {
+                var rulesObj = new JObject();
+                foreach (var rule in data.RuleArguments)
+                {
+                    var argsObj = new JObject();
+                    if (rule.Value != null)
+                    {
+                        foreach (var arg in rule.Value)
+                        {
+                            // Serialize scalar or complex value
+                            argsObj[arg.Key] = arg.Value != null
+                                ? JToken.FromObject(arg.Value, serializer)
+                                : JValue.CreateNull();
+                        }
+                    }
+                    rulesObj[rule.Key] = argsObj;
+                }
+                root["Rules"] = rulesObj;
+            }
+            return root.ToString(Formatting.Indented);
         }
     }
 

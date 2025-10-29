@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -78,6 +79,92 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return HashtableSettingsConverter.Convert(raw);
         }
-    }
 
+        /// <summary>
+        /// Serializes a <see cref="SettingsData"/> instance into a formatted .psd1 settings file
+        /// (PowerShell hashtable) similar to shipped presets.
+        /// Omits empty collections and flags (if false) to keep output concise.
+        /// </summary>
+        /// <param name="settingsData">Settings to serialize.</param>
+        /// <returns>Formatted .psd1 content as a string.</returns>
+        public string Serialise(SettingsData settingsData)
+        {
+            if (settingsData == null) throw new ArgumentNullException(nameof(settingsData));
+
+            var sb = new System.Text.StringBuilder();
+            var indent = "    ";
+
+            string Quote(string s) => "'" + s.Replace("'", "''") + "'";
+
+            void AppendStringList(string key, List<string> list)
+            {
+                if (list == null || list.Count == 0) return;
+                sb.Append(indent).Append(key).Append(" = @(").AppendLine();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    sb.Append(indent).Append(indent).Append(Quote(list[i]));
+                    sb.AppendLine(i == list.Count - 1 ? string.Empty : ",");
+                }
+                sb.AppendLine(indent + ")").AppendLine();
+            }
+
+            string FormatScalar(object value)
+            {
+                if (value == null) return "$null";
+                return value switch
+                {
+                    string s => Quote(s),
+                    bool b => b ? "$true" : "$false",
+                    Enum e => Quote(e.ToString()),
+                    int or long or short or byte or sbyte or uint or ulong or ushort => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture),
+                    float f => f.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    double d => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    decimal m => m.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    _ => Quote(value.ToString())
+                };
+            }
+
+            sb.AppendLine("@{");
+
+            // Ordered sections
+            AppendStringList("IncludeRules", settingsData.IncludeRules);
+            AppendStringList("ExcludeRules", settingsData.ExcludeRules);
+            AppendStringList("Severity", settingsData.Severities);
+            AppendStringList("CustomRulePath", settingsData.CustomRulePath);
+
+            if (settingsData.IncludeDefaultRules)
+            {
+                sb.Append(indent).Append("IncludeDefaultRules = ").AppendLine("$true").AppendLine();
+            }
+            if (settingsData.RecurseCustomRulePath)
+            {
+                sb.Append(indent).Append("RecurseCustomRulePath = ").AppendLine("$true").AppendLine();
+            }
+
+            // Rules block
+            if (settingsData.RuleArguments != null && settingsData.RuleArguments.Count > 0)
+            {
+                sb.Append(indent).AppendLine("Rules = @{");
+                foreach (var ruleKvp in settingsData.RuleArguments)
+                {
+                    sb.Append(indent).Append(indent).Append(ruleKvp.Key).Append(" = @{").AppendLine();
+                    if (ruleKvp.Value != null && ruleKvp.Value.Count > 0)
+                    {
+                        foreach (var argKvp in ruleKvp.Value)
+                        {
+                            sb.Append(indent).Append(indent).Append(indent)
+                              .Append(argKvp.Key).Append(" = ")
+                              .AppendLine(FormatScalar(argKvp.Value));
+                        }
+                    }
+                    sb.Append(indent).Append(indent).AppendLine("}").AppendLine();
+                }
+                sb.Append(indent).AppendLine("}");
+            }
+
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+    }
 }
