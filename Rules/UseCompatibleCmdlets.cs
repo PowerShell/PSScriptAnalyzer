@@ -306,7 +306,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            string commandDataFilesPath = Settings.GetShippedCommandDataFileDirectory();
+            string commandDataFilesPath = Settings.GetShippedModuleSubDirectory("CommandDataFiles");
 #if DEBUG
             object modeObject;
             if (ruleArgs.TryGetValue("mode", out modeObject))

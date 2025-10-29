@@ -229,7 +229,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public static string TryResolvePreset(string name)
         {
             // Get the path to the folder of preset settings files shipped with the module
-            var settingsDir = GetShippedSettingsDirectory();
+            var settingsDir = GetShippedModuleSubDirectory("Settings");
 
             // If we can't locate it, return null
             if (settingsDir == null) return null;
@@ -298,10 +298,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Retrieves the Settings directory from the Module directory structure
+        /// Retrieves a subdirectory from the Module directory structure
         /// </summary>
-        /// <returns>The Settings directory path</returns>
-        public static string GetShippedSettingsDirectory()
+        /// <returns>The subdirectory path</returns>
+        public static string GetShippedModuleSubDirectory(string subDirectoryName)
         {
             // Find the compatibility files in Settings folder
             var path = typeof(Helper).GetTypeInfo().Assembly.Location;
@@ -313,50 +313,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Find the compatibility files in Settings folder adjacent to the assembly.
             // Some builds place binaries in subfolders (coreclr/, PSv3/); in those cases,
             // the Settings folder lives in the parent (module root), so we also probe one level up.
-            var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
-            if (!Directory.Exists(settingsPath))
+            var subDirectoryPath = Path.Combine(Path.GetDirectoryName(path), subDirectoryName);
+            if (!Directory.Exists(subDirectoryPath))
             {
                 // Probe parent directory (module root) for Settings folder.
                 var parentDir = Path.GetDirectoryName(Path.GetDirectoryName(path));
-                settingsPath = Path.Combine(parentDir ?? string.Empty, "Settings");
-                if (!Directory.Exists(settingsPath))
+                subDirectoryPath = Path.Combine(parentDir ?? string.Empty, subDirectoryName);
+                if (!Directory.Exists(subDirectoryPath))
                 {
                     return null;
                 }
             }
 
-            return settingsPath;
-        }
-
-        /// <summary>
-        /// Retrieves the Settings directory from the Module directory structure
-        /// </summary>
-        /// <returns>The Settings directory path</returns>
-        public static string GetShippedCommandDataFileDirectory()
-        {
-            // Find the compatibility files in Settings folder
-            var path = typeof(Helper).GetTypeInfo().Assembly.Location;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return null;
-            }
-
-            // Find the compatibility files in Settings folder adjacent to the assembly.
-            // Some builds place binaries in subfolders (coreclr/, PSv3/); in those cases,
-            // the Settings folder lives in the parent (module root), so we also probe one level up.
-            var commandDataFilesPath = Path.Combine(Path.GetDirectoryName(path), "CommandDataFiles");
-            if (!Directory.Exists(commandDataFilesPath))
-            {
-                // Probe parent directory (module root) for CommandDataFiles folder.
-                var parentDir = Path.GetDirectoryName(Path.GetDirectoryName(path));
-                commandDataFilesPath = Path.Combine(parentDir ?? string.Empty, "CommandDataFiles");
-                if (!Directory.Exists(commandDataFilesPath))
-                {
-                    return null;
-                }
-            }
-
-            return commandDataFilesPath;
+            return subDirectoryPath;
         }
 
         /// <summary>
@@ -367,7 +336,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public static IEnumerable<string> GetSettingPresets()
         {
-            var settingsPath = GetShippedSettingsDirectory();
+            var settingsPath = GetShippedModuleSubDirectory("Settings");
 
             if (settingsPath == null)
             {

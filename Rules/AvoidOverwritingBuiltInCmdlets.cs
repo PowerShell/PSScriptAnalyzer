@@ -90,7 +90,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var psVerList = PowerShellVersion;
-            string commandDataFilesPath = Settings.GetShippedCommandDataFileDirectory();
+            string commandDataFilesPath = Settings.GetShippedModuleSubDirectory("CommandDataFiles");
 
             foreach (string reference in psVerList)
             {
