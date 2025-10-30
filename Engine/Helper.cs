@@ -1501,6 +1501,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
+            if (rulePaths.Length == 0)
+            {
+                return null;
+            }
+
             Collection<PathInfo> pathInfo = new Collection<PathInfo>();
             foreach (string rulePath in rulePaths)
             {
