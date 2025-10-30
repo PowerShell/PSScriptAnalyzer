@@ -8,9 +8,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// Data container representing fully parsed and normalized PSScriptAnalyzer settings.
-    /// Produced by format parsers (JSON, PSD1) or the hashtable converter; consumed by rule
-    /// selection and formatter logic. Lists and dictionaries are mutable here for simplicity, but
-    /// callers should treat the instance as a snapshot and avoid modifying post-creation.
     /// </summary>
     public sealed class SettingsData
     {

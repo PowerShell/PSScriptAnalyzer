@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Management.Automation;
 using System.Reflection;
@@ -18,24 +19,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// (null, preset name, file path, or inline hashtable) into a SettingsData instance by:
     /// 1. Auto-discovering a settings file (PSScriptAnalyzerSettings.*) in the working directory.
     /// 2. Mapping preset names to shipped settings files (supporting multiple formats).
-    /// 3. Loading and parsing settings files via registered format parsers (psd1, json).
+    /// 3. Loading and parsing settings files via registered formats (e.g. psd1, json).
     /// 4. Converting inline hashtables directly to SettingsData.
     /// Also exposes helpers to enumerate shipped presets and locate module resource folders.
     /// </summary>
     public static class Settings
     {
 
-        private readonly static string DefaultSettingsFileName = "PSScriptAnalyzerSettings";
+        public readonly static string DefaultSettingsFileName = "PSScriptAnalyzerSettings";
 
         /// <summary>
-        /// Registered settings parsers in precedence order.
-        /// The first matching parser "wins" for auto discovery and presets when multiple
+        /// Registered settings formats in precedence order.
+        /// The first matching format "wins" for auto discovery and presets when multiple
         /// files of the same base name, but different supported extensions, exist.
         /// </summary>
-        private static readonly ISettingsParser[] s_parsers =
+        private static readonly ISettingsFormat[] s_formats =
         {
-            new JsonSettingsParser(),
-            new Psd1SettingsParser()
+            new JsonSettingsFormat(),
+            new Psd1SettingsFormat()
         };
 
         /// <summary>
@@ -72,14 +73,61 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Determine how we're being passed settings
             var result = ResolveSettingsSource(settingsObj, cwd, getResolvedProviderPathFromPSPathDelegate);
 
-            return result.Kind switch
+            switch (result.Kind)
             {
-                SettingsSourceKind.None => null,
-                SettingsSourceKind.InlineHashtable => HashtableSettingsConverter.Convert(result.InlineHashtable),
-                SettingsSourceKind.AutoFile or SettingsSourceKind.ExplicitFile or SettingsSourceKind.PresetFile => ParseFile(result.FilePath),
-                _ => null,
-            };
-
+                case SettingsSourceKind.InlineHashtable:
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingHashtable
+                        )
+                    );
+                    return HashtableSettingsConverter.Convert(result.InlineHashtable);
+                case SettingsSourceKind.AutoFile:
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsNotProvided,
+                            cwd ?? ""
+                        )
+                    );
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsAutoDiscovered,
+                            result.FilePath
+                        )
+                    );
+                    return Deserialize(result.FilePath);
+                case SettingsSourceKind.ExplicitFile:
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingFile,
+                            result.FilePath
+                        )
+                    );
+                    return Deserialize(result.FilePath);
+                case SettingsSourceKind.PresetFile:
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingPresetFile,
+                            settingsObj,
+                            result.FilePath
+                        )
+                    );
+                    return Deserialize(result.FilePath);
+                case SettingsSourceKind.None:
+                default:
+                    outputWriter?.WriteVerbose(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsObjectCouldNotBResolved
+                        )
+                    );
+                    return null;
+            }
         }
 
         /// <summary>
@@ -170,7 +218,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     };
                 }
 
-                // If it doesn't match a prefix, is it a valid file path?
+                // If it doesn't match a preset, is it a valid file path?
                 // Attempt provider path resolution if possible
                 s = ResolveProviderPathIfPossible(s, getResolvedProviderPathFromPSPathDelegate);
                 if (File.Exists(s))
@@ -182,15 +230,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     };
                 }
 
-                throw new FileNotFoundException($"Settings file '{s}' not found.");
+                throw new FileNotFoundException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.SettingsCannotFindFile,
+                        s
+                    )
+                );
             }
 
-            throw new ArgumentException("Settings must be a hashtable, a preset name, or a file path.");
+            throw new ArgumentException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.SettingsInvalidType
+                )
+            );
         }
 
         /// <summary>
         /// Attempts to locate a settings file in the supplied path's directory
-        /// using the registered parser formats in precedence order.
+        /// using the supported formats in precedence order.
         /// </summary>
         /// <param name="path">File or directory path.</param>
         /// <returns>Full path to discovered settings file or null.</returns>
@@ -210,10 +267,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (!Directory.Exists(dir)) return null;
 
             // Test for the presence of a settings file for each of the formats
-            // supported. The parsers format list determines precedence.
-            foreach (var parser in s_parsers)
+            // supported. The format list order determines precedence.
+            foreach (var format in s_formats)
             {
-                var filePath = Path.Combine(dir, $"{DefaultSettingsFileName}.{parser.FormatName}");
+                var filePath = Path.Combine(dir, $"{DefaultSettingsFileName}.{format.FormatName}");
                 if (File.Exists(filePath)) return filePath;
             }
 
@@ -236,9 +293,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Loop through supported formats and check for existence
             // return the first match
-            foreach (var parser in s_parsers)
+            foreach (var format in s_formats)
             {
-                var filePath = Path.Combine(settingsDir, name + "." + parser.FormatName);
+                var filePath = Path.Combine(settingsDir, name + "." + format.FormatName);
                 if (File.Exists(filePath)) return filePath;
             }
 
@@ -273,28 +330,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Opens and parses the specified settings file using an appropriate registered parser.
-        /// Clones result to stamp correct SourceKind if immutability prevents direct assignment.
+        /// Opens and parses the specified settings file using an appropriate supported format.
         /// </summary>
         /// <param name="path">Existing settings file path.</param>
         /// <returns>Parsed <see cref="SettingsData"/>.</returns>
-        /// <exception cref="NotSupportedException">If no parser can handle the file.</exception>
-        private static SettingsData ParseFile(string path)
+        /// <exception cref="NotSupportedException">If no format can handle the file.</exception>
+        public static SettingsData Deserialize(string path)
         {
-            var parser = Array.Find(s_parsers, p => p.CanParse(path)) ??
-                throw new NotSupportedException($"No parser registered for settings file '{path}'.");
+            var format = Array.Find(s_formats, f => f.Supports(path)) ??
+                throw new NotSupportedException($"No format registered for settings file '{path}'.");
             using var fs = File.OpenRead(path);
-            var data = parser.Parse(fs, path);
+            var content = new StreamReader(fs).ReadToEnd();
+            var data = format.Deserialize(content, path);
             return data;
         }
 
-        public static string Serialise(SettingsData data, string format)
+        /// <summary>
+        /// Serializes the supplied <see cref="SettingsData"/> into the specified format.
+        /// </summary>
+        /// <param name="data">Settings data to serialize.</param>
+        /// <param name="format">Format identifier (e.g. 'psd1', 'json').</param>
+        /// <returns>Serialized settings content.</returns>
+        /// <exception cref="NotSupportedException">If no format is registered for the specified name.</exception>
+        public static string Serialize(SettingsData data, string format)
         {
-            // Check each parser to see if the format matches
-            // and use it to serialize the data
-            var parser = Array.Find(s_parsers, p => string.Equals(p.FormatName, format, StringComparison.OrdinalIgnoreCase)) ??
-                throw new NotSupportedException($"No parser registered for format '{format}'.");
-            return parser.Serialise(data);
+            // Find the appropriate format handler and use it to serialize the data
+            foreach (var f in s_formats)
+            {
+                if (string.Equals(f.FormatName, format, StringComparison.OrdinalIgnoreCase))
+                {
+                    return f.Serialize(data);
+                }
+            }
+            throw new NotSupportedException($"No supported format for '{format}'.");
         }
 
         /// <summary>
@@ -348,9 +416,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // only yield the name once.
             var yielded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var parser in s_parsers)
+            foreach (var format in s_formats)
             {
-                var pattern = "*." + parser.FormatName;
+                var pattern = "*." + format.FormatName;
                 foreach (var filepath in Directory.EnumerateFiles(settingsPath, pattern))
                 {
                     var name = Path.GetFileNameWithoutExtension(filepath);
@@ -362,6 +430,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Returns supported settings file format identifiers
+        /// </summary>
+        public static IEnumerable<string> GetSettingsFormats()
+        {
+            foreach (var f in s_formats)
+            {
+                yield return f.FormatName;
+            }
+        }
     }
 
 }
