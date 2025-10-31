@@ -42,7 +42,7 @@ Enable or disable the rule during ScriptAnalyzer invocation.
 
 #### CheckCommands: bool (Default value is `$true`)
 
-If true, require the case of all operators to be lowercase.
+If true, require the case of all command and parameter names to match their canonical casing.
 
 #### CheckKeyword: bool (Default value is `$true`)
 
@@ -50,7 +50,7 @@ If true, require the case of all keywords to be lowercase.
 
 #### CheckOperator: bool (Default value is `$true`)
 
-If true, require the case of all commands to match their actual casing.
+If true, require the case of all operators (e.g. -eq, -ne, -gt) to be lowercase.
 
 ## Examples
 
