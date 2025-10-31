@@ -58,7 +58,7 @@ If true, require the case of all operators (e.g. -eq, -ne, -gt) to be lowercase.
 
 ```powershell
 ForEach ($file in Get-childitem -Recurse) {
-    $file.Extension -eq '.txt'
+    $file.Extension -EQ '.txt'
 }
 
 invoke-command { 'foo' } -runasadministrator
