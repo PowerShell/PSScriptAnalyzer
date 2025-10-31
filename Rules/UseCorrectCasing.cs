@@ -141,14 +141,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             var correctlyCasedParameterName = parameterMetaData.Name;
                             if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
                             {
-                                var message = string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.UseCorrectCasingParameterError,
-                                    commandParameterAst.Extent.Text,
-                                    commandName,
-                                    correctlyCasedParameterName);
                                 yield return new DiagnosticRecord(
-                                    message,
+                                    string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.UseCorrectCasingParameterError,
+                                        commandParameterAst.Extent.Text,
+                                        commandName,
+                                        correctlyCasedParameterName),
                                     commandParameterAst.Extent,
                                     GetName(),
                                     DiagnosticSeverity.Information,
