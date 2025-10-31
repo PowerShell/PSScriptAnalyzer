@@ -25,7 +25,7 @@ commands. Using lowercase operators helps distinguish them from parameters.
 
 ```powershell
 Rules = @{
-    PS UseCorrectCasing = @{
+    PSUseCorrectCasing = @{
         Enable        = $true
         CheckCommands = $true
         CheckKeyword  = $true
