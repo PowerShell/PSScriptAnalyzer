@@ -103,7 +103,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
                     {
-                        yield return GetDiagnosticRecord(commandAst, fileName, correctlyCasedCommandName, Strings.UseCorrectCasingError);
+                        var extent = GetCommandExtent(commandAst);
+                        yield return new DiagnosticRecord(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UseCorrectCasingError,
+                                commandName,
+                                correctlyCasedCommandName),
+                            extent,
+                            GetName(),
+                            DiagnosticSeverity.Information,
+                            fileName,
+                            correctlyCasedCommandName,
+                            GetCorrectionExtent(commandAst, extent, correctlyCasedCommandName));
                     }
 
                     var commandParameterAsts = commandAst.FindAll(
@@ -129,14 +141,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             var correctlyCasedParameterName = parameterMetaData.Name;
                             if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
                             {
-                                yield return GetDiagnosticRecord(commandParameterAst, fileName, correctlyCasedParameterName, Strings.UseCorrectCasingError);
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.UseCorrectCasingParameterError,
+                                    commandParameterAst.Extent.Text,
+                                    commandName,
+                                    correctlyCasedParameterName);
+                                yield return new DiagnosticRecord(
+                                    message,
+                                    commandParameterAst.Extent,
+                                    GetName(),
+                                    DiagnosticSeverity.Information,
+                                    fileName,
+                                    correctlyCasedParameterName,
+                                    GetCorrectionExtent(commandParameterAst, commandParameterAst.Extent, correctlyCasedParameterName));
                             }
                         }
                     }
                 }
             }
         }
-
 
         /// <summary>
         /// For a command like "gci -path c:", returns the extent of "gci" in the command
@@ -195,32 +219,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 fileName,
                 correction, // return the keyword case as the id, so you can turn this off for specific keywords...
                 suggestedCorrections: extents);
-        }
-
-        private DiagnosticRecord GetDiagnosticRecord(Ast ast, string fileName, string correction, string message)
-        {
-            var extent = ast is CommandAst ? GetCommandExtent((CommandAst)ast) : ast.Extent;
-            return new DiagnosticRecord(
-                string.Format(CultureInfo.CurrentCulture, message, extent.Text, correction),
-                extent,
-                GetName(),
-                DiagnosticSeverity.Information,
-                fileName,
-                correction,
-                suggestedCorrections: GetCorrectionExtent(ast, extent, correction));
-        }
-
-        private DiagnosticRecord GetDiagnosticRecord(CommandParameterAst ast, string fileName, string correction, string message)
-        {
-            var extent = ast.Extent;
-            return new DiagnosticRecord(
-                string.Format(CultureInfo.CurrentCulture, message, extent.Text, correction),
-                extent,
-                GetName(),
-                DiagnosticSeverity.Information,
-                fileName,
-                correction,
-                suggestedCorrections: GetCorrectionExtent(ast, extent, correction));
         }
 
         /// <summary>
