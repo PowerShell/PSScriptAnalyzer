@@ -684,4 +684,131 @@ bar -h i `
                 Should -Be $expected
         }
     }
+
+    Context "Braced Member Accessor Handling" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckParameter = $false
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with no whitespace' {
+            $def = '$variable.{Property}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with whitespace after dot' {
+            $def = '$object. {Member}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with newline after dot' {
+            $def = "`$object.`n{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with inline comment after dot' {
+            $def = "`$object.<#comment#>{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with inline comment before dot' {
+            $def = "`$object<#comment#>.{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a simple braced member accessor with multiple touching inline comment before dot' {
+            $def = "`$object<#a#><#b#><#c#><#d#>.{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for an indexed braced member accessor' {
+            $def = "`$object[0].{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a parenthesized braced member accessor' {
+            $def = "(`$object).{Member}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a string literal braced member accessor' {
+            $def = "'StringLiteral'.{Length}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for an expandable string literal braced member accessor' {
+            $def = "`"StringLiteral`".{Length}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a here-string braced member accessor' {
+            $def = "@'
+string
+'@.{Length}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a doublequoted here-string braced member accessor' {
+            $def = "@`"
+string
+`"@.{Length}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for a type braced member accessor' {
+            $def = "[System.DayOfWeek].{Assembly}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for an braced member accessor on an identifier' {
+            $def = "`$Object.Property.{Prop}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for an braced member accessor with nested braces' {
+            $def = "`$Object.{{Prop}}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It 'Should not find a violation for an braced member accessor with nested inner dot' {
+            $def = "`$Object.{`$InnerObject.{Prop}}"
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        # Check that dot-sourcing still causes formatting violations
+        It 'Should find violations for dot-sourcing a script (no space after dot)' {
+            $def = '.{5+5}'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 2
+        }
+
+        It 'Should find violations for dot-sourcing a script (space after dot)' {
+            $def = '. {5+5}'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 2
+        }
+
+        It 'Should find violations for dot-sourcing a script (Semi-Colon before dot)' {
+            $def = '$a = 4;. {5+5}'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 2
+        }
+
+        # PS7 Specific behaviour. QuestionDot token.
+        It 'Should not find a violation for a null conditional braced member accessor' {
+            $def = '${Object}?.{Prop}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        } -Skip:$($PSVersionTable.PSVersion.Major -lt 7)
+
+        It 'Should not find a violation for a nested null conditional braced member accessor' {
+            $def = '${Object}?.{${InnerObject}?.{Prop}}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        } -Skip:$($PSVersionTable.PSVersion.Major -lt 7)
+
+    }
 }
