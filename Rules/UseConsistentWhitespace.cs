@@ -257,6 +257,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindInnerBraceViolations(TokenOperations tokenOperations)
         {
+            // Ranges which represent braced member access. Tokens within these ranges should be
+            // excluded from formatting.
+            var exclusionRanges = tokenOperations.GetBracedMemberAccessRanges();
             foreach (var lCurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
                 if (lCurly.Next == null
@@ -264,6 +267,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
                     || lCurly.Next.Value.Kind == TokenKind.LineContinuation
                     || lCurly.Next.Value.Kind == TokenKind.RCurly
+                    || exclusionRanges.Any(range =>
+                        lCurly.Value.Extent.StartOffset >= range.Item1 &&
+                        lCurly.Value.Extent.EndOffset <= range.Item2
+                       )
                     )
                 {
                     continue;
@@ -290,6 +297,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || rCurly.Previous.Value.Kind == TokenKind.NewLine
                     || rCurly.Previous.Value.Kind == TokenKind.LineContinuation
                     || rCurly.Previous.Value.Kind == TokenKind.AtCurly
+                    || exclusionRanges.Any(range =>
+                        rCurly.Value.Extent.StartOffset >= range.Item1 &&
+                        rCurly.Value.Extent.EndOffset <= range.Item2
+                       )
                     )
                 {
                     continue;
