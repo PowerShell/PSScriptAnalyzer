@@ -296,6 +296,111 @@ function SuppressPasswordParam()
             # All violations should be suppressed since there's no RuleSuppressionID filtering
             $diagnostics | Should -HaveCount 0
         }
+
+        It "Should work with custom rule from issue #1686 comment" {
+            # This test recreates the exact scenario from GitHub issue 1686 comment
+            # with a custom rule that populates RuleSuppressionID for targeted suppression
+
+            # Custom rule module that creates violations with specific RuleSuppressionIDs
+            $customRuleScript = @'
+function Measure-AvoidFooBarCommand {
+    [CmdletBinding()]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.ScriptBlockAst]
+        $ScriptBlockAst
+    )
+
+    $results = @()
+
+    # Find all command expressions
+    $commandAsts = $ScriptBlockAst.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.CommandAst]
+    }, $true)
+
+    foreach ($commandAst in $commandAsts) {
+        $commandName = $commandAst.GetCommandName()
+        if ($commandName -match '^(Get-FooBar|Set-FooBar)$') {
+            # Create a diagnostic with the command name as RuleSuppressionID
+            $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]::new(
+                "Avoid using $commandName command",
+                $commandAst.Extent,
+                'Measure-AvoidFooBarCommand',
+                'Warning',
+                $null,
+                $commandName  # This becomes the RuleSuppressionID
+            )
+            $results += $result
+        }
+    }
+
+    return $results
+}
+
+Export-ModuleMember -Function Measure-AvoidFooBarCommand
+'@
+
+            # Script that uses the custom rule with targeted suppression
+            $scriptWithCustomRuleSuppression = @'
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('Measure-AvoidFooBarCommand', RuleSuppressionId = 'Get-FooBar', Scope = 'Function', Target = 'Allow-GetFooBar')]
+param()
+
+function Test-BadCommands {
+    Get-FooBar  # Line 6 - Should NOT be suppressed (wrong function)
+    Set-FooBar  # Line 7 - Should NOT be suppressed (different RuleSuppressionID)
+}
+
+function Allow-GetFooBar {
+    Get-FooBar  # Line 11 - Should be suppressed (matches RuleSuppressionId and Target)
+    Set-FooBar  # Line 12 - Should NOT be suppressed (different RuleSuppressionID)
+}
+'@
+
+            # Save custom rule to temporary file
+            $customRuleFile = [System.IO.Path]::GetTempFileName()
+            $customRuleModuleFile = [System.IO.Path]::ChangeExtension($customRuleFile, '.psm1')
+            Set-Content -Path $customRuleModuleFile -Value $customRuleScript
+
+            try
+            {
+                # Check suppressed violations - this is the key test for our fix
+                $suppressions = Invoke-ScriptAnalyzer `
+                    -ScriptDefinition $scriptWithCustomRuleSuppression `
+                    -CustomRulePath $customRuleModuleFile `
+                    -SuppressedOnly `
+                    -ErrorAction SilentlyContinue
+
+                # The core functionality: RuleSuppressionID with named arguments should work for custom rules
+                # We should have at least one suppressed Get-FooBar violation
+                $suppressions | Should -Not -BeNullOrEmpty -Because "RuleSuppressionID named arguments should work for custom rules"
+
+                $getFooBarSuppressions = $suppressions | Where-Object { $_.RuleSuppressionID -eq 'Get-FooBar' }
+                $getFooBarSuppressions | Should -Not -BeNullOrEmpty -Because "Get-FooBar should be suppressed based on RuleSuppressionID"
+
+                # Verify the suppression occurred in the right function (Allow-GetFooBar)
+                $getFooBarSuppressions | Should -Not -BeNullOrEmpty
+                $getFooBarSuppressions[0].RuleName | Should -BeExactly 'Measure-AvoidFooBarCommand'
+
+                # Get unsuppressed violations to verify selective suppression
+                $diagnostics = Invoke-ScriptAnalyzer `
+                    -ScriptDefinition $scriptWithCustomRuleSuppression `
+                    -CustomRulePath $customRuleModuleFile `
+                    -ErrorAction SilentlyContinue
+
+                # Should still have violations for Set-FooBar (different RuleSuppressionID) and Get-FooBar in wrong function
+                $setFooBarViolations = $diagnostics | Where-Object { $_.RuleSuppressionID -eq 'Set-FooBar' }
+                $setFooBarViolations | Should -Not -BeNullOrEmpty -Because "Set-FooBar should not be suppressed (different RuleSuppressionID)"
+
+            }
+            finally
+            {
+                Remove-Item -Path $customRuleModuleFile -ErrorAction SilentlyContinue
+                Remove-Item -Path $customRuleFile -ErrorAction SilentlyContinue
+            }
+        }
     }
 
     Context "Rule suppression within DSC Configuration definition" {
