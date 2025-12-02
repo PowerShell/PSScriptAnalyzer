@@ -69,7 +69,6 @@ To install **PSScriptAnalyzer** from the PowerShell Gallery, see
 [Installing PSScriptAnalyzer](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview#installing-psscriptanalyzer) or simply open PowerShell in a Terminal and run:
 
 ```powershell
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name PSScriptAnalyzer
 ```
 
