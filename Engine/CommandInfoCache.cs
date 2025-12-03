@@ -80,21 +80,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>Returns null if command does not exists</returns>
         private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
+            string moduleName = null;
+            string actualCmdName = cmdName;
+
+            // Check if cmdName is in the format "moduleName\CmdletName" (exactly one backslash)
+            int backslashIndex = cmdName.IndexOf('\\');
+            if (
+                backslashIndex > 0 &&
+                backslashIndex == cmdName.LastIndexOf('\\') &&
+                backslashIndex != cmdName.Length - 1 &&
+                backslashIndex != 0
+            )
+            {
+                moduleName = cmdName.Substring(0, backslashIndex);
+                actualCmdName = cmdName.Substring(backslashIndex + 1);
+            }
             // 'Get-Command ?' would return % for example due to PowerShell interpreting is a single-character-wildcard search and not just the ? alias.
             // For more details see https://github.com/PowerShell/PowerShell/issues/9308
-            cmdName = WildcardPattern.Escape(cmdName);
+            actualCmdName = WildcardPattern.Escape(actualCmdName);
 
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 ps.RunspacePool = _runspacePool;
 
                 ps.AddCommand("Get-Command")
-                    .AddParameter("Name", cmdName)
+                    .AddParameter("Name", actualCmdName)
                     .AddParameter("ErrorAction", "SilentlyContinue");
 
                 if (commandType != null)
                 {
                     ps.AddParameter("CommandType", commandType);
+                }
+
+                if (!string.IsNullOrEmpty(moduleName))
+                {
+                    ps.AddParameter("Module", moduleName);
                 }
 
                 return ps.Invoke<CommandInfo>()

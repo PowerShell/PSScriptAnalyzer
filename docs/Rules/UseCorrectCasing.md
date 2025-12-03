@@ -25,7 +25,7 @@ commands. Using lowercase operators helps distinguish them from parameters.
 
 ```powershell
 Rules = @{
-    PS UseCorrectCasing = @{
+    PSUseCorrectCasing = @{
         Enable        = $true
         CheckCommands = $true
         CheckKeyword  = $true
@@ -42,7 +42,7 @@ Enable or disable the rule during ScriptAnalyzer invocation.
 
 #### CheckCommands: bool (Default value is `$true`)
 
-If true, require the case of all operators to be lowercase.
+If true, require the case of all command and parameter names to match their canonical casing.
 
 #### CheckKeyword: bool (Default value is `$true`)
 
@@ -50,7 +50,7 @@ If true, require the case of all keywords to be lowercase.
 
 #### CheckOperator: bool (Default value is `$true`)
 
-If true, require the case of all commands to match their actual casing.
+If true, require the case of all operators (e.g. -eq, -ne, -gt) to be lowercase.
 
 ## Examples
 
@@ -58,7 +58,7 @@ If true, require the case of all commands to match their actual casing.
 
 ```powershell
 ForEach ($file in Get-childitem -Recurse) {
-    $file.Extension -eq '.txt'
+    $file.Extension -EQ '.txt'
 }
 
 invoke-command { 'foo' } -runasadministrator
