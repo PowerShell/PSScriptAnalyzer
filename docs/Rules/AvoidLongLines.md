@@ -10,7 +10,7 @@ title: AvoidLongLines
 
 ## Description
 
-The length of lines, including leading spaces (indentation), should less than the configured number
+The length of lines, including leading spaces (indentation), should be less than the configured number
 of characters. The default length is 120 characters.
 
 > [!NOTE]
