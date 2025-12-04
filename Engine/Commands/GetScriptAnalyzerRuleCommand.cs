@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -114,8 +115,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                 foreach (IRule rule in rules)
                 {
+                    IEnumerable<RuleOptionInfo> optionInfos = null;
+
+                    if (rule is ConfigurableRule configurable)
+                    {
+                        var props = rule.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                        var optList = new List<RuleOptionInfo>();
+
+                        foreach (var p in props)
+                        {
+                            if (p.GetCustomAttribute<ConfigurableRulePropertyAttribute>(inherit: true) == null) {
+                                continue;
+                            }
+
+                            optList.Add(new RuleOptionInfo
+                            {
+                                Name = p.Name,
+                                OptionType = p.PropertyType,
+                                DefaultValue = p.GetValue(rule)
+                            });
+                        }
+
+                        if (optList.Count > 0)
+                        {
+                            optionInfos = optList;
+                        }
+                    }
+
                     WriteObject(new RuleInfo(rule.GetName(), rule.GetCommonName(), rule.GetDescription(),
-                        rule.GetSourceType(), rule.GetSourceName(), rule.GetSeverity(), rule.GetType()));
+                        rule.GetSourceType(), rule.GetSourceName(), rule.GetSeverity(), rule.GetType(), optionInfos));
                 }
             }
         }

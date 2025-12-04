@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
@@ -18,6 +20,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string sourceName;
         private RuleSeverity ruleSeverity;
         private Type implementingType;
+        private IEnumerable<RuleOptionInfo> options;
 
         /// <summary>
         /// Name: The name of the rule.
@@ -91,6 +94,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Options : The configurable options of the rule if it is a ConfigurableRule.
+        /// </summary>
+        public IEnumerable<RuleOptionInfo> Options
+        {
+            get { return options; }
+            private set { options = value; }
+        }
+
+        /// <summary>
         /// Constructor for a RuleInfo.
         /// </summary>
         /// <param name="name">Name of the rule.</param>
@@ -106,6 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             SourceType  = sourceType;
             SourceName  = sourceName;
             Severity = severity;
+            Options = Enumerable.Empty<RuleOptionInfo>();
         }
 
         /// <summary>
@@ -119,13 +132,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="implementingType">The dotnet type of the rule.</param>
         public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType)
         {
-            RuleName        = name;
-            CommonName  = commonName;
+            RuleName = name;
+            CommonName = commonName;
             Description = description;
-            SourceType  = sourceType;
-            SourceName  = sourceName;
+            SourceType = sourceType;
+            SourceName = sourceName;
             Severity = severity;
             ImplementingType = implementingType;
+            Options = Enumerable.Empty<RuleOptionInfo>();
+        }
+
+        /// <summary>
+        /// Constructor for a RuleInfo.
+        /// </summary>
+        /// <param name="name">Name of the rule.</param>
+        /// <param name="commonName">Common Name of the rule.</param>
+        /// <param name="description">Description of the rule.</param>
+        /// <param name="sourceType">Source type of the rule.</param>
+        /// <param name="sourceName">Source name of the rule.</param>
+        /// <param name="implementingType">The dotnet type of the rule.</param>
+        /// <param name="options">The configurable options of the rule.</param>
+        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType, IEnumerable<RuleOptionInfo> options)
+        {
+            RuleName = name;
+            CommonName = commonName;
+            Description = description;
+            SourceType = sourceType;
+            SourceName = sourceName;
+            Severity = severity;
+            ImplementingType = implementingType;
+            Options = options ?? Enumerable.Empty<RuleOptionInfo>();
         }
 
         public override string ToString()

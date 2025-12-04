@@ -261,6 +261,9 @@
   <data name="SettingsUsingFile" xml:space="preserve">
     <value>Using settings file at {0}.</value>
   </data>
+  <data name="SettingsUsingPresetFile" xml:space="preserve">
+    <value>Using settings preset {0}. File found at {1}.</value>
+  </data>
   <data name="SettingsUsingHashtable" xml:space="preserve">
     <value>Using settings hashtable.</value>
   </data>
