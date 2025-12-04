@@ -1224,6 +1224,24 @@
   <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
   </data>
+  <data name="UseFullyQualifiedCmdletNamesAliasError" xml:space="preserve">
+    <value>The alias '{0}' should be replaced with the fully qualified cmdlet name '{1}'.</value>
+  </data>
+  <data name="UseFullyQualifiedCmdletNamesCommandError" xml:space="preserve">
+    <value>The cmdlet '{0}' should be replaced with the fully qualified cmdlet name '{1}'.</value>
+  </data>
+  <data name="UseFullyQualifiedCmdletNamesCorrection" xml:space="preserve">
+    <value>Replace '{0}' with '{1}'</value>
+  </data>
+  <data name="UseFullyQualifiedCmdletNamesName" xml:space="preserve">
+    <value>UseFullyQualifiedCmdletNames</value>
+  </data>
+  <data name="UseFullyQualifiedCmdletNamesCommonName" xml:space="preserve">
+    <value>Use Fully Qualified Cmdlet Names</value>
+  </data>
+  <data name="UseFullyQualifiedCmdletNamesDescription" xml:space="preserve">
+    <value>Cmdlets should be called using their fully qualified names instead of aliases or abbreviated forms.</value>
+  </data>
   <data name="AvoidReservedWordsAsFunctionNamesCommonName" xml:space="preserve">
     <value>Avoid reserved words as function names</value>
   </data>
