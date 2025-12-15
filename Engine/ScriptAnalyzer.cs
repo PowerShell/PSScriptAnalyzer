@@ -207,7 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Update includerules, excluderules, severity and rule arguments.
         /// </summary>
         /// <param name="settings">An object of type Settings</param>
-        public void UpdateSettings(Settings settings)
+        public void UpdateSettings(SettingsData settings)
         {
             if (settings == null)
             {

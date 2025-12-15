@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public static string Format<TCmdlet>(
             string scriptDefinition,
-            Settings settings,
+            SettingsData settings,
             Range range,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
@@ -81,9 +81,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private static Settings GetCurrentSettings(Settings settings, string rule)
+        private static SettingsData GetCurrentSettings(SettingsData settings, string rule)
         {
-            return new Settings(new Hashtable()
+            return Settings.Create(new Hashtable()
             {
                 {"IncludeRules", new string[] {rule}},
                 {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }

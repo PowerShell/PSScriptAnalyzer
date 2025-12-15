@@ -306,7 +306,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            string settingsPath = Settings.GetShippedSettingsDirectory();
+            string commandDataFilesPath = Settings.GetShippedModuleSubDirectory("CommandDataFiles");
 #if DEBUG
             object modeObject;
             if (ruleArgs.TryGetValue("mode", out modeObject))
@@ -317,7 +317,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (mode)
                 {
                     case "offline":
-                        settingsPath = GetStringArgFromListStringArg(ruleArgs["uri"]);
+                        commandDataFilesPath = GetStringArgFromListStringArg(ruleArgs["uri"]);
                         break;
 
                     case "online": // not implemented yet.
@@ -328,8 +328,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             }
 #endif
-            if (settingsPath == null
-                || !ContainsReferenceFile(settingsPath))
+            if (commandDataFilesPath == null
+                || !ContainsReferenceFile(commandDataFilesPath))
             {
                 return;
             }
@@ -348,7 +348,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             ProcessDirectory(
-                settingsPath,
+                commandDataFilesPath,
                 extentedCompatibilityList);
             if (psCmdletMap.Keys.Count != extentedCompatibilityList.Count())
             {

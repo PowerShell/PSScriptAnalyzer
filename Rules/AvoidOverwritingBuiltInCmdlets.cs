@@ -90,17 +90,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var psVerList = PowerShellVersion;
-            string settingsPath = Settings.GetShippedSettingsDirectory();
+            string commandDataFilesPath = Settings.GetShippedModuleSubDirectory("CommandDataFiles");
 
             foreach (string reference in psVerList)
             {
-                if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
+                if (commandDataFilesPath == null || !ContainsReferenceFile(commandDataFilesPath, reference))
                 {
                     throw new ArgumentException(nameof(PowerShellVersion));
                 }
             }
 
-            ProcessDirectory(settingsPath, psVerList);
+            ProcessDirectory(commandDataFilesPath, psVerList);
 
             if (_cmdletMap.Keys.Count != psVerList.Count())
             {
