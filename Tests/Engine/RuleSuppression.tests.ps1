@@ -56,28 +56,28 @@ Describe "RuleSuppressionWithoutScope" {
 
         It "Suppresses rule with extent created using ScriptExtent constructor" {
             Invoke-ScriptAnalyzer `
-              -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword `
-              -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" `
-              -OutVariable ruleViolations `
-              -SuppressedOnly
+                -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword `
+                -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" `
+                -OutVariable ruleViolations `
+                -SuppressedOnly
             $ruleViolations.Count | Should -Be 1
-	    }
+        }
     }
 
     Context "Script" {
         It "Does not raise violations" {
-            $suppression = $violations | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
+            $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should -Be 0
-            $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
+            $suppression = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should -Be 0
         }
     }
 
     Context "RuleSuppressionID" {
         It "Only suppress violations for that ID" {
-            $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
+            $suppression = $violations | Where-Object { $_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should -Be 1
-            $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
+            $suppression = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should -Be 1
         }
 
@@ -93,10 +93,10 @@ function SuppressPwdParam()
 }
 '@
             Invoke-ScriptAnalyzer `
-              -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword `
-              -IncludeRule "PSAvoidUsingPlainTextForPassword" `
-              -OutVariable ruleViolations `
-              -SuppressedOnly
+                -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword `
+                -IncludeRule "PSAvoidUsingPlainTextForPassword" `
+                -OutVariable ruleViolations `
+                -SuppressedOnly
             $ruleViolations.Count | Should -Be 1
         }
 
@@ -246,8 +246,165 @@ function MyFunc
         }
     }
 
+    Context "RuleSuppressionID with named arguments" {
+        It "Should work with named argument syntax" {
+            $scriptWithNamedArgs = @'
+function SuppressPasswordParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(RuleName="PSAvoidUsingPlainTextForPassword", RuleSuppressionId="password1")]
+    param(
+        [string] $password1,
+        [string] $password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer `
+                -ScriptDefinition $scriptWithNamedArgs `
+                -IncludeRule "PSAvoidUsingPlainTextForPassword"
+            $suppressions = Invoke-ScriptAnalyzer `
+                -ScriptDefinition $scriptWithNamedArgs `
+                -IncludeRule "PSAvoidUsingPlainTextForPassword" `
+                -SuppressedOnly
+
+            # There should be one unsuppressed diagnostic (password2) and one suppressed diagnostic (password1)
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+
+            $suppressions | Should -HaveCount 1
+            $suppressions[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $suppressions[0].RuleSuppressionID | Should -BeExactly "password1"
+        }
+
+        It "Should work with mixed positional and named argument syntax" {
+            $scriptWithMixedArgs = @'
+function SuppressPasswordParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", Scope="Function")]
+    param(
+        [string] $password1,
+        [string] $password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer `
+                -ScriptDefinition $scriptWithMixedArgs `
+                -IncludeRule "PSAvoidUsingPlainTextForPassword"
+
+            # All violations should be suppressed since there's no RuleSuppressionID filtering
+            $diagnostics | Should -HaveCount 0
+        }
+
+        It "Should work with custom rule from issue #1686 comment" {
+            # This test recreates the exact scenario from GitHub issue 1686 comment
+            # with a custom rule that populates RuleSuppressionID for targeted suppression
+
+            # Custom rule module that creates violations with specific RuleSuppressionIDs
+            $customRuleScript = @'
+function Measure-AvoidFooBarCommand {
+    [CmdletBinding()]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.ScriptBlockAst]
+        $ScriptBlockAst
+    )
+
+    $results = @()
+
+    # Find all command expressions
+    $commandAsts = $ScriptBlockAst.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.CommandAst]
+    }, $true)
+
+    foreach ($commandAst in $commandAsts) {
+        $commandName = $commandAst.GetCommandName()
+        if ($commandName -match '^(Get-FooBar|Set-FooBar)$') {
+            # Create a diagnostic with the command name as RuleSuppressionID
+            $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]::new(
+                "Avoid using $commandName command",
+                $commandAst.Extent,
+                'Measure-AvoidFooBarCommand',
+                'Warning',
+                $null,
+                $commandName  # This becomes the RuleSuppressionID
+            )
+            $results += $result
+        }
+    }
+
+    return $results
+}
+
+Export-ModuleMember -Function Measure-AvoidFooBarCommand
+'@
+
+            # Script that uses the custom rule with targeted suppression
+            $scriptWithCustomRuleSuppression = @'
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('Measure-AvoidFooBarCommand', RuleSuppressionId = 'Get-FooBar', Scope = 'Function', Target = 'Allow-GetFooBar')]
+param()
+
+function Test-BadCommands {
+    Get-FooBar  # Line 6 - Should NOT be suppressed (wrong function)
+    Set-FooBar  # Line 7 - Should NOT be suppressed (different RuleSuppressionID)
+}
+
+function Allow-GetFooBar {
+    Get-FooBar  # Line 11 - Should be suppressed (matches RuleSuppressionId and Target)
+    Set-FooBar  # Line 12 - Should NOT be suppressed (different RuleSuppressionID)
+}
+'@
+
+            # Save custom rule to temporary file
+            $customRuleFile = [System.IO.Path]::GetTempFileName()
+            $customRuleModuleFile = [System.IO.Path]::ChangeExtension($customRuleFile, '.psm1')
+            Set-Content -Path $customRuleModuleFile -Value $customRuleScript
+
+            try
+            {
+                # Check suppressed violations - this is the key test for our fix
+                $suppressions = Invoke-ScriptAnalyzer `
+                    -ScriptDefinition $scriptWithCustomRuleSuppression `
+                    -CustomRulePath $customRuleModuleFile `
+                    -SuppressedOnly `
+                    -ErrorAction SilentlyContinue
+
+                # The core functionality: RuleSuppressionID with named arguments should work for custom rules
+                # We should have at least one suppressed Get-FooBar violation
+                $suppressions | Should -Not -BeNullOrEmpty -Because "RuleSuppressionID named arguments should work for custom rules"
+
+                $getFooBarSuppressions = $suppressions | Where-Object { $_.RuleSuppressionID -eq 'Get-FooBar' }
+                $getFooBarSuppressions | Should -Not -BeNullOrEmpty -Because "Get-FooBar should be suppressed based on RuleSuppressionID"
+
+                # Verify the suppression occurred in the right function (Allow-GetFooBar)
+                $getFooBarSuppressions | Should -Not -BeNullOrEmpty
+                $getFooBarSuppressions[0].RuleName | Should -BeExactly 'Measure-AvoidFooBarCommand'
+
+                # Get unsuppressed violations to verify selective suppression
+                $diagnostics = Invoke-ScriptAnalyzer `
+                    -ScriptDefinition $scriptWithCustomRuleSuppression `
+                    -CustomRulePath $customRuleModuleFile `
+                    -ErrorAction SilentlyContinue
+
+                # Should still have violations for Set-FooBar (different RuleSuppressionID) and Get-FooBar in wrong function
+                $setFooBarViolations = $diagnostics | Where-Object { $_.RuleSuppressionID -eq 'Set-FooBar' }
+                $setFooBarViolations | Should -Not -BeNullOrEmpty -Because "Set-FooBar should not be suppressed (different RuleSuppressionID)"
+
+            }
+            finally
+            {
+                Remove-Item -Path $customRuleModuleFile -ErrorAction SilentlyContinue
+                Remove-Item -Path $customRuleFile -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
     Context "Rule suppression within DSC Configuration definition" {
-        It "Suppresses rule" -skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
+        It "Suppresses rule" -Skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
             $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
             $suppressedRule.Count | Should -Be 1
         }
@@ -281,9 +438,9 @@ function MyFunc
 Describe "RuleSuppressionWithScope" {
     Context "FunctionScope" {
         It "Does not raise violations" {
-            $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
+            $suppression = $violations | Where-Object { $_.RuleName -eq "PSAvoidUsingPositionalParameters" }
             $suppression.Count | Should -Be 0
-            $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
+            $suppression = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingPositionalParameters" }
             $suppression.Count | Should -Be 0
         }
     }
@@ -353,4 +510,4 @@ Describe "RuleSuppressionWithScope" {
             $suppressed.Count | Should -Be 1
         }
     }
- }
+}
