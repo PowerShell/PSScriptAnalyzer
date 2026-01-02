@@ -1236,4 +1236,19 @@
   <data name="AvoidReservedWordsAsFunctionNamesError" xml:space="preserve">
     <value>The reserved word '{0}' was used as a function name. This should be avoided.</value>
   </data>
+  <data name="UseConsistentParametersKindCommonName" xml:space="preserve">
+    <value>Use correct function parameters definition kind.</value>
+  </data>
+  <data name="UseConsistentParametersKindDescription" xml:space="preserve">
+    <value>Use consistent parameters definition kind to prevent potential unexpected behavior with inline functions parameters or param() block.</value>
+  </data>
+  <data name="UseConsistentParametersKindName" xml:space="preserve">
+    <value>UseConsistentParametersKind</value>
+  </data>
+  <data name="UseConsistentParametersKindInlineError" xml:space="preserve">
+    <value>Use param() block in function body instead of inline parameters.</value>
+  </data>
+  <data name="UseConsistentParametersKindParamBlockError" xml:space="preserve">
+    <value>Use inline parameters definition instead of param() block in function body.</value>
+  </data>
 </root>
