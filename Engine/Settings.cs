@@ -462,9 +462,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Hashtable hashtable;
             try
             {
-                // ideally we should use HashtableAst.SafeGetValue() but since
-                // it is not available on PSv3, we resort to our own narrow implementation.
-                hashtable = Helper.GetSafeValueFromHashtableAst(hashTableAst);
+                hashtable = (Hashtable) hashTableAst.SafeGetValue();
             }
             catch (InvalidOperationException e)
             {
