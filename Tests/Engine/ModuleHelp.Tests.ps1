@@ -62,14 +62,8 @@ $paramBlockList = @(
 	'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 )
 [string] $ModuleName = 'PSScriptAnalyzer'
-if ($PSVersionTable.PSVersion -lt '5.0') {
-	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
-	$commands = Get-Command -Module $ms.Name
-}
-else {
-	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-	$commands = Get-Command -FullyQualifiedModule $ms
-}
+$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
+$commands = Get-Command -FullyQualifiedModule $ms
 
 $testCases = $commands.ForEach{
 	@{
@@ -92,9 +86,6 @@ BeforeAll {
 	$paramBlockList = @(
 		'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 	)
-	if ($PSVersionTable.PSVersion -lt '5.0') {
-		$paramBlockList += 'SaveDscDependency'
-	}
 }
 
 
