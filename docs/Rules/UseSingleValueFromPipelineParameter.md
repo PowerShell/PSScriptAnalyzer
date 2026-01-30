@@ -11,7 +11,7 @@ title: UseSingleValueFromPipelineParameter
 ## Description
 
 Parameter sets should have at most one parameter marked as 
-`ValueFromPipeline=true`.
+`ValueFromPipeline = true`.
 
 This rule identifies functions where multiple parameters within the same
 parameter set have `ValueFromPipeline` set to `true` (either explicitly or
@@ -32,10 +32,10 @@ function Process-Data {
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline)]
-        [string]$InputData,
+        [string] $InputData,
         
         [Parameter(ValueFromPipeline)]
-        [string]$ProcessingMode
+        [string] $ProcessingMode
     )
     
     process {
@@ -52,10 +52,10 @@ function Process-Data {
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline)]
-        [string]$InputData,
+        [string] $InputData,
         
         [Parameter(Mandatory)]
-        [string]$ProcessingMode
+        [string] $ProcessingMode
     )
     process {
         Write-Output "$ProcessingMode`: $InputData"
@@ -73,10 +73,10 @@ function Process-Data {
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
-        [string]$InputData,
+        [string] $InputData,
         
         [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
-        [string]$ProcessingMode
+        [string] $ProcessingMode
     )
     process {
         Write-Output "$ProcessingMode`: $InputData"
@@ -92,8 +92,8 @@ For the default parameter set, use `'default'` as the suppression target:
 
 ## Notes
 
-- This rule applies to both explicit `ValueFromPipeline=$true` and implicit 
-  `ValueFromPipeline` (which is the same as using  `=$true`)
+- This rule applies to both explicit `ValueFromPipeline = $true` and implicit 
+  `ValueFromPipeline` (which is the same as using  `= $true`)
 - Parameters with `ValueFromPipeline=$false` are not flagged by this rule
 - The rule correctly handles the default parameter set (`__AllParameterSets`)
   and named parameter sets
