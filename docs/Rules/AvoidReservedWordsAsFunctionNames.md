@@ -10,16 +10,15 @@ title: AvoidReservedWordsAsFunctionNames
 
 ## Description
 
-Avoid using reserved words as function names. Using reserved words as function
-names can cause errors or unexpected behavior in scripts.
+Avoid using reserved words as function names. Using reserved words as function names can cause
+errors or unexpected behavior in scripts.
 
 ## How to Fix
 
-Avoid using any of the reserved words as function names. Instead, choose a
-different name that is not reserved.
+Avoid using any of the reserved words as function names. Choose a different name that's not a
+reserved word.
 
-See [`about_Reserved_Words`](https://learn.microsoft.com/en-gb/powershell/module/microsoft.powershell.core/about/about_reserved_words) for a list of reserved
-words in PowerShell.
+See [about_Reserved_Words][01] for a list of reserved words in PowerShell.
 
 ## Example
 
@@ -40,3 +39,6 @@ function myFunction {
     Write-Host "Hello, World!"
 }
 ```
+
+<!-- link references -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_reserved_words

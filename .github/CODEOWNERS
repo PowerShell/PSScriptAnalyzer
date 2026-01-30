@@ -2,5 +2,5 @@
 * @PowerShell/extension @bergmeister
 
 # Version bumps and documentation updates
-Directory.Build.props @sdwheeler @michaeltlombardi
+Directory.Build.props @PowerShell/extension @sdwheeler @michaeltlombardi
 /docs/ @PowerShell/extension @sdwheeler @michaeltlombardi

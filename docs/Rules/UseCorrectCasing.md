@@ -11,7 +11,7 @@ title: UseCorrectCasing
 ## Description
 
 This is a style/formatting rule. PowerShell is case insensitive wherever possible, so the casing of
-cmdlet names, parameters, keywords and operators does not matter. This rule nonetheless ensures
+cmdlet names, parameters, keywords and operators doesn't matter. This rule nonetheless ensures
 consistent casing for clarity and readability. Using lowercase keywords helps distinguish them from
 commands. Using lowercase operators helps distinguish them from parameters.
 
@@ -34,23 +34,23 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-#### Enable: bool (Default value is `$false`)
+### Enable: bool (Default value is `$false`)
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-#### CheckCommands: bool (Default value is `$true`)
+### CheckCommands: bool (Default value is `$true`)
 
 If true, require the case of all command and parameter names to match their canonical casing.
 
-#### CheckKeyword: bool (Default value is `$true`)
+### CheckKeyword: bool (Default value is `$true`)
 
 If true, require the case of all keywords to be lowercase.
 
-#### CheckOperator: bool (Default value is `$true`)
+### CheckOperator: bool (Default value is `$true`)
 
-If true, require the case of all operators (e.g. -eq, -ne, -gt) to be lowercase.
+If true, require the case of all operators to be lowercase. For example: `-eq`, `-ne`, `-gt`
 
 ## Examples
 
