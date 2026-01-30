@@ -1,6 +1,6 @@
 # Default owners
-* @andyleejordan @bergmeister
+* @PowerShell/extension @bergmeister
 
 # Version bumps and documentation updates
-Directory.Build.props @sdwheeler @michaeltlombardi
-/docs/ @sdwheeler @michaeltlombardi
+Directory.Build.props @PowerShell/extension @sdwheeler @michaeltlombardi
+/docs/ @PowerShell/extension @sdwheeler @michaeltlombardi
