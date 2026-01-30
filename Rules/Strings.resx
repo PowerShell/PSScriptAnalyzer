@@ -1251,4 +1251,16 @@
   <data name="UseConsistentParameterSetNameName" xml:space="preserve">
     <value>UseConsistentParameterSetName</value>
   </data>
+  <data name="AvoidReservedWordsAsFunctionNamesCommonName" xml:space="preserve">
+    <value>Avoid reserved words as function names</value>
+  </data>
+  <data name="AvoidReservedWordsAsFunctionNamesDescription" xml:space="preserve">
+    <value>Avoid using reserved words as function names. Using reserved words as function names can cause errors or unexpected behavior in scripts.</value>
+  </data>
+  <data name="AvoidReservedWordsAsFunctionNamesName" xml:space="preserve">
+    <value>AvoidReservedWordsAsFunctionNames</value>
+  </data>
+  <data name="AvoidReservedWordsAsFunctionNamesError" xml:space="preserve">
+    <value>The reserved word '{0}' was used as a function name. This should be avoided.</value>
+  </data>
 </root>
