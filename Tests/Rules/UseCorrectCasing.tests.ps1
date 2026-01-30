@@ -103,6 +103,27 @@ Describe "UseCorrectCasing" {
             Should -BeExactly '$A++; $B--'
     }
 
+    It "Shows relevant diagnostic message for function/command name casing" {
+        $settings = @{ 'Rules' = @{ 'PSUseCorrectCasing' = @{ 'Enable' = $true; CheckCommands = $true; CheckKeywords = $true; CheckOperators = $true } } }
+        $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'WHERE-OBJECT Name -EQ "Value"' -Settings $settings
+        $violations.Count | Should -Be 1
+        $violations[0].Message | Should -Be "Function/Cmdlet 'WHERE-OBJECT' does not match its exact casing 'Where-Object'."
+    }
+
+    It "Shows relevant diagnostic message for parameter casing" {
+        $settings = @{ 'Rules' = @{ 'PSUseCorrectCasing' = @{ 'Enable' = $true; CheckCommands = $true; CheckKeywords = $true; CheckOperators = $true } } }
+        $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Where-Object Name -eq "Value"' -Settings $settings
+        $violations.Count | Should -Be 1
+        $violations[0].Message | Should -Be "Parameter '-eq' of function/cmdlet 'Where-Object' does not match its exact casing 'EQ'."
+    }
+
+    It "Shows relevant diagnostic message for operator casing" {
+        $settings = @{ 'Rules' = @{ 'PSUseCorrectCasing' = @{ 'Enable' = $true; CheckCommands = $true; CheckKeywords = $true; CheckOperators = $true } } }
+        $violations = Invoke-ScriptAnalyzer -ScriptDefinition '$a -EQ 1' -Settings $settings
+        $violations.Count | Should -Be 1
+        $violations[0].Message | Should -Be "Operator '-EQ' does not match the expected case '-eq'."
+    }
+
     Context "Inconsistent Keywords" {
         It "Corrects keyword case" {
             Invoke-Formatter 'ForEach ($x IN $y) { $x }' |

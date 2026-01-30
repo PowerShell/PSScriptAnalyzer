@@ -245,5 +245,165 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return findAstVisitor.AstPosition;
         }
 
+        /// <summary>
+        /// Returns a list of non-overlapping ranges (startOffset,endOffset) representing the start
+        /// and end of braced member access expressions. These are member accesses where the name is
+        /// enclosed in braces. The contents of such braces are treated literally as a member name.
+        /// Altering the contents of these braces by formatting is likely to break code.
+        /// </summary>
+        public List<Tuple<int, int>> GetBracedMemberAccessRanges()
+        {
+            // A list of (startOffset, endOffset) pairs representing the start
+            // and end braces of braced member access expressions.
+            var ranges = new List<Tuple<int, int>>();
+
+            var node = tokensLL.Value.First;
+            while (node != null)
+            {
+                switch (node.Value.Kind)
+                {
+#if CORECLR
+                    // TokenKind added in PS7
+                    case TokenKind.QuestionDot:
+#endif
+                    case TokenKind.Dot:
+                        break;
+                    default:
+                        node = node.Next;
+                        continue;
+                }
+
+                // Note: We don't check if the dot is part of an existing range. When we find
+                // a valid range, we skip all tokens inside it - so we won't ever evaluate a token
+                // which already part of a previously found range.
+
+                // Backward scan:
+                // Determine if this 'dot' is part of a member access.
+                // Walk left over contiguous comment tokens that are 'touching'.
+                // After skipping comments, the preceding non-comment token must also be 'touching'
+                // and one of the expected TokenKinds.
+                var leftToken = node.Previous;
+                var rightToken = node;
+                while (leftToken != null && leftToken.Value.Kind == TokenKind.Comment)
+                {
+                    if (leftToken.Value.Extent.EndOffset != rightToken.Value.Extent.StartOffset)
+                    {
+                        leftToken = null;
+                        break;
+                    }
+                    rightToken = leftToken;
+                    leftToken = leftToken.Previous;
+                }
+                if (leftToken == null)
+                {
+                    // We ran out of tokens before finding a non-comment token to the left or there
+                    // was intervening whitespace.
+                    node = node.Next;
+                    continue;
+                }
+
+                if (leftToken.Value.Extent.EndOffset != rightToken.Value.Extent.StartOffset)
+                {
+                    // There's whitespace between the two tokens
+                    node = node.Next;
+                    continue;
+                }
+
+                // Limit to valid token kinds that can precede a 'dot' in a member access.
+                switch (leftToken.Value.Kind)
+                {
+                    // Note: TokenKind.Number isn't in the list as 5.{Prop} is a syntax error
+                    // (Unexpected token). Numbers also have no properties - only methods.
+                    case TokenKind.Variable:
+                    case TokenKind.Identifier:
+                    case TokenKind.StringLiteral:
+                    case TokenKind.StringExpandable:
+                    case TokenKind.HereStringLiteral:
+                    case TokenKind.HereStringExpandable:
+                    case TokenKind.RParen:
+                    case TokenKind.RCurly:
+                    case TokenKind.RBracket:
+                        // allowed
+                        break;
+                    default:
+                        // not allowed
+                        node = node.Next;
+                        continue;
+                }
+
+                // Forward Scan:
+                // Check that the next significant token is an LCurly
+                // Starting from the token after the 'dot', walk right skipping trivia tokens:
+                //   - Comment
+                //   - NewLine
+                //   - LineContinuation (`)
+                // These may be multi-line and need not be 'touching' the dot.
+                // The first non-trivia token encountered must be an opening curly brace (LCurly) for
+                // this dot to begin a braced member access. If it is not LCurly or we run out
+                // of tokens, this dot is ignored.
+                var scan = node.Next;
+                while (scan != null)
+                {
+                    if (
+                        scan.Value.Kind == TokenKind.Comment ||
+                        scan.Value.Kind == TokenKind.NewLine ||
+                        scan.Value.Kind == TokenKind.LineContinuation
+                    )
+                    {
+                        scan = scan.Next;
+                        continue;
+                    }
+                    break;
+                }
+
+                // If we reached the end without finding a significant token, or if the found token
+                // is not LCurly, continue.
+                if (scan == null || scan.Value.Kind != TokenKind.LCurly)
+                {
+                    node = node.Next;
+                    continue;
+                }
+
+                // We have a valid token, followed by a dot, followed by an LCurly.
+                // Find the matching RCurly and create the range.
+                var lCurlyNode = scan;
+
+                // Depth count braces to find the RCurly which closes the LCurly.
+                int depth = 0;
+                LinkedListNode<Token> rcurlyNode = null;
+                while (scan != null)
+                {
+                    if (scan.Value.Kind == TokenKind.LCurly) depth++;
+                    else if (scan.Value.Kind == TokenKind.RCurly)
+                    {
+                        depth--;
+                        if (depth == 0)
+                        {
+                            rcurlyNode = scan;
+                            break;
+                        }
+                    }
+                    scan = scan.Next;
+                }
+
+                // If we didn't find a matching RCurly, something has gone wrong.
+                // Should an unmatched pair be caught by the parser as a parse error?
+                if (rcurlyNode == null)
+                {
+                    node = node.Next;
+                    continue;
+                }
+
+                ranges.Add(new Tuple<int, int>(
+                    lCurlyNode.Value.Extent.StartOffset,
+                    rcurlyNode.Value.Extent.EndOffset
+                ));
+
+                // Skip all tokens inside the excluded range.
+                node = rcurlyNode.Next;
+            }
+
+            return ranges;
+        }
     }
 }

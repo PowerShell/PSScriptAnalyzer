@@ -193,12 +193,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         }
                         else if (argumentName.Equals("rulesuppressionid", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (!String.IsNullOrWhiteSpace(RuleName))
+                            if (!String.IsNullOrWhiteSpace(RuleSuppressionID))
                             {
                                 Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
                             }
 
-                            RuleName = (name.Argument as StringConstantExpressionAst).Value;
+                            RuleSuppressionID = (name.Argument as StringConstantExpressionAst).Value;
                         }
                         else if (argumentName.Equals("scope", StringComparison.OrdinalIgnoreCase))
                         {
@@ -333,12 +333,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is FunctionDefinitionAst && reg.IsMatch((ast as FunctionDefinitionAst).Name), true);
                     }
-                    #if !(PSV3 || PSV4)
+#if !(PSV3 || PSV4)
                     else if (scope.Equals("class", StringComparison.OrdinalIgnoreCase))
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is TypeDefinitionAst && reg.IsMatch((ast as TypeDefinitionAst).Name), true);
                     }
-                    #endif
+#endif
 
                     if (targetAsts != null)
                     {
