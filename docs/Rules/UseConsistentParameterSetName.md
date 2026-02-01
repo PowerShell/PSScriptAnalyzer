@@ -21,6 +21,9 @@ The rule performs five different checks:
 4. **Case mismatch between different ParameterSetName values** - Ensures all references to the same parameter set use identical casing
 5. **Parameter set names containing newlines** - Warns against using newline characters in parameter set names
 
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
+
 ## How
 
 - Use a `DefaultParameterSetName` when defining multiple parameter sets
@@ -107,6 +110,22 @@ function Get-Data {
     )
 }
 ```
+
+## Configuration
+
+```powershell
+Rules = @{
+    PSUseConsistentParameterSetName  = @{
+        Enable = $true
+    }
+}
+```
+
+### Parameters
+
+- `Enable`: **bool** (Default value is `$false`)
+
+  Enable or disable the rule during ScriptAnalyzer invocation.
 
 ## Notes
 
