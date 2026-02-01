@@ -3,6 +3,14 @@
 
 BeforeAll {
     $ruleName = 'PSUseConsistentParameterSetName'
+
+    $ruleSettings = @{
+        Enable = $true
+    }
+    $settings = @{
+        IncludeRules = @($ruleName)
+        Rules        = @{ $ruleName = $ruleSettings }
+    }
 }
 
 Describe "UseConsistentParameterSetName" {
@@ -20,7 +28,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Severity | Should -Be 'Warning'
             $violations[0].Message | Should -Match "DefaultParameterSetName 'SetOne' does not match the case of ParameterSetName 'setone'"
@@ -39,7 +47,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations | ForEach-Object { $_.Severity | Should -Be 'Warning' }
         }
@@ -62,7 +70,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Severity | Should -Be 'Warning'
             $violations[0].Message | Should -Match "ParameterSetName 'setone' does not match the case of 'SetOne'"
@@ -83,7 +91,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2  # Two mismatches with the first occurrence
             $violations | ForEach-Object { $_.Severity | Should -Be 'Warning' }
         }
@@ -103,7 +111,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Severity | Should -Be 'Warning'
             $violations[0].Message | Should -Match "uses parameter sets but does not specify a DefaultParameterSetName"
@@ -121,7 +129,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations | ForEach-Object { $_.Message | Should -Be "Parameter 'Parameter1' is declared in parameter-set 'SetOne' multiple times." }
         }
@@ -136,7 +144,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations | ForEach-Object { $_.Message | Should -Be "Parameter 'Parameter1' is declared in parameter-set '__AllParameterSets' multiple times." }
         }
@@ -151,7 +159,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
             $violations | ForEach-Object { $_.Message | Should -Be "Parameter 'Parameter1' is declared in parameter-set '__AllParameterSets' multiple times." }
         }
@@ -169,7 +177,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Message | Should -Match "should not contain new lines"
         }
@@ -183,7 +191,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Message | Should -Match "should not contain new lines"
         }
@@ -197,7 +205,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
         }
 
@@ -210,7 +218,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Message | Should -Match "should not contain new lines"
         }
@@ -224,7 +232,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].Message | Should -Match "should not contain new lines"
         }
@@ -237,7 +245,7 @@ function Test-Function {
     param([string]$Parameter1)
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 1
         }
 
@@ -253,7 +261,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -267,7 +275,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -284,7 +292,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -304,7 +312,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -323,7 +331,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -339,7 +347,7 @@ function Test-Function {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }
@@ -362,7 +370,7 @@ function Test-ComplexFunction {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
 
@@ -383,7 +391,7 @@ function Test-ComplexFunction {
     )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2  # 'byname' and 'byid' case mismatches
             $violations | ForEach-Object { $_.Severity | Should -Be 'Warning' }
         }
