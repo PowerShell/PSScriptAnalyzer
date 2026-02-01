@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseConsistentParameterSetName : IScriptRule
+    public class UseConsistentParameterSetName : ConfigurableRule
     {
 
         private const string AllParameterSetsName = "__AllParameterSets";
@@ -30,7 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// AnalyzeScript: Check for parameter set name issues.
         /// </summary>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
@@ -341,20 +341,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static IScriptExtent GetParameterSetNameValueExtent(AttributeAst attributeAst)
         {
             return GetAttributeNamedArgumentValueExtent(attributeAst, "ParameterSetName", "Parameter");
-            // if (attributeAst == null || attributeAst.NamedArguments == null)
-            //     return null;
-
-            // if (!string.Equals(attributeAst.TypeName?.Name, "Parameter", StringComparison.OrdinalIgnoreCase))
-            //     return null;
-
-            // foreach (var namedArg in attributeAst.NamedArguments)
-            // {
-            //     if (string.Equals(namedArg.ArgumentName, "ParameterSetName", StringComparison.OrdinalIgnoreCase))
-            //     {
-            //         return namedArg.Argument?.Extent;
-            //     }
-            // }
-            // return null;
         }
 
         /// <summary>
@@ -421,7 +407,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName() => string.Format(
+        public override string GetName() => string.Format(
             CultureInfo.CurrentCulture,
             Strings.NameSpaceFormat,
             GetSourceName(),
@@ -432,7 +418,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName() => string.Format(
+        public override string GetCommonName() => string.Format(
             CultureInfo.CurrentCulture,
             Strings.UseConsistentParameterSetNameCommonName
             );
@@ -441,7 +427,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() => string.Format(
+        public override string GetDescription() => string.Format(
             CultureInfo.CurrentCulture,
             Strings.UseConsistentParameterSetNameDescription
             );
@@ -449,18 +435,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Method: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType() => SourceType.Builtin;
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName() => string.Format(
+        public override string GetSourceName() => string.Format(
             CultureInfo.CurrentCulture, Strings.SourceName
             );
     }
