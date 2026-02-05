@@ -192,7 +192,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .Where(g =>
                         g.Select(p => p.ParameterSetName)
                          .Distinct(StringComparer.Ordinal)
-                         .Count() > 1
+                         .Skip(1).Any()
                         );
 
                 foreach (var group in paramSetGroups)
