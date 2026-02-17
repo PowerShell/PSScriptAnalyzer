@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Iterates all ParamAsts and check the number of its types.
             foreach (ParameterAst paramAst in paramAsts)
             {
-                if (paramAst.Attributes.Where(typeAst => typeAst is TypeConstraintAst).Count() > 1)
+                if (paramAst.Attributes.Count(typeAst => typeAst is TypeConstraintAst) > 1)
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesError, paramAst.Name),

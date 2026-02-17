@@ -453,7 +453,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
 
             // no hashtable, raise warning
-            if (hashTableAsts.Count() == 0)
+            if (!hashTableAsts.Any())
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
             }
