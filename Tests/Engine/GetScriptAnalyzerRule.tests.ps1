@@ -63,8 +63,8 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 71
-			$defaultRules.Count | Should -Be $expectedNumRules
+            $expectedNumRules = 72
+			      $defaultRules.Count | Should -Be $expectedNumRules
 		}
 
         It "is a positional parameter" {
