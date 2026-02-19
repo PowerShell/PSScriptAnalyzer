@@ -91,11 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-#if !(PSV3 || PSV4)
         private class SyntaxCompatibilityVisitor : AstVisitor2
-#else
-        private class SyntaxCompatibilityVisitor : AstVisitor
-#endif
         {
             private const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
 

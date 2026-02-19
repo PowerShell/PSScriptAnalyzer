@@ -147,7 +147,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-#if !PSV3
             var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
             if (configAsts != null)
             {
@@ -163,7 +162,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     groups.AddRange(GetCommandElementExtentGroups(configAst));
                 }
             }
-#endif
 
             // it is probably much easier have a hashtable writer that formats the hashtable and writes it
             // but it makes handling comments hard. So we need to use this approach.
