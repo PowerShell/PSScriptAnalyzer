@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if !PSV3
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -520,4 +519,3 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 #endregion Public Methods
     }
 }
-#endif // !PSV3

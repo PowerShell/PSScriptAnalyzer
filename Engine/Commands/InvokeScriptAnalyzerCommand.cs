@@ -227,7 +227,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private bool stopProcessing;
 
-#if !PSV3
         /// <summary>
         /// Resolve DSC resource dependency
         /// </summary>
@@ -238,7 +237,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { saveDscDependency = value; }
         }
         private bool saveDscDependency;
-#endif // !PSV3
 
 #if DEBUG
         /// <summary>
@@ -387,7 +385,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 ProcessPath();
             }
 
-#if !PSV3
             // TODO Support dependency resolution for analyzing script definitions
             if (saveDscDependency)
             {
@@ -407,7 +404,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 }
                 return;
             }
-#endif
             ProcessInput();
         }
 

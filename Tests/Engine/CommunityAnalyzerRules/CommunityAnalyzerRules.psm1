@@ -232,165 +232,158 @@ function Measure-RequiresModules
     }
 }
 
-
-# The two rules in the following if block use StaticParameterBinder class.
-# StaticParameterBinder class was introduced in PSv4.
-if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
+<#
+.SYNOPSIS
+    You can store the type name in a variable or using -f operator to reduce the amount of redundant information in your script.
+.DESCRIPTION
+    When interacting with classes that have long type names, you want to reduce the amount of redundant information in your script.
+    To fix a violation of this rule, please store the type name in a variable or using -f operator. For example:
+    $namespace = "System.Collections.{0}"; $arrayList = New-Object ($namespace -f "ArrayList"); $queue = New-Object ($namespace -f "Queue")
+.EXAMPLE
+    Measure-LongClassName -CommandAst $CommandAst
+.INPUTS
+    [System.Management.Automation.Language.CommandAst]
+.OUTPUTS
+    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+.NOTES
+    Reference: 3.11. Reduce Typying for Long Class Names, Windows PowerShell Cookbook, Third Edition
+#>
+function Measure-LongClassName
 {
-	<#
-	.SYNOPSIS
-		You can store the type name in a variable or using -f operator to reduce the amount of redundant information in your script.
-	.DESCRIPTION
-		When interacting with classes that have long type names, you want to reduce the amount of redundant information in your script.
-		To fix a violation of this rule, please store the type name in a variable or using -f operator. For example:
-		$namespace = "System.Collections.{0}"; $arrayList = New-Object ($namespace -f "ArrayList"); $queue = New-Object ($namespace -f "Queue")
-	.EXAMPLE
-		Measure-LongClassName -CommandAst $CommandAst
-	.INPUTS
-		[System.Management.Automation.Language.CommandAst]
-	.OUTPUTS
-		[Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
-	.NOTES
-		Reference: 3.11. Reduce Typying for Long Class Names, Windows PowerShell Cookbook, Third Edition
-	#>
-	function Measure-LongClassName
-	{
-		[CmdletBinding()]
-		[OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
-		Param
-		(
-			[Parameter(Mandatory = $true)]
-			[ValidateNotNullOrEmpty()]
-			[System.Management.Automation.Language.CommandAst]
-			$CommandAst
-		)
+    [CmdletBinding()]
+    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.CommandAst]
+        $CommandAst
+    )
 
-		Process
-		{
-			$results = @()
+    Process
+    {
+        $results = @()
 
-			# The StaticParameterBinder help us to find the argument of TypeName.
-			$spBinder = [System.Management.Automation.Language.StaticParameterBinder]
+        # The StaticParameterBinder help us to find the argument of TypeName.
+        $spBinder = [System.Management.Automation.Language.StaticParameterBinder]
 
-			# Checks New-Object without ComObject parameter command only.
-			if ($null -ne $CommandAst.GetCommandName())
-			{
-				if ($CommandAst.GetCommandName() -ne "new-object")
-				{
-					return $results
-				}
-			}
-			else
-			{
-				return $results
-			}
+        # Checks New-Object without ComObject parameter command only.
+        if ($null -ne $CommandAst.GetCommandName())
+        {
+            if ($CommandAst.GetCommandName() -ne "new-object")
+            {
+                return $results
+            }
+        }
+        else
+        {
+            return $results
+        }
 
-			try
-			{
-				[System.Management.Automation.Language.StaticBindingResult]$sbResults = $spBinder::BindCommand($CommandAst, $true)
-				foreach ($sbResult in $sbResults)
-				{
-					# TypeName cannot be found if user run command like, New-Object -ComObject Scripting.FileSystemObject.
-					if ($null -eq $sbResult.BoundParameters["TypeName"].ConstantValue) { continue }
+        try
+        {
+            [System.Management.Automation.Language.StaticBindingResult]$sbResults = $spBinder::BindCommand($CommandAst, $true)
+            foreach ($sbResult in $sbResults)
+            {
+                # TypeName cannot be found if user run command like, New-Object -ComObject Scripting.FileSystemObject.
+                if ($null -eq $sbResult.BoundParameters["TypeName"].ConstantValue) { continue }
 
-					if ($sbResult.BoundParameters["TypeName"].ConstantValue.ToString().Split('.').Length -ge 3)
-					{
-						# $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-						$result = New-Object `
-									-Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
-									-ArgumentList $Messages.MeasureLongClassName,$sbResult.BoundParameters["TypeName"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+                if ($sbResult.BoundParameters["TypeName"].ConstantValue.ToString().Split('.').Length -ge 3)
+                {
+                    # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureLongClassName,$sbResult.BoundParameters["TypeName"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
 
-						$results += $result
-					}
-				}
+                    $results += $result
+                }
+            }
 
-				return $results
-			}
-			catch
-			{
-				$PSCmdlet.ThrowTerminatingError($PSItem)
-			}
+            return $results
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($PSItem)
+        }
 
 
-		}
-	}
+    }
+}
 
-		<#
-	.SYNOPSIS
-		Please do not use COM objects when calling New-Object.
-	.DESCRIPTION
-		If you can't use just PowerShell, use .NET, external commands or COM objects, in that order of preference. COM objects are rarely well-documented, making them harder for someone else to research and understand.
-		They do not always work flawlessly in PowerShell, as they must be used through .NET's Interop layer, which isn't 100% perfect.
-		To fix a violation of this rule, please do not use COM objects when calling New-Object.
-	.EXAMPLE
-		Measure-ComObject -CommandAst $CommandAst
-	.INPUTS
-		[System.Management.Automation.Language.CommandAst]
-	.OUTPUTS
-		[Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
-	.NOTES
-		Reference: The Purity Laws, The Community Book of PowerShell Practices.
-	#>
-	function Measure-ComObject
-	{
-		[CmdletBinding()]
-		[OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
-		Param
-		(
-			[Parameter(Mandatory = $true)]
-			[ValidateNotNullOrEmpty()]
-			[System.Management.Automation.Language.CommandAst]
-			$CommandAst
-		)
+<#
+.SYNOPSIS
+    Please do not use COM objects when calling New-Object.
+.DESCRIPTION
+    If you can't use just PowerShell, use .NET, external commands or COM objects, in that order of preference. COM objects are rarely well-documented, making them harder for someone else to research and understand.
+    They do not always work flawlessly in PowerShell, as they must be used through .NET's Interop layer, which isn't 100% perfect.
+    To fix a violation of this rule, please do not use COM objects when calling New-Object.
+.EXAMPLE
+    Measure-ComObject -CommandAst $CommandAst
+.INPUTS
+    [System.Management.Automation.Language.CommandAst]
+.OUTPUTS
+    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+.NOTES
+    Reference: The Purity Laws, The Community Book of PowerShell Practices.
+#>
+function Measure-ComObject
+{
+    [CmdletBinding()]
+    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.CommandAst]
+        $CommandAst
+    )
 
-		Process
-		{
-			$results = @()
+    Process
+    {
+        $results = @()
 
-			# The StaticParameterBinder help us to find the argument of TypeName.
-			$spBinder = [System.Management.Automation.Language.StaticParameterBinder]
+        # The StaticParameterBinder help us to find the argument of TypeName.
+        $spBinder = [System.Management.Automation.Language.StaticParameterBinder]
 
-			# Checks New-Object without ComObject parameter command only.
-			if ($null -ne $CommandAst.GetCommandName())
-			{
-				if ($CommandAst.GetCommandName() -ne "new-object")
-				{
-					return $results
-				}
-			}
-			else
-			{
-				return $results
-			}
+        # Checks New-Object without ComObject parameter command only.
+        if ($null -ne $CommandAst.GetCommandName())
+        {
+            if ($CommandAst.GetCommandName() -ne "new-object")
+            {
+                return $results
+            }
+        }
+        else
+        {
+            return $results
+        }
 
-			try
-			{
-				[System.Management.Automation.Language.StaticBindingResult]$sbResults = $spBinder::BindCommand($CommandAst, $true)
-				foreach ($sbResult in $sbResults)
-				{
-					if ($sbResults.BoundParameters.ContainsKey("ComObject"))
-					{
-						# $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-						$result = New-Object `
-									-Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
-									-ArgumentList $Messages.MeasureComObject,$sbResult.BoundParameters["ComObject"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+        try
+        {
+            [System.Management.Automation.Language.StaticBindingResult]$sbResults = $spBinder::BindCommand($CommandAst, $true)
+            foreach ($sbResult in $sbResults)
+            {
+                if ($sbResults.BoundParameters.ContainsKey("ComObject"))
+                {
+                    # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureComObject,$sbResult.BoundParameters["ComObject"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
 
-						$results += $result
-					}
-				}
+                    $results += $result
+                }
+            }
 
-				return $results
-			}
-			catch
-			{
-				$PSCmdlet.ThrowTerminatingError($PSItem)
-			}
+            return $results
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($PSItem)
+        }
 
 
-		}
-	}
-
-} # end if ($PSVersionTable.PSVersion -ge [Version]'4.0')
+    }
+}
 
 
 <#
