@@ -1,6 +1,7 @@
 name: CI Tests
 
 on:
+  workflow_dispatch: # to allow contributors to trigger CI manually in their fork
   push:
     branches: [ main ]
   pull_request:
