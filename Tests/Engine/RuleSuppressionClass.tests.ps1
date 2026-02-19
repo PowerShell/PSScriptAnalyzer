@@ -2,11 +2,6 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $script:skipForV3V4 = $true
-    if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-        $script:skipForV3V4 = $false
-    }
-
     $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
     $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
 }
@@ -14,7 +9,7 @@ BeforeAll {
 Describe "RuleSuppressionWithoutScope" {
 
     Context "Class" {
-        It "Does not raise violations" -skip:$script:skipForV3V4 {
+        It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingInvokeExpression" }
             $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingInvokeExpression" }
@@ -23,7 +18,7 @@ Describe "RuleSuppressionWithoutScope" {
     }
 
     Context "FunctionInClass" {
-        It "Does not raise violations" -skip:$script:skipForV3V4 {
+        It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingCmdletAliases" }
             $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingCmdletAliases" }
@@ -32,7 +27,7 @@ Describe "RuleSuppressionWithoutScope" {
     }
 
     Context "Script" {
-        It "Does not raise violations" -skip:$script:skipForV3V4 {
+        It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
@@ -41,7 +36,7 @@ Describe "RuleSuppressionWithoutScope" {
     }
 
     Context "RuleSuppressionID" {
-        It "Only suppress violations for that ID" -skip:$script:skipForV3V4 {
+        It "Only suppress violations for that ID" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should -Be 1
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
@@ -52,7 +47,7 @@ Describe "RuleSuppressionWithoutScope" {
 
 Describe "RuleSuppressionWithScope" {
     Context "FunctionScope" {
-        It "Does not raise violations" -skip:$script:skipForV3V4 {
+        It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
             $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
@@ -61,7 +56,7 @@ Describe "RuleSuppressionWithScope" {
     }
 
     Context "ClassScope" {
-        It "Does not raise violations" -skip:$script:skipForV3V4 {
+        It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingConvertToSecureStringWithPlainText" }
             $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingConvertToSecureStringWithPlainText" }
