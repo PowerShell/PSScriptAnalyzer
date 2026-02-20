@@ -8,11 +8,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// <summary>
     /// Provides an efficient way to find the position in the AST corresponding to a given script position.
     /// </summary>
-#if !(PSV3 || PSV4)
     internal class FindAstPositionVisitor : AstVisitor2
-#else
-    internal class FindAstPositionVisitor : AstVisitor
-#endif
     {
         private IScriptPosition searchPosition;
 
@@ -300,7 +296,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
              return Visit(whileStatementAst);
          }
 
-#if !(PSV3 || PSV4)
          public override AstVisitAction VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
          {
              return Visit(baseCtorInvokeMemberExpressionAst);
@@ -335,7 +330,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
          {
              return AstVisitAction.Continue;
          }
-#endif
 
 #if !(NET462 || PSV7) // net462 includes V3,4,5
          public override AstVisitAction VisitPipelineChain(PipelineChainAst pipelineChainAst)

@@ -317,20 +317,9 @@ function Test-ScriptAnalyzer
         # and ".../out/PSScriptAnalyzer" is added to env:PSModulePath
         #
         #
-        $major = $PSVersionTable.PSVersion.Major
-        if ( $major -lt 5 ) {
-            # get the directory name of the destination, we need to change it
-            $versionDirectoryRoot = Split-Path $script:destinationDir
-            $testModulePath = Join-Path $versionDirectoryRoot $analyzerName
-        }
-        else {
-            $testModulePath = Join-Path "${projectRoot}" -ChildPath out
-        }
+        $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         $testScripts = "'${projectRoot}\Tests\Build','${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
-            if ( $major -lt 5 ) {
-                Rename-Item $script:destinationDir ${testModulePath}
-            }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             $analyzerPsd1Path = Join-Path -Path $script:destinationDir -ChildPath "$analyzerName.psd1"
@@ -353,9 +342,6 @@ function Test-ScriptAnalyzer
         }
         finally {
             $env:PSModulePath = $savedModulePath
-            if ( $major -lt 5 ) {
-                Rename-Item ${testModulePath} ${script:destinationDir}
-            }
         }
     }
 }

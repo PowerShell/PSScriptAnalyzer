@@ -149,11 +149,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return targetVersions;
         }
 
-#if !(PSV3 || PSV4)
         private class SyntaxCompatibilityVisitor : AstVisitor2
-#else
-        private class SyntaxCompatibilityVisitor : AstVisitor
-#endif
         {
             private readonly UseCompatibleSyntax _rule;
 
@@ -260,7 +256,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-#if !(PSV3 || PSV4)
             public override AstVisitAction VisitUsingStatement(UsingStatementAst usingStatementAst)
             {
                 // Look for 'using ...;' at the top of scripts
@@ -306,7 +301,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 return AstVisitAction.Continue;
             }
-#endif
 
 #if PSV7
             public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)

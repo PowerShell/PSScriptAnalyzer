@@ -3,7 +3,7 @@
 
 function Get-Skip
 {
-    if ($testingLibararyUsage -or ($PSVersionTable.PSVersion -lt '5.0'))
+    if ($testingLibararyUsage)
     {
         return $true
     }
@@ -50,7 +50,6 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Module handler class" {
         BeforeAll {
-            if ($PSVersionTable.PSVersion -lt '5.0') { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $savedPSModulePath = $env:PSModulePath
@@ -59,7 +58,7 @@ Describe "Resolve DSC Resource Dependency" {
             if ( $skipTest ) { return }
             $env:PSModulePath = $savedPSModulePath
         }
-        It "Sets defaults correctly" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+        It "Sets defaults correctly" {
             $rsp = [runspacefactory]::CreateRunspace()
             $rsp.Open()
             $depHandler = $moduleHandlerType::new($rsp)
@@ -82,15 +81,15 @@ Describe "Resolve DSC Resource Dependency" {
             $rsp.Dispose()
         }
 
-        It "Keeps the environment variables unchanged" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+        It "Keeps the environment variables unchanged" {
             Test-EnvironmentVariables($oldEnvVars)
         }
 
-        It "Throws if runspace is null" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+        It "Throws if runspace is null" {
             {$moduleHandlerType::new($null)} | Should -Throw
         }
 
-        It "Throws if runspace is not opened" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+        It "Throws if runspace is not opened" {
             $rsp = [runspacefactory]::CreateRunspace()
             {$moduleHandlerType::new($rsp)} | Should -Throw
             $rsp.Dispose()

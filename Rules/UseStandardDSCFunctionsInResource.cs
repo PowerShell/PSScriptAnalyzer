@@ -64,12 +64,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            #if (PSV3||PSV4)
-
-            return null;
-
-            #else
-
             List<string> resourceFunctionNames = new List<string>(new string[] {"Test", "Get", "Set"});
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>
@@ -90,8 +84,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
-
-            #endif
         }        
 
         /// <summary>
