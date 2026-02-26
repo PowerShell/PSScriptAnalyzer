@@ -22,9 +22,7 @@ BeforeAll {
 
     $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
-    if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-        $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
-    }
+    $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
 
     $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
@@ -334,7 +332,7 @@ $s$s$s$s
         }
 
 
-        It "Does not count violation in DSC class" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+        It "Does not count violation in DSC class" {
             $dscViolations.Count | Should -Be 0
         }
     }

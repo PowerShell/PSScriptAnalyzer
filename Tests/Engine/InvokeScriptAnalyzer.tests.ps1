@@ -71,7 +71,7 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "SaveDscDependency parameter" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
+    Context "SaveDscDependency parameter" -Skip:($testingLibraryUsage) {
         It "has the parameter" {
             $params.ContainsKey("SaveDscDependency") | Should -BeTrue
         }
@@ -616,7 +616,7 @@ Describe "-ReportSummary switch" {
 }
 
 # using statements are only supported in v5+
-Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
+Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage) {
     BeforeAll {
         $script = @'
             using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
@@ -640,7 +640,7 @@ Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage
     }
 }
 
-Describe 'Handles static Singleton (issue 1182)' -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
+Describe 'Handles static Singleton (issue 1182)' -Skip:($testingLibraryUsage) {
     It 'Does not throw or return diagnostic record' {
         $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
         Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
