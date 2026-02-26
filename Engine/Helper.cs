@@ -512,8 +512,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            #if !(PSV3||PSV4)
-
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>
@@ -527,8 +525,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return true;
             }
-
-            #endif
 
             return false;
         }
@@ -953,15 +949,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptAst"></param>
         /// <returns></returns>
 
-#if (PSV3||PSV4)
-
-        public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
-
-#else
-
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes)
-
-#endif
         {
             if (ret == null || funcAst == null)
             {
@@ -992,15 +980,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         else if (cmAst.Expression is MemberExpressionAst)
                         {
-#if PSV3
-
-                            result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst);
-
-#else
-
                             result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst, classes);
-
-#endif
                         }
                     }
                 }
@@ -1024,15 +1004,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <returns></returns>
 
-#if (PSV3||PSV4)
-
-        public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
-
-#else
-
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
-
-#endif
         {
             if (memberAst == null)
             {
@@ -1041,11 +1013,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             VariableAnalysisDetails details = null;
 
-#if !(PSV3||PSV4)
-
             TypeDefinitionAst psClass = null;
-
-#endif
 
             if (memberAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scopeAst))
             {
@@ -1053,26 +1021,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Get the analysis detail for the variable
                 details = VarTypeAnalysis.GetVariableAnalysis(memberAst.Expression as VariableExpressionAst);
 
-#if !PSV3
-
                 if (details != null && classes != null)
                 {
                     // Get the class that corresponds to the name of the type (if possible, the type is not available in the case of a static Singleton)
                     psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                 }
-
-#endif
             }
 
-#if PSV3
-
-                return GetTypeFromMemberExpressionAstHelper(memberAst, details);
-
-#else
-
-                return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
-
-#endif
+            return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
         }
 
         /// <summary>
@@ -1084,20 +1040,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
 
-#if (PSV3||PSV4)
-
-        internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
-
-#else
-
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
-
-#endif
         {
             //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
-
-#if !(PSV3||PSV4)
 
             //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
@@ -1105,7 +1051,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst, analysisDetails, psClass);
             }
 
-#endif
 
             if (result != null)
             {
@@ -1205,7 +1150,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
-#if !(PSV3||PSV4)
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -1221,7 +1165,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 ruleSuppressionList.AddRange(GetSuppressionsConfiguration(configDefAst));
             }
-#endif // !PSV3
 
             ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
@@ -1257,7 +1200,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-#if !(PSV3||PSV4)
         /// <summary>
         /// Returns a list of rule suppression from the class
         /// </summary>
@@ -1312,8 +1254,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 configDefAst));
             return result;
         }
-
-#endif // !PSV3
 
         /// <summary>
         /// Suppress the rules from the diagnostic records list.
@@ -2116,15 +2056,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // We already run variable analysis if the parent is a function so skip these.
             // Otherwise, we have to do variable analysis using the outer scope variables.
-#if PSV3
-
-                if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
-
-#else
 
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
-
-#endif
             {
                 OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
             }
@@ -2152,15 +2085,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             VariableAnalysis innerAnalysis = OuterAnalysis;
             OuterAnalysis = previousOuter;
 
-#if PSV3
-
-            if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
-
-#else
-
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
-
-#endif
             {
                 // Update the variable analysis of the outer script block
                 VariableAnalysis.UpdateOuterAnalysis(OuterAnalysis, innerAnalysis);
@@ -2180,12 +2105,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return null;
             }
-
-#if (PSV3||PSV4)
-
-            statementAst.Visit(this);
-
-#else
 
             TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
 
@@ -2212,13 +2131,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     OuterAnalysis = previousOuter;
                 }
             }
-
-#endif
-
             return null;
         }
-
-#if !PSV3
 
         /// <summary>
         /// Do nothing
@@ -2229,8 +2143,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             return null;
         }
-
-#endif
 
         /// <summary>
         /// Do nothing
@@ -2897,11 +2809,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         List<Tuple<string, StatementAst>> outputTypes;
 
-#if !(PSV3||PSV4)
-
         IEnumerable<TypeDefinitionAst> classes;
-
-#endif
 
         FunctionDefinitionAst myFunction;
         /// <summary>
@@ -2939,23 +2847,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
 
-#if (PSV3||PSV4)
-
-        public FindPipelineOutput(FunctionDefinitionAst ast)
-
-#else
-
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
-
-#endif
         {
             outputTypes = new List<Tuple<string, StatementAst>>();
 
-#if !PSV3
-
             this.classes = classes;
-
-#endif
 
             myFunction = ast;
 
@@ -2970,20 +2866,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <returns></returns>
 
-#if (PSV3||PSV4)
-
-        public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)
-        {
-            return (new FindPipelineOutput(funcAst)).outputTypes;
-        }
-
-#else
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst, IEnumerable<TypeDefinitionAst> classes)
         {
             return (new FindPipelineOutput(funcAst, classes)).outputTypes;
         }
-
-#endif
 
         /// <summary>
         /// Ignore assignment statement
@@ -3436,15 +3322,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitReturnStatement(ReturnStatementAst returnStatementAst)
         {
-#if PSV3
-
-            return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst);
-
-#else
-
             return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst, classes);
-
-#endif
         }
 
         /// <summary>
@@ -3454,15 +3332,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitMemberExpression(MemberExpressionAst memAst)
         {
-#if PSV3
-
-            return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction);
-
-#else
-
             return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction, classes);
-
-#endif
         }
 
         /// <summary>
@@ -3472,15 +3342,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeAst)
         {
-#if PSV3
-
-            return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction);
-
-#else
-
             return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction, classes);
-
-#endif
         }
 
         /// <summary>

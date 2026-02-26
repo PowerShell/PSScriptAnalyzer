@@ -53,14 +53,6 @@
     <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' OR '$(Configuration)' == 'PSV3Debug'">
-    <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Debug' OR '$(Configuration)' == 'PSV4Release'">
-    <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>

@@ -134,15 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public void AnalyzeImpl(Ast ast, VariableAnalysis outerAnalysis)
         {
 
-            #if PSV3
-
-            if (!(ast is ScriptBlockAst || ast is FunctionDefinitionAst))
-            
-            #else            
-
             if (!(ast is ScriptBlockAst || ast is FunctionMemberAst || ast is FunctionDefinitionAst))
-
-            #endif
             {
                 return;
             }
@@ -151,15 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             Init();
 
-            #if PSV3
-
-            if (ast is FunctionDefinitionAst)
-
-            #else
-
             if (ast is FunctionMemberAst || ast is FunctionDefinitionAst)
-
-            #endif
             {
                 IEnumerable<ParameterAst> parameters = FindParameters(ast, ast.GetType());
                 if (parameters != null)
@@ -176,20 +160,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #if PSV3
-
-            if (ast is FunctionDefinitionAst)
-
-            #else
-
             if (ast is FunctionMemberAst)
             {
                 (ast as FunctionMemberAst).Body.Visit(this.Decorator);
             }
             else if (ast is FunctionDefinitionAst)
-            
-            #endif
-
             {
                 (ast as FunctionDefinitionAst).Body.Visit(this.Decorator);
             }
@@ -205,13 +180,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 parent = parent.Parent;
             }
 
-            #if !(PSV3||PSV4)
-
             List<TypeDefinitionAst> classes = parent.FindAll(item =>
                 item is TypeDefinitionAst && (item as TypeDefinitionAst).IsClass, true)
                 .Cast<TypeDefinitionAst>().ToList();
-
-            #endif
 
             if (outerAnalysis != null)
             {
@@ -250,15 +221,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #if PSV3
-
-            var dictionaries = Block.SparseSimpleConstants(_variables, Entry);
-
-            #else
-
             var dictionaries = Block.SparseSimpleConstants(_variables, Entry, classes);
 
-            #endif
             VariablesDictionary = dictionaries.Item1;
             InternalVariablesDictionary = new Dictionary<string, VariableAnalysisDetails>(StringComparer.OrdinalIgnoreCase);
 

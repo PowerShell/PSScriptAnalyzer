@@ -64,15 +64,7 @@ Describe "Test Name parameters" {
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
             $expectedNumRules = 72
-            if ($PSVersionTable.PSVersion.Major -le 4)
-            {
-                # for PSv3 PSAvoidGlobalAliases is not shipped because
-                # it uses StaticParameterBinder.BindCommand which is
-                # available only on PSv4 and above
-
-                $expectedNumRules--
-            }
-			$defaultRules.Count | Should -Be $expectedNumRules
+			      $defaultRules.Count | Should -Be $expectedNumRules
 		}
 
         It "is a positional parameter" {
@@ -100,11 +92,7 @@ Describe "Test RuleExtension" {
         BeforeAll {
             $community = "CommunityAnalyzerRules"
             $measureRequired = "Measure-RequiresModules"
-            $expectedNumCommunityRules = 10
-            if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
-            {
-                $expectedNumCommunityRules = 12
-            }
+            $expectedNumCommunityRules = 12
         }
         It "with the module folder path" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object {$_.SourceName -eq $community}

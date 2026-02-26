@@ -50,9 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         private SuppressionPreference _suppressionPreference;
-#if !PSV3
         ModuleDependencyHandler moduleHandler;
-#endif
 #endregion
 
 #region Singleton
@@ -98,7 +96,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         internal List<ExternalRule> ExternalRules { get; set; }
 
-#if !PSV3
         public ModuleDependencyHandler ModuleHandler {
             get
             {
@@ -110,7 +107,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 moduleHandler = value;
             }
         }
-#endif
 
 #endregion
 
@@ -622,36 +618,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 else
                 {
                     HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
-#if PSV3
-                    settings = GetDictionaryFromHashTableAst(
-                        hashTableAst,
-                        writer,
-                        profile,
-                        out hasError);
-                    foreach (var key in settings.Keys)
-                    {
-                        var rhsList = settings[key] as List<string>;
-                        if (rhsList == null)
-                        {
-                            continue;
-                        }
-                        if (!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
-                        {
-                            writer.WriteError(
-                                new ErrorRecord(
-                                    new InvalidDataException(
-                                        string.Format(
-                                            CultureInfo.CurrentCulture,
-                                            Strings.WrongKey,
-                                            key,
-                                            profile)),
-                                    Strings.WrongConfigurationKey,
-                                    ErrorCategory.InvalidData,
-                                    profile));
-                            hasError = true;
-                        }
-                    }
-#else
 
                     try
                     {
@@ -668,7 +634,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 profile));
                         hasError = true;
                     }
-#endif // PSV3
                 }
             }
 
@@ -691,10 +656,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("outputWriter");
             }
-#if !PSV3
             this.moduleHandler = null;
-#endif
-
             this.outputWriter = outputWriter;
 
 #region Verifies rule extensions
@@ -1843,7 +1805,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-#if !PSV3
         private bool TrySaveModules(ParseError[] errors, ScriptBlockAst scriptAst)
         {
             bool modulesSaved = false;
@@ -1877,7 +1838,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             return modulesSaved;
         }
-#endif // !PSV3
 
         private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
         {
@@ -1915,13 +1875,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 this.outputWriter.WriteWarning(e.ToString());
                 return null;
             }
-#if !PSV3
+
             //try parsing again
             if (TrySaveModules(errors, scriptAst))
             {
                 scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
             }
-#endif //!PSV3
+
             IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
             // First, add all parse errors if they've been requested
@@ -2254,17 +2214,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                             try
                             {
-#if PSV3
-                                var errRecs = new List<ErrorRecord>();
-                                var records = Helper.Instance.SuppressRule(
-                                    dscResourceRule.GetName(),
-                                    ruleSuppressions,
-                                    null,
-                                    out errRecs);
-#else
                                 var ruleRecords = dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList();
                                 var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
-#endif
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
