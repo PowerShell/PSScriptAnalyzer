@@ -404,7 +404,7 @@ function Allow-GetFooBar {
     }
 
     Context "Rule suppression within DSC Configuration definition" {
-        It "Suppresses rule" -Skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
+        It "Suppresses rule" -Skip:($IsLinux -or $IsMacOS) {
             $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
             $suppressedRule.Count | Should -Be 1
         }

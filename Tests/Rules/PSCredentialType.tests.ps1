@@ -12,9 +12,6 @@ Describe "PSCredentialType" {
     Context "When there are violations" {
         BeforeAll {
             $expectedViolations = 1
-            if (($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4)) {
-                $expectedViolations = 2
-            }
         }
         It ("has correct count of PSCredential type violations" -f $expectedViolations) {
             $violations.Count | Should -Be $expectedViolations

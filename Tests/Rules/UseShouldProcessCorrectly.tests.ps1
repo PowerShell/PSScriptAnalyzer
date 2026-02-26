@@ -1,8 +1,6 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$IsV3OrV4 = ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4)
-
 BeforeAll {
     $violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
     $violationName = "PSShouldProcess"
@@ -179,7 +177,7 @@ function Remove-Foo {
         }
 
         # Install-Module is present by default only on PSv5 and above
-        It "finds no violation when caller declares SupportsShouldProcess and callee is a function with ShouldProcess" -Skip:$IsV3OrV4 {
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a function with ShouldProcess" {
             $scriptDef = @'
 function Install-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -231,7 +229,7 @@ function Install-ModuleWithDeps {
         }
 
        # Install-Module is present by default only on PSv5 and above
-       It "finds no violation for a function with self reference and implicit call to ShouldProcess" -Skip:$IsV3OrV4 {
+       It "finds no violation for a function with self reference and implicit call to ShouldProcess" {
             $scriptDef = @'
 function Install-ModuleWithDeps {
 [CmdletBinding(SupportsShouldProcess)]

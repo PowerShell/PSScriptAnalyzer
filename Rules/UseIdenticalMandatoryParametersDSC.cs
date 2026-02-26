@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 // this rule can only compile on v4+
-#if (PSV4 || !PSV3)
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -335,5 +333,3 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
-#endif
