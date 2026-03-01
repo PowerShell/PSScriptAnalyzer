@@ -56,6 +56,7 @@ foreach ($x in $y) {
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTPS' | Should -Be $expected
         }
 
         It "Should correct violation when brace should be on the same line and take comment into account" {
@@ -73,6 +74,7 @@ foreach ($x in $y) { # useful comment
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTPS' | Should -Be $expected
         }
 
         It "Should correct violation when the brace should be on the next line and take comment into account" {
@@ -90,6 +92,7 @@ foreach ($x in $y) { # useful comment
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTPS' | Should -Be $expected
         }
     }
 
