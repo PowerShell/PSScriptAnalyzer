@@ -84,10 +84,10 @@ function Test-Code
 {
     [CmdletBinding()]
     param(
-        [int]$ParameterOne
+        [int] $ParameterOne
     )
     end {
-        if(10 -gt $ParameterOne) {
+        if (10 -gt $ParameterOne) {
             "Greater"
         }
         else {
