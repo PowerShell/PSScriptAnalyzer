@@ -86,8 +86,8 @@ $x = @{ 'key'="value" }
 
         It "Should ignore if a hashtable has a single key-value pair across multiple lines" {
             $def = @'
-$x = @{ 
-    'key'="value" 
+$x = @{
+    'key'="value"
 }
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 0
@@ -128,10 +128,9 @@ Configuration MyDscConfiguration {
         }
     }
 
-    if ($PSVersionTable.PSVersion.Major -ge 5) {
-        Context "When assignment statements are in DSC Configuration that has parse errors" {
-            It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
-                $def = @'
+    Context "When assignment statements are in DSC Configuration that has parse errors" {
+        It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
+            $def = @'
 Configuration Sample_ChangeDescriptionAndPermissions
 {
     Import-DscResource -Module NonExistentModule
@@ -152,14 +151,13 @@ Configuration Sample_ChangeDescriptionAndPermissions
     }
 }
 '@
-                # This invocation will throw parse error caused by "Undefined DSC resource" because
-                # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
-                # SilentlyContinue
-                Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Severity -ne "ParseError" } |
-                    Get-Count |
-                    Should -Be 4
-            }
+            # This invocation will throw parse error caused by "Undefined DSC resource" because
+            # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
+            # SilentlyContinue
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
+                Where-Object { $_.Severity -ne "ParseError" } |
+                Get-Count |
+                Should -Be 4
         }
     }
 }

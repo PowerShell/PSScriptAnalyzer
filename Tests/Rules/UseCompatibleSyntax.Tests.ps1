@@ -12,15 +12,10 @@ BeforeDiscovery {
         @{ Script = '$y.$methodWithAVeryLongName()'; Versions = @(3) }
         @{ Script = '$typeExpression::$staticMember'; Versions = @() }
         @{ Script = '$typeExpression::$dynamicStaticMethodName()'; Versions = @(3) }
+        @{ Script = "class MyClass { }"; Versions = @(3,4) }
+        @{ Script = "enum MyEnum { One; Two }"; Versions = @(3,4) }
     )
-    # PS v3/4 won't parse classes or enums
-    if ($PSVersionTable.PSVersion.Major -ge 5)
-    {
-        $testCases += @(
-            @{ Script = "class MyClass { }"; Versions = @(3,4) }
-            @{ Script = "enum MyEnum { One; Two }"; Versions = @(3,4) }
-        )
-    }
+
     # PS v6+ won't parse workflows
     if ($PSVersionTable.PSVersion.Major -le 5)
     {
@@ -79,16 +74,7 @@ Describe "PSUseCompatibleSyntax" {
         $diagnostics = Invoke-ScriptAnalyzer -IncludeRule PSUseCompatibleSyntax -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings `
             | Where-Object { $_.RuleName -eq 'PSUseCompatibleSyntax' }
 
-        if ($PSVersionTable.PSVersion.Major -ge 5)
-        {
-            $expected = 5
-        }
-        else
-        {
-            # PSv3/4 can't detect class/enum parts
-            $expected = 4
-        }
-
+        $expected = 5
         $diagnostics.Count | Should -Be $expected
     }
 

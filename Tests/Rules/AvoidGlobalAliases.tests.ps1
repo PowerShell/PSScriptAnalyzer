@@ -1,8 +1,6 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$IsV3OrV4 = ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4)
-
 BeforeAll {
     $AvoidGlobalAliasesError = "Avoid creating aliases with a Global scope."
     $violationName = "PSAvoidGlobalAliases"
@@ -12,17 +10,17 @@ BeforeAll {
 
 Describe "$violationName " {
     Context "When there are violations" {
-        It "Has 4 avoid global alias violations" -Skip:$IsV3OrV4 {
+        It "Has 4 avoid global alias violations" {
             $violations.Count | Should -Be 4
         }
 
-        It "Has the correct description message" -Skip:$IsV3OrV4 {
+        It "Has the correct description message" {
             $violations[0].Message | Should -Match $AvoidGlobalAliasesError
         }
     }
 
     Context "When there are no violations" {
-        It "Returns no violations" -Skip:$IsV3OrV4 {
+        It "Returns no violations" {
             $noViolations.Count | Should -Be 0
         }
     }

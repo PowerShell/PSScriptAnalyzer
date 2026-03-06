@@ -97,16 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public static Dictionary<string, VariableAnalysisDetails> Visit(Ast ast)
         {
-            #if PSV3
-
-            if (!(ast is ScriptBlockAst || ast is FunctionDefinitionAst))
-
-            #else
-
             if (!(ast is ScriptBlockAst || ast is FunctionMemberAst || ast is FunctionDefinitionAst))
-
-            #endif
-
             {
                 return null;
             }
@@ -122,34 +113,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 (ast as ScriptBlockAst).Visit(visitor);
             }
-
-            #if !PSV3
-
             else if (ast is FunctionMemberAst)
             {
                 (ast as FunctionMemberAst).Body.Visit(visitor);
             }
-
-            #endif
-
             else if (ast is FunctionDefinitionAst)
             {
                 (ast as FunctionDefinitionAst).Body.Visit(visitor);
             }
-
-            #if PSV3
-
-            if (ast is FunctionDefinitionAst && (ast as FunctionDefinitionAst).Parameters != null)
-
-            #else
 
             if (ast is FunctionMemberAst && (ast as FunctionMemberAst).Parameters != null)
             {
                 visitor.VisitParameters((ast as FunctionMemberAst).Parameters);
             }
             else if (ast is FunctionDefinitionAst && (ast as FunctionDefinitionAst).Parameters != null)
-
-            #endif
             {
                 visitor.VisitParameters((ast as FunctionDefinitionAst).Parameters);
             }
@@ -165,8 +142,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             _variables.Add("true", new VariableAnalysisDetails { Name = "true", RealName = "true", Type = typeof(bool) });
             _variables.Add("false", new VariableAnalysisDetails { Name = "false", RealName = "true", Type = typeof(bool) });
 
-            #if !(PSV3||PSV4)
-
             if (ast is FunctionMemberAst)
             {
                 TypeDefinitionAst psClass = AssignmentTarget.FindClassAncestor(ast);
@@ -175,9 +150,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     _variables.Add("this", new VariableAnalysisDetails { Name = "this", RealName = "this", Constant = SpecialVars.ThisVariable });
                 }
             }
-
-            #endif
-
         }
 
         internal void VisitParameters(ReadOnlyCollection<ParameterAst> parameters)
@@ -808,16 +780,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="Entry"></param>
         /// <param name="Classes"></param>
         /// <returns></returns>        
-        #if (PSV3||PSV4)
-
         internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
-             Dictionary<string, VariableAnalysisDetails> Variables, Block Entry)
-
-        #else            
-            internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
-            Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
-
-        #endif
+        Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
         {
             List<Block> blocks = GenerateReverseDepthFirstOrder(Entry);
 
@@ -989,16 +953,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 VariableAnalysisDetails analysis = VariablesDictionary[VariableAnalysis.AnalysisDictionaryKey(memAst.Expression as VariableExpressionAst)];
 
-                                #if (PSV3||PSV4)
-
-                                Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis);
-
-                                #else
-
                                 TypeDefinitionAst psClass = Classes.FirstOrDefault(item => String.Equals(item.Name, analysis.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                                 Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis, psClass);
-
-                                #endif
 
                                 if (possibleType != null && possibleType != assigned.Type)
                                 {
@@ -1370,23 +1326,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="memAst"></param>
         /// <param name="psClass"></param>
         /// <returns></returns>
-        
-        #if (PSV3||PSV4)
-
-        internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis)
-
-        #else
-
         internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis, TypeDefinitionAst psClass)
-
-        #endif        
         {
             if (memAst != null && memAst.Expression is VariableExpressionAst && memAst.Member is StringConstantExpressionAst
                 && !String.Equals((memAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
             {
                 string fieldName = (memAst.Member as StringConstantExpressionAst).Value;
-
-                #if !PSV3
 
                 if (psClass == null && analysis.Constant == SpecialVars.ThisVariable)
                 {
@@ -1403,8 +1348,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                     }
                 }
-
-                #endif
 
                 // If the type is not a ps class or there are some types of the same name.
                 if (analysis != null && analysis.Type != null && analysis.Type != typeof(object)
@@ -1460,7 +1403,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // isStatic is true
                         result = GetTypeFromInvokeMemberAst(type, imeAst, methodName, true);
                     }
-                    #if !(PSV3||PSV4)
                     else
                     {
                         // Check for classes
@@ -1478,7 +1420,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     }
-                    #endif
                 }
 
                 #endregion
@@ -1498,7 +1439,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         result = GetPropertyOrFieldTypeFromMemberExpressionAst(expressionType, fieldName);
                     }
-                    #if !(PSV3||PSV4)
                     else
                     {
                         // check for class type
@@ -1514,7 +1454,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     }
-                    #endif
                 }
 
                 #endregion
@@ -1531,15 +1470,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (memberAst.Expression is VariableExpressionAst
                 && String.Equals((memberAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
             {
-                #if !(PSV3||PSV4)
-
                 // Check that we are in a class
                 TypeDefinitionAst psClass = FindClassAncestor(memberAst);
 
                 // Is static is false for this case
                 result = GetTypeFromClass(psClass, memberAst);
-
-                #endif
             }
 
             return result;
@@ -1598,7 +1533,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-#if !(PSV3||PSV4)
         /// <summary>
         /// Checks whether a class with the name name exists in the script that contains ast
         /// </summary>
@@ -1685,8 +1619,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return result;
         }
-
-#endif // !PSV3
 
         private void SetVariableName()
         {
