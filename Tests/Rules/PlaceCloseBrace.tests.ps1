@@ -383,4 +383,54 @@ if ($true) {
             $violations.Count | Should -Be 0
         }
     }
+
+    Context "When formatting presets handles if else" {
+        BeforeAll {
+            $AllmanDefinition = @"
+if (`$true)
+{
+    'yes'
+}
+else
+{
+    'no'
+}
+"@
+            $OTBSDefinition = @"
+if (`$true) {
+    'yes'
+} else {
+    'no'
+}
+"@
+            $OTPSAndStroustrupDefinition = @"
+if (`$true) {
+    "yes"
+}
+else {
+    "no"
+}
+"@
+        }
+
+        It "Allman should have all opening and closing braces on a new line" {
+            Invoke-Formatter -ScriptDefinition $OTBSDefinition -Settings 'CodeFormattingAllman' | Should -Be $AllmanDefinition
+            Invoke-Formatter -ScriptDefinition $OTPSAndStroustrupDefinition -Settings 'CodeFormattingAllman' | Should -Be $AllmanDefinition
+        }
+
+        It "OTBS should place else on same line as the if closing bracket" {
+            Invoke-Formatter -ScriptDefinition $AllmanDefinition -Settings 'CodeFormattingOTBS' | Should -Be $OTBSDefinition
+            Invoke-Formatter -ScriptDefinition $OTPSAndStroustrupDefinition -Settings 'CodeFormattingOTBS' | Should -Be $OTBSDefinition
+        }
+
+        It "OTPS should place else on a new line after the if closing bracket" {
+            Invoke-Formatter -ScriptDefinition $AllmanDefinition -Settings 'CodeFormattingOTPS' | Should -Be $OTPSAndStroustrupDefinition
+            Invoke-Formatter -ScriptDefinition $OTBSDefinition -Settings 'CodeFormattingOTPS' | Should -Be $OTPSAndStroustrupDefinition
+        }
+
+        It "Stroustrup should place else on a new line after the if closing bracket" {
+            Invoke-Formatter -ScriptDefinition $AllmanDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $OTPSAndStroustrupDefinition
+            Invoke-Formatter -ScriptDefinition $OTBSDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $OTPSAndStroustrupDefinition
+        }
+    }
 }
