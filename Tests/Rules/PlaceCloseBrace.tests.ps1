@@ -405,10 +405,10 @@ if (`$true) {
 "@
             $OTPSAndStroustrupDefinition = @"
 if (`$true) {
-    "yes"
+    'yes'
 }
 else {
-    "no"
+    'no'
 }
 "@
         }
