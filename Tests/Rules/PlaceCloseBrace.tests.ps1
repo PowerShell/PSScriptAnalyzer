@@ -384,7 +384,7 @@ if ($true) {
         }
     }
 
-    Context "When formatting presets handles if else" {
+    Context "When formatting presets handle if/else" {
         BeforeAll {
             $AllmanDefinition = @"
 if (`$true)
