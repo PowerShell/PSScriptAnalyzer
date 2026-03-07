@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -1235,5 +1235,29 @@
   </data>
   <data name="AvoidReservedWordsAsFunctionNamesError" xml:space="preserve">
     <value>The reserved word '{0}' was used as a function name. This should be avoided.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeName" xml:space="preserve">
+    <value>UseConstrainedLanguageMode</value>
+  </data>
+  <data name="UseConstrainedLanguageModeCommonName" xml:space="preserve">
+    <value>Consider Constrained Language Mode Restrictions</value>
+  </data>
+  <data name="UseConstrainedLanguageModeDescription" xml:space="preserve">
+    <value>Identifies script patterns that are restricted in Constrained Language Mode. Constrained Language Mode limits the types, cmdlets, and .NET methods that can be used to help secure PowerShell in environments requiring additional restrictions.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeAddTypeError" xml:space="preserve">
+    <value>Add-Type is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeComObjectError" xml:space="preserve">
+    <value>New-Object with COM objects is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeXamlError" xml:space="preserve">
+    <value>XAML usage is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeDotSourceError" xml:space="preserve">
+    <value>Dot-sourcing may be restricted in Constrained Language Mode depending on the source location. Ensure scripts are from trusted locations if running in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeInvokeExpressionError" xml:space="preserve">
+    <value>Invoke-Expression is restricted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
   </data>
 </root>
