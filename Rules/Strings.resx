@@ -1266,4 +1266,13 @@
   <data name="UseConstrainedLanguageModeConstrainedTypeError" xml:space="preserve">
     <value>Type constraint [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
   </data>
+  <data name="UseConstrainedLanguageModeTypeExpressionError" xml:space="preserve">
+    <value>Type expression [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeConvertExpressionError" xml:space="preserve">
+    <value>Type cast [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeMemberAccessError" xml:space="preserve">
+    <value>Member '{1}' accessed on type [{0}] which is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
 </root>

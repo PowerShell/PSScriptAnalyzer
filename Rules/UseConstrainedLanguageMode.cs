@@ -268,7 +268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ));
             }
 
-            // Check for disallowed type accelerators and type constraints
+            // Check for disallowed type constraints (e.g., [System.Net.WebClient]$client)
             var typeConstraints = ast.FindAll(testAst => testAst is TypeConstraintAst, true);
             foreach (TypeConstraintAst typeConstraint in typeConstraints)
             {
@@ -288,7 +288,254 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+            // Check for disallowed type expressions and casts (e.g., [System.Net.WebClient]::new() or $x -as [Type])
+            var typeExpressions = ast.FindAll(testAst => testAst is TypeExpressionAst, true);
+            foreach (TypeExpressionAst typeExpr in typeExpressions)
+            {
+                var typeName = typeExpr.TypeName.FullName;
+                if (!IsTypeAllowed(typeName))
+                {
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.UseConstrainedLanguageModeTypeExpressionError,
+                                typeName),
+                            typeExpr.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
+                }
+            }
+
+            // Check for convert expressions (e.g., $x = [System.Net.WebClient]$value)
+            var convertExpressions = ast.FindAll(testAst => testAst is ConvertExpressionAst, true);
+            foreach (ConvertExpressionAst convertExpr in convertExpressions)
+            {
+                var typeName = convertExpr.Type.TypeName.FullName;
+                if (!IsTypeAllowed(typeName))
+                {
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.UseConstrainedLanguageModeConvertExpressionError,
+                                typeName),
+                            convertExpr.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
+                }
+            }
+
+            // Check for member invocations on disallowed types
+            // This includes method calls and property access on variables with type constraints
+            var memberInvocations = ast.FindAll(testAst => 
+                testAst is InvokeMemberExpressionAst || testAst is MemberExpressionAst, true);
+            
+            foreach (Ast memberAst in memberInvocations)
+            {
+                // Skip static member access - already handled by TypeExpressionAst check
+                if (memberAst is InvokeMemberExpressionAst invokeAst && invokeAst.Static)
+                {
+                    continue;
+                }
+                
+                if (memberAst is MemberExpressionAst memAst && memAst.Static)
+                {
+                    continue;
+                }
+
+                // Get the expression being invoked on (e.g., the variable in $var.Method())
+                ExpressionAst targetExpr = memberAst is InvokeMemberExpressionAst invExpr 
+                    ? invExpr.Expression 
+                    : ((MemberExpressionAst)memberAst).Expression;
+
+                // Check if the target has a type constraint
+                string constrainedType = GetTypeConstraintFromExpression(targetExpr);
+                if (!string.IsNullOrWhiteSpace(constrainedType) && !IsTypeAllowed(constrainedType))
+                {
+                    string memberName = memberAst is InvokeMemberExpressionAst inv
+                        ? (inv.Member as StringConstantExpressionAst)?.Value ?? "<unknown>"
+                        : ((memberAst as MemberExpressionAst).Member as StringConstantExpressionAst)?.Value ?? "<unknown>";
+
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.UseConstrainedLanguageModeMemberAccessError,
+                                constrainedType,
+                                memberName),
+                            memberAst.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
+                }
+            }
+
             return diagnosticRecords;
+        }
+
+        /// <summary>
+        /// Attempts to determine if an expression has a type constraint.
+        /// Returns the type name if found, otherwise null.
+        /// </summary>
+        private string GetTypeConstraintFromExpression(ExpressionAst expr)
+        {
+            if (expr == null)
+            {
+                return null;
+            }
+
+            // Check if this is a convert expression with a type (e.g., [Type]$var)
+            if (expr is ConvertExpressionAst convertExpr)
+            {
+                return convertExpr.Type.TypeName.FullName;
+            }
+
+            // Check if this is a variable expression
+            if (expr is VariableExpressionAst varExpr)
+            {
+                // Walk up the AST to find if this variable has a type constraint in a parameter
+                var parameterAst = FindParameterForVariable(varExpr);
+                if (parameterAst != null)
+                {
+                    // Get the first type constraint attribute
+                    var typeConstraint = parameterAst.Attributes
+                        .OfType<TypeConstraintAst>()
+                        .FirstOrDefault();
+                    
+                    if (typeConstraint != null)
+                    {
+                        return typeConstraint.TypeName.FullName;
+                    }
+                }
+
+                // Check if the variable was declared with a type constraint elsewhere
+                // Look for assignment statements with type constraints
+                var assignmentWithType = FindTypedAssignment(varExpr);
+                if (assignmentWithType != null)
+                {
+                    return assignmentWithType;
+                }
+            }
+
+            // Check if this is a member expression that might have a known return type
+            // For now, we'll be conservative and only check direct type constraints
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Finds the parameter AST for a given variable expression, if it exists.
+        /// </summary>
+        private ParameterAst FindParameterForVariable(VariableExpressionAst varExpr)
+        {
+            if (varExpr == null)
+            {
+                return null;
+            }
+
+            var varName = varExpr.VariablePath.UserPath;
+            
+            // Walk up to find the containing function or script block
+            Ast current = varExpr.Parent;
+            while (current != null)
+            {
+                if (current is FunctionDefinitionAst funcAst)
+                {
+                    // Check parameters in the param block
+                    var paramBlock = funcAst.Body?.ParamBlock;
+                    if (paramBlock?.Parameters != null)
+                    {
+                        foreach (var param in paramBlock.Parameters)
+                        {
+                            if (string.Equals(param.Name.VariablePath.UserPath, varName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return param;
+                            }
+                        }
+                    }
+                    
+                    // Check function parameters (for functions with parameters outside param block)
+                    if (funcAst.Parameters != null)
+                    {
+                        foreach (var param in funcAst.Parameters)
+                        {
+                            if (string.Equals(param.Name.VariablePath.UserPath, varName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return param;
+                            }
+                        }
+                    }
+                    
+                    break; // Don't check outer function scopes
+                }
+                
+                if (current is ScriptBlockAst scriptAst)
+                {
+                    var paramBlock = scriptAst.ParamBlock;
+                    if (paramBlock?.Parameters != null)
+                    {
+                        foreach (var param in paramBlock.Parameters)
+                        {
+                            if (string.Equals(param.Name.VariablePath.UserPath, varName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return param;
+                            }
+                        }
+                    }
+                    break; // Don't check outer script block scopes
+                }
+                
+                current = current.Parent;
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Looks for a typed assignment to a variable (e.g., [Type]$var = ...)
+        /// </summary>
+        private string FindTypedAssignment(VariableExpressionAst varExpr)
+        {
+            if (varExpr == null)
+            {
+                return null;
+            }
+
+            var varName = varExpr.VariablePath.UserPath;
+            
+            // Walk up to find the containing function or script block
+            Ast searchScope = varExpr.Parent;
+            while (searchScope != null && 
+                   !(searchScope is FunctionDefinitionAst) && 
+                   !(searchScope is ScriptBlockAst))
+            {
+                searchScope = searchScope.Parent;
+            }
+            
+            if (searchScope == null)
+            {
+                return null;
+            }
+
+            // Find all assignment statements in this scope
+            var assignments = searchScope.FindAll(testAst => 
+                testAst is AssignmentStatementAst, true);
+            
+            foreach (AssignmentStatementAst assignment in assignments)
+            {
+                // Check if the left side is a convert expression with our variable
+                if (assignment.Left is ConvertExpressionAst convertExpr &&
+                    convertExpr.Child is VariableExpressionAst assignedVar &&
+                    string.Equals(assignedVar.VariablePath.UserPath, varName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return convertExpr.Type.TypeName.FullName;
+                }
+            }
+            
+            return null;
         }
 
         /// <summary>
