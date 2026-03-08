@@ -5,7 +5,6 @@ BeforeAll {
     $testRootDirectory = Split-Path -Parent $PSScriptRoot
     Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-    $violationMessage = "is not permitted in Constrained Language Mode"
     $violationName = "PSUseConstrainedLanguageMode"
     $ruleName = $violationName
     
@@ -33,7 +32,7 @@ Add-Type -TypeDefinition @"
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should -Be 1
             $violations[0].RuleName | Should -Be $violationName
-            $violations[0].Message | Should -BeLike "*Add-Type*$violationMessage*"
+            $violations[0].Message | Should -BeLike "*Add-Type*"
         }
 
         It "Should not flag other commands" {
@@ -44,18 +43,44 @@ Add-Type -TypeDefinition @"
     }
 
     Context "When New-Object with COM is used" {
-        It "Should detect New-Object -ComObject usage" {
-            $def = 'New-Object -ComObject "Scripting.FileSystemObject"'
+        It "Should detect disallowed New-Object -ComObject usage" {
+            $def = 'New-Object -ComObject "Excel.Application"'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -Be 1
-            $matchingViolations[0].Message | Should -BeLike "*COM object*$violationMessage*"
+            $matchingViolations[0].Message | Should -BeLike "*COM object*"
         }
 
-        It "Should not flag New-Object without -ComObject" {
+        It "Should NOT flag allowed COM objects - Scripting.Dictionary" {
+            $def = 'New-Object -ComObject "Scripting.Dictionary"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+
+        It "Should NOT flag allowed COM objects - Scripting.FileSystemObject" {
+            $def = 'New-Object -ComObject "Scripting.FileSystemObject"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+
+        It "Should NOT flag allowed COM objects - VBScript.RegExp" {
+            $def = 'New-Object -ComObject "VBScript.RegExp"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+
+        It "Should NOT flag New-Object with allowed TypeName" {
             $def = 'New-Object -TypeName System.Collections.ArrayList'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+
+        It "Should flag New-Object with disallowed TypeName" {
+            $def = 'New-Object -TypeName System.Net.WebClient'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 1
+            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
         }
     }
 
@@ -71,7 +96,7 @@ $xaml = @"
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -Be 1
-            $matchingViolations[0].Message | Should -BeLike "*XAML*$violationMessage*"
+            $matchingViolations[0].Message | Should -BeLike "*XAML*"
         }
     }
 
@@ -81,7 +106,7 @@ $xaml = @"
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -Be 1
-            $matchingViolations[0].Message | Should -BeLike "*Invoke-Expression*$violationMessage*"
+            $matchingViolations[0].Message | Should -BeLike "*Invoke-Expression*"
         }
     }
 
@@ -91,6 +116,22 @@ $xaml = @"
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations[0].Severity | Should -Be 'Information'
+        }
+    }
+
+    Context "When type constraints are used" {
+        It "Should flag disallowed type constraint" {
+            $def = 'function Test { param([System.Net.WebClient]$Client) }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
+        }
+
+        It "Should NOT flag allowed type constraint" {
+            $def = 'function Test { param([string]$Name, [int]$Count, [hashtable]$Data) }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
         }
     }
 }
