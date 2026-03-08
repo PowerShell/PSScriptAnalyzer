@@ -124,7 +124,7 @@
     <value>Avoid Using Cmdlet Aliases or omitting the 'Get-' prefix.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
-    <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, use Write-Error or throw statements in catch blocks.</value>
+    <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things, it can, and should be avoided if possible. To fix a violation of this rule, use Write-Error or throw statements in catch blocks.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockCommonName" xml:space="preserve">
     <value>Avoid Using Empty Catch Block</value>
@@ -1015,10 +1015,10 @@
     <value>Use SupportsShouldProcess</value>
   </data>
   <data name="UseSupportsShouldProcessDescription" xml:space="preserve">
-    <value>Commands typically provide Confirm and Whatif parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a command needs Confirm and Whatif parameters, then it should support ShouldProcess.</value>
+    <value>Commands typically provide Confirm and WhatIf parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a command needs Confirm and WhatIf parameters, then it should support ShouldProcess.</value>
   </data>
   <data name="UseSupportsShouldProcessError" xml:space="preserve">
-    <value>Whatif and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
+    <value>WhatIf and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
   </data>
   <data name="AlignAssignmentStatementName" xml:space="preserve">
     <value>AlignAssignmentStatement</value>
