@@ -110,6 +110,56 @@ $xaml = @"
         }
     }
 
+    Context "When PowerShell classes are used" {
+        It "Should detect class definition" {
+            $def = @'
+class MyClass {
+    [string]$Name
+    [int]$Value
+    
+    MyClass([string]$name) {
+        $this.Name = $name
+    }
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 1
+            $matchingViolations[0].Message | Should -BeLike "*class*MyClass*"
+        }
+
+        It "Should detect multiple class definitions" {
+            $def = @'
+class FirstClass {
+    [string]$Name
+}
+
+class SecondClass {
+    [int]$Value
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 2
+        }
+
+        It "Should not flag enum definitions" {
+            $def = @'
+enum MyEnum {
+    Value1
+    Value2
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            # Enums are allowed, so no class-specific violations
+            # (though we may still flag other issues if present)
+            $classViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*class*" 
+            }
+            $classViolations | Should -BeNullOrEmpty
+        }
+    }
+
     Context "Informational severity" {
         It "Should have Information severity" {
             $def = 'Add-Type -AssemblyName System.Windows.Forms'

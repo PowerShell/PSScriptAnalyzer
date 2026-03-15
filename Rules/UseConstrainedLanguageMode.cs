@@ -268,6 +268,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ));
             }
 
+            // Check for class definitions (not allowed in Constrained Language Mode)
+            var classDefinitions = ast.FindAll(testAst =>
+                testAst is TypeDefinitionAst typeAst && typeAst.IsClass,
+                true);
+
+            foreach (TypeDefinitionAst classDef in classDefinitions)
+            {
+                diagnosticRecords.Add(
+                    new DiagnosticRecord(
+                        String.Format(CultureInfo.CurrentCulture, 
+                            Strings.UseConstrainedLanguageModeClassError,
+                            classDef.Name),
+                        classDef.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName
+                    ));
+            }
+
             // Check for disallowed type constraints (e.g., [System.Net.WebClient]$client)
             var typeConstraints = ast.FindAll(testAst => testAst is TypeConstraintAst, true);
             foreach (TypeConstraintAst typeConstraint in typeConstraints)

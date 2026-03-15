@@ -1275,4 +1275,7 @@
   <data name="UseConstrainedLanguageModeMemberAccessError" xml:space="preserve">
     <value>Member '{1}' accessed on type [{0}] which is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
   </data>
+  <data name="UseConstrainedLanguageModeClassError" xml:space="preserve">
+    <value>PowerShell class '{0}' is not permitted in Constrained Language Mode. Consider using alternative approaches such as hashtables or PSCustomObject.</value>
+  </data>
 </root>
