@@ -109,6 +109,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
+            // Check if this is a module manifest (.psd1 file)
+            bool isModuleManifest = fileName != null && fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase);
+            
+            if (isModuleManifest)
+            {
+                // Perform PSD1-specific checks
+                CheckModuleManifest(ast, fileName, diagnosticRecords);
+            }
+
             // Check for Add-Type usage (not allowed in Constrained Language Mode)
             var addTypeCommands = ast.FindAll(testAst =>
                 testAst is CommandAst cmdAst &&
@@ -555,6 +564,227 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             
             return null;
+        }
+
+        /// <summary>
+        /// Checks module manifest (.psd1) files for CLM compatibility issues.
+        /// </summary>
+        private void CheckModuleManifest(Ast ast, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            // Find the hashtable in the manifest
+            var hashtableAst = ast.Find(x => x is HashtableAst, false) as HashtableAst;
+            
+            if (hashtableAst == null)
+            {
+                return;
+            }
+
+            // Check for wildcard exports in FunctionsToExport, CmdletsToExport, AliasesToExport
+            CheckWildcardExports(hashtableAst, fileName, diagnosticRecords);
+            
+            // Check for .ps1 files in RootModule and NestedModules
+            CheckScriptModules(hashtableAst, fileName, diagnosticRecords);
+        }
+
+        /// <summary>
+        /// Checks for wildcard ('*') in export fields which are not allowed in CLM.
+        /// </summary>
+        private void CheckWildcardExports(HashtableAst hashtableAst, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            string[] exportFields = { "FunctionsToExport", "CmdletsToExport", "AliasesToExport", "VariablesToExport" };
+
+            foreach (var kvp in hashtableAst.KeyValuePairs)
+            {
+                if (kvp.Item1 is StringConstantExpressionAst keyAst)
+                {
+                    string keyName = keyAst.Value;
+                    
+                    if (exportFields.Contains(keyName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // Check if the value contains a wildcard
+                        bool hasWildcard = false;
+                        IScriptExtent wildcardExtent = null;
+
+                        // The value in a hashtable is a StatementAst, need to extract the expression
+                        var valueExpr = GetExpressionFromStatement(kvp.Item2);
+                        
+                        if (valueExpr is StringConstantExpressionAst stringValue)
+                        {
+                            if (stringValue.Value == "*")
+                            {
+                                hasWildcard = true;
+                                wildcardExtent = stringValue.Extent;
+                            }
+                        }
+                        else if (valueExpr is ArrayLiteralAst arrayValue)
+                        {
+                            foreach (var element in arrayValue.Elements)
+                            {
+                                if (element is StringConstantExpressionAst strElement && strElement.Value == "*")
+                                {
+                                    hasWildcard = true;
+                                    wildcardExtent = strElement.Extent;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (valueExpr is ArrayExpressionAst arrayExpr)
+                        {
+                            // Array expressions like @('a', 'b') have a SubExpression inside
+                            if (arrayExpr.SubExpression?.Statements != null)
+                            {
+                                foreach (var stmt in arrayExpr.SubExpression.Statements)
+                                {
+                                    var expr = GetExpressionFromStatement(stmt);
+                                    if (expr is ArrayLiteralAst arrayLiteral)
+                                    {
+                                        foreach (var element in arrayLiteral.Elements)
+                                        {
+                                            if (element is StringConstantExpressionAst strElement && strElement.Value == "*")
+                                            {
+                                                hasWildcard = true;
+                                                wildcardExtent = strElement.Extent;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (hasWildcard) break;
+                                }
+                            }
+                        }
+
+                        if (hasWildcard && wildcardExtent != null)
+                        {
+                            diagnosticRecords.Add(
+                                new DiagnosticRecord(
+                                    String.Format(CultureInfo.CurrentCulture,
+                                        Strings.UseConstrainedLanguageModeWildcardExportError,
+                                        keyName),
+                                    wildcardExtent,
+                                    GetName(),
+                                    GetDiagnosticSeverity(),
+                                    fileName
+                                ));
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks for .ps1 files in RootModule and NestedModules which are not recommended for CLM.
+        /// </summary>
+        private void CheckScriptModules(HashtableAst hashtableAst, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            string[] moduleFields = { "RootModule", "ModuleToProcess", "NestedModules" };
+
+            foreach (var kvp in hashtableAst.KeyValuePairs)
+            {
+                if (kvp.Item1 is StringConstantExpressionAst keyAst)
+                {
+                    string keyName = keyAst.Value;
+                    
+                    if (moduleFields.Contains(keyName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        var valueExpr = GetExpressionFromStatement(kvp.Item2);
+                        CheckForPs1Files(valueExpr, keyName, fileName, diagnosticRecords);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extracts an ExpressionAst from a StatementAst (typically from hashtable values).
+        /// </summary>
+        private ExpressionAst GetExpressionFromStatement(StatementAst statement)
+        {
+            if (statement is PipelineAst pipeline && pipeline.PipelineElements.Count == 1)
+            {
+                if (pipeline.PipelineElements[0] is CommandExpressionAst commandExpr)
+                {
+                    return commandExpr.Expression;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Helper method to check if an expression contains .ps1 file references.
+        /// </summary>
+        private void CheckForPs1Files(ExpressionAst valueAst, string fieldName, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            if (valueAst is StringConstantExpressionAst stringValue)
+            {
+                if (stringValue.Value != null && stringValue.Value.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
+                {
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.UseConstrainedLanguageModeScriptModuleError,
+                                fieldName,
+                                stringValue.Value),
+                            stringValue.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
+                }
+            }
+            else if (valueAst is ArrayLiteralAst arrayValue)
+            {
+                foreach (var element in arrayValue.Elements)
+                {
+                    if (element is StringConstantExpressionAst strElement &&
+                        strElement.Value != null &&
+                        strElement.Value.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        diagnosticRecords.Add(
+                            new DiagnosticRecord(
+                                String.Format(CultureInfo.CurrentCulture,
+                                    Strings.UseConstrainedLanguageModeScriptModuleError,
+                                    fieldName,
+                                    strElement.Value),
+                                strElement.Extent,
+                                GetName(),
+                                GetDiagnosticSeverity(),
+                                fileName
+                            ));
+                    }
+                }
+            }
+            else if (valueAst is ArrayExpressionAst arrayExpr)
+            {
+                // Array expressions like @('a', 'b') have a SubExpression inside
+                if (arrayExpr.SubExpression?.Statements != null)
+                {
+                    foreach (var stmt in arrayExpr.SubExpression.Statements)
+                    {
+                        var expr = GetExpressionFromStatement(stmt);
+                        if (expr is ArrayLiteralAst arrayLiteral)
+                        {
+                            foreach (var element in arrayLiteral.Elements)
+                            {
+                                if (element is StringConstantExpressionAst strElement &&
+                                    strElement.Value != null &&
+                                    strElement.Value.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    diagnosticRecords.Add(
+                                        new DiagnosticRecord(
+                                            String.Format(CultureInfo.CurrentCulture,
+                                                Strings.UseConstrainedLanguageModeScriptModuleError,
+                                                fieldName,
+                                                strElement.Value),
+                                            strElement.Extent,
+                                            GetName(),
+                                            GetDiagnosticSeverity(),
+                                            fileName
+                                        ));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

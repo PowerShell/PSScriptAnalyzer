@@ -160,6 +160,148 @@ enum MyEnum {
         }
     }
 
+    Context "When module manifests (.psd1) are analyzed" {
+        BeforeAll {
+            $tempPath = Join-Path $TestDrive "TestManifests"
+            New-Item -Path $tempPath -ItemType Directory -Force | Out-Null
+        }
+
+        It "Should flag wildcard in FunctionsToExport" {
+            $manifestPath = Join-Path $tempPath "WildcardFunctions.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    FunctionsToExport = '*'
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*FunctionsToExport*wildcard*"
+        }
+
+        It "Should flag wildcard in CmdletsToExport" {
+            $manifestPath = Join-Path $tempPath "WildcardCmdlets.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    CmdletsToExport = '*'
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*CmdletsToExport*wildcard*"
+        }
+
+        It "Should flag wildcard in array of exports" {
+            $manifestPath = Join-Path $tempPath "WildcardArray.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    AliasesToExport = @('Get-Foo', '*', 'Set-Bar')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*AliasesToExport*wildcard*"
+        }
+
+        It "Should NOT flag explicit list of exports" {
+            $manifestPath = Join-Path $tempPath "ExplicitExports.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    FunctionsToExport = @('Get-MyFunction', 'Set-MyFunction')
+    CmdletsToExport = @('Get-MyCmdlet')
+    AliasesToExport = @()
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $wildcardViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*wildcard*" 
+            }
+            $wildcardViolations | Should -BeNullOrEmpty
+        }
+
+        It "Should flag .ps1 file in RootModule" {
+            $manifestPath = Join-Path $tempPath "ScriptRootModule.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    RootModule = 'MyModule.ps1'
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*RootModule*MyModule.ps1*"
+        }
+
+        It "Should flag .ps1 file in NestedModules" {
+            $manifestPath = Join-Path $tempPath "ScriptNestedModule.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    NestedModules = @('Helper.ps1', 'Utility.psm1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*NestedModules*Helper.ps1*"
+        }
+
+        It "Should NOT flag .psm1 or .dll modules" {
+            $manifestPath = Join-Path $tempPath "BinaryModules.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    RootModule = 'MyModule.psm1'
+    NestedModules = @('Helper.dll', 'Utility.psm1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $scriptModuleViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*.ps1*" 
+            }
+            $scriptModuleViolations | Should -BeNullOrEmpty
+        }
+
+        It "Should flag both wildcard and .ps1 issues in same manifest" {
+            $manifestPath = Join-Path $tempPath "MultipleIssues.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    RootModule = 'MyModule.ps1'
+    FunctionsToExport = '*'
+    CmdletsToExport = '*'
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            # Should have at least 3 violations: RootModule .ps1, FunctionsToExport *, CmdletsToExport *
+            $matchingViolations.Count | Should -BeGreaterOrEqual 3
+        }
+    }
+
     Context "Informational severity" {
         It "Should have Information severity" {
             $def = 'Add-Type -AssemblyName System.Windows.Forms'

@@ -1278,4 +1278,10 @@
   <data name="UseConstrainedLanguageModeClassError" xml:space="preserve">
     <value>PowerShell class '{0}' is not permitted in Constrained Language Mode. Consider using alternative approaches such as hashtables or PSCustomObject.</value>
   </data>
+  <data name="UseConstrainedLanguageModeWildcardExportError" xml:space="preserve">
+    <value>Module manifest field '{0}' uses wildcard ('*') which is not recommended for Constrained Language Mode. Explicitly list exported items instead.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeScriptModuleError" xml:space="preserve">
+    <value>Module manifest field '{0}' contains script file '{1}' (.ps1). Use binary modules (.psm1 or .dll) instead for Constrained Language Mode compatibility.</value>
+  </data>
 </root>
