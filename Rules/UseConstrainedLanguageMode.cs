@@ -109,16 +109,94 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
+            // Basic check if the file is signed
+            bool isFileSigned = IsScriptSigned(fileName);
+
             // Check if this is a module manifest (.psd1 file)
             bool isModuleManifest = fileName != null && fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase);
             
             if (isModuleManifest)
             {
                 // Perform PSD1-specific checks
+                // These checks are ALWAYS enforced, even for signed scripts
                 CheckModuleManifest(ast, fileName, diagnosticRecords);
             }
 
-            // Check for Add-Type usage (not allowed in Constrained Language Mode)
+            // For signed scripts, only check specific patterns that are still restricted
+            if (isFileSigned)
+            {
+                // Even signed scripts have these restrictions in CLM:
+                
+                // 1. Check for dot-sourcing (still restricted in CLM even for signed scripts)
+                CheckDotSourcing(ast, fileName, diagnosticRecords);
+                
+                // 2. Check for type constraints on parameters (still need to be validated)
+                CheckParameterTypeConstraints(ast, fileName, diagnosticRecords);
+                
+                return diagnosticRecords;
+            }
+
+            // For unsigned scripts, perform all CLM checks
+            CheckAllClmRestrictions(ast, fileName, diagnosticRecords);
+
+            return diagnosticRecords;
+        }
+
+        /// <summary>
+        /// Checks if a PowerShell script file appears to be digitally signed.
+        /// Note: This performs a simple text check for the signature block marker.
+        /// It does NOT validate signature authenticity, certificate trust, or file integrity.
+        /// For production use, PowerShell's execution policy and Get-AuthenticodeSignature
+        /// should be used to properly validate signatures.
+        /// </summary>
+        private bool IsScriptSigned(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName) || !System.IO.File.Exists(fileName))
+            {
+                return false;
+            }
+
+            // Only check .ps1, .psm1, and .psd1 files
+            string extension = System.IO.Path.GetExtension(fileName);
+            if (!extension.Equals(".ps1", StringComparison.OrdinalIgnoreCase) &&
+                !extension.Equals(".psm1", StringComparison.OrdinalIgnoreCase) &&
+                !extension.Equals(".psd1", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            try
+            {
+                // Read the file content
+                string content = System.IO.File.ReadAllText(fileName);
+                
+                // Check for signature block marker
+                // A signed PowerShell script contains a signature block that starts with:
+                // # SIG # Begin signature block
+                //
+                // IMPORTANT: This is a simple text check only. It does NOT validate:
+                // - Signature authenticity
+                // - Certificate validity or trust
+                // - File integrity (hash matching)
+                // - Certificate expiration
+                //
+                // This check assumes that if a signature block is present, the script
+                // was intended to be signed. Actual signature validation is performed
+                // by PowerShell at execution time based on execution policy.
+                return content.IndexOf("# SIG # Begin signature block", StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+            catch
+            {
+                // If we can't read the file, assume it's not signed
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Performs all CLM restriction checks (for unsigned scripts).
+        /// </summary>
+        private void CheckAllClmRestrictions(Ast ast, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
             var addTypeCommands = ast.FindAll(testAst =>
                 testAst is CommandAst cmdAst &&
                 cmdAst.GetCommandName() != null &&
@@ -230,33 +308,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            // Check for dot-sourcing - PowerShell doesn't have a specific DotSourceExpressionAst
-            // We look for patterns where a script block or file is dot-sourced
-            // This is best detected through token analysis, but for simplicity we'll check for common patterns
-            var scriptBlocks = ast.FindAll(testAst => testAst is ScriptBlockExpressionAst, true);
-            
-            foreach (ScriptBlockExpressionAst sbAst in scriptBlocks)
-            {
-                // Check if preceded by a dot token (basic heuristic for dot-sourcing)
-                // More sophisticated detection would require token analysis
-                var parent = sbAst.Parent;
-                if (parent is CommandAst cmdAst)
-                {
-                    // Check if this looks like a dot-source pattern
-                    var cmdName = cmdAst.GetCommandName();
-                    if (cmdName != null && cmdName.StartsWith("."))
-                    {
-                        diagnosticRecords.Add(
-                            new DiagnosticRecord(
-                                String.Format(CultureInfo.CurrentCulture, Strings.UseConstrainedLanguageModeDotSourceError),
-                                sbAst.Extent,
-                                GetName(),
-                                GetDiagnosticSeverity(),
-                                fileName
-                            ));
-                    }
-                }
-            }
+            // Check for dot-sourcing (also called separately for signed scripts)
+            CheckDotSourcing(ast, fileName, diagnosticRecords);
 
             // Check for Invoke-Expression usage (restricted in Constrained Language Mode)
             var invokeExpressionCommands = ast.FindAll(testAst =>
@@ -296,8 +349,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ));
             }
 
-            // Check for disallowed type constraints (e.g., [System.Net.WebClient]$client)
-            var typeConstraints = ast.FindAll(testAst => testAst is TypeConstraintAst, true);
+            // Check for parameter type constraints (also called separately for signed scripts)
+            CheckParameterTypeConstraints(ast, fileName, diagnosticRecords);
+
+            // Check for disallowed type constraints on variables (e.g., [System.Net.WebClient]$client)
+            var typeConstraints = ast.FindAll(testAst => 
+                testAst is TypeConstraintAst typeConstraint && 
+                !(typeConstraint.Parent is ParameterAst), // Exclude parameters - handled above
+                true);
+                
             foreach (TypeConstraintAst typeConstraint in typeConstraints)
             {
                 var typeName = typeConstraint.TypeName.FullName;
@@ -400,8 +460,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         ));
                 }
             }
+        }
 
-            return diagnosticRecords;
+        /// <summary>
+        /// Checks for dot-sourcing patterns which are restricted in CLM even for signed scripts.
+        /// </summary>
+        private void CheckDotSourcing(Ast ast, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            // Check for dot-sourcing - PowerShell doesn't have a specific DotSourceExpressionAst
+            // We look for patterns where a script block or file is dot-sourced
+            var scriptBlocks = ast.FindAll(testAst => testAst is ScriptBlockExpressionAst, true);
+            
+            foreach (ScriptBlockExpressionAst sbAst in scriptBlocks)
+            {
+                // Check if preceded by a dot token (basic heuristic for dot-sourcing)
+                var parent = sbAst.Parent;
+                if (parent is CommandAst cmdAst)
+                {
+                    // Check if this looks like a dot-source pattern
+                    var cmdName = cmdAst.GetCommandName();
+                    if (cmdName != null && cmdName.StartsWith("."))
+                    {
+                        diagnosticRecords.Add(
+                            new DiagnosticRecord(
+                                String.Format(CultureInfo.CurrentCulture, Strings.UseConstrainedLanguageModeDotSourceError),
+                                sbAst.Extent,
+                                GetName(),
+                                GetDiagnosticSeverity(),
+                                fileName
+                            ));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks parameter type constraints which need validation even for signed scripts.
+        /// </summary>
+        private void CheckParameterTypeConstraints(Ast ast, string fileName, List<DiagnosticRecord> diagnosticRecords)
+        {
+            // Find all parameter definitions
+            var parameters = ast.FindAll(testAst => testAst is ParameterAst, true);
+            
+            foreach (ParameterAst param in parameters)
+            {
+                // Check for type constraints on parameters
+                var typeConstraints = param.Attributes.OfType<TypeConstraintAst>();
+                
+                foreach (var typeConstraint in typeConstraints)
+                {
+                    var typeName = typeConstraint.TypeName.FullName;
+                    if (!IsTypeAllowed(typeName))
+                    {
+                        diagnosticRecords.Add(
+                            new DiagnosticRecord(
+                                String.Format(CultureInfo.CurrentCulture,
+                                    Strings.UseConstrainedLanguageModeConstrainedTypeError,
+                                    typeName),
+                                typeConstraint.Extent,
+                                GetName(),
+                                GetDiagnosticSeverity(),
+                                fileName
+                            ));
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -591,6 +714,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void CheckWildcardExports(HashtableAst hashtableAst, string fileName, List<DiagnosticRecord> diagnosticRecords)
         {
+            //AliasesToExport and VariablesToExport can use wildcards in CLM, but it is not recommended for performance reasons. We will flag it as an informational message to encourage best practices.
             string[] exportFields = { "FunctionsToExport", "CmdletsToExport", "AliasesToExport", "VariablesToExport" };
 
             foreach (var kvp in hashtableAst.KeyValuePairs)
