@@ -110,6 +110,16 @@ $xaml = @"
         }
     }
 
+    Context "When dot-sourcing is used" {
+        It "Should detect dot-sourcing in unsigned scripts" {
+            $def = '. $PSScriptRoot\Helper.ps1'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*dot*"
+        }
+    }
+
     Context "When PowerShell classes are used" {
         It "Should detect class definition" {
             $def = @'
@@ -157,6 +167,33 @@ enum MyEnum {
                 $_.RuleName -eq $violationName -and $_.Message -like "*class*" 
             }
             $classViolations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "When type expressions are used" {
+        It "Should flag static type reference with new()" {
+            $def = '$instance = [System.Net.WebClient]::new()'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*"
+        }
+
+        It "Should flag static method call on disallowed type" {
+            $def = '[System.IO.File]::ReadAllText("C:\test.txt")'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*"
+        }
+
+        It "Should NOT flag static reference to allowed type" {
+            $def = '[string]::Empty'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $typeExprViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*type expression*string*"
+            }
+            $typeExprViolations | Should -BeNullOrEmpty
         }
     }
 
@@ -462,4 +499,149 @@ function Complex-Test {
             $matchingViolations.Count | Should -BeGreaterThan 2
         }
     }
+
+    Context "When scripts are digitally signed" {
+        BeforeAll {
+            $tempPath = Join-Path $TestDrive "SignedScripts"
+            New-Item -Path $tempPath -ItemType Directory -Force | Out-Null
+        }
+
+        It "Should NOT flag Add-Type in signed scripts" {
+            $scriptPath = Join-Path $tempPath "SignedWithAddType.ps1"
+            $scriptContent = @'
+Add-Type -TypeDefinition "public class Test { }"
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $scriptPath -Value $scriptContent
+            $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
+            $addTypeViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*Add-Type*" 
+            }
+            $addTypeViolations | Should -BeNullOrEmpty
+        }
+
+        It "Should NOT flag disallowed types in signed scripts" {
+            $scriptPath = Join-Path $tempPath "SignedWithDisallowedType.ps1"
+            $scriptContent = @'
+$client = New-Object System.Net.WebClient
+$data = $client.DownloadString("http://example.com")
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $scriptPath -Value $scriptContent
+            $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
+            $typeViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*WebClient*type*" 
+            }
+            $typeViolations | Should -BeNullOrEmpty
+        }
+
+        It "Should NOT flag classes in signed scripts" {
+            $scriptPath = Join-Path $tempPath "SignedWithClass.ps1"
+            $scriptContent = @'
+class MyClass {
+    [string]$Name
 }
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $scriptPath -Value $scriptContent
+            $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
+            $classViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*class*MyClass*" 
+            }
+            $classViolations | Should -BeNullOrEmpty
+        }
+
+        It "Should STILL flag dot-sourcing in signed scripts" {
+            $scriptPath = Join-Path $tempPath "SignedWithDotSource.ps1"
+            $scriptContent = @'
+. .\Helper.ps1
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $scriptPath -Value $scriptContent
+            $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
+            $dotSourceViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*dot*"
+            }
+            # Dot-sourcing should still be flagged even in signed scripts
+            $dotSourceViolations.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should STILL flag disallowed parameter types in signed scripts" {
+            $scriptPath = Join-Path $tempPath "SignedWithBadParam.ps1"
+            $scriptContent = @'
+function Test {
+    param([System.Net.WebClient]$Client)
+    Write-Output "Test"
+}
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $scriptPath -Value $scriptContent
+            $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
+            $paramViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*WebClient*"
+            }
+            # Parameter type constraints should still be flagged
+            $paramViolations.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should STILL flag wildcard exports in signed manifests" {
+            $manifestPath = Join-Path $tempPath "SignedManifest.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    FunctionsToExport = '*'
+}
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $wildcardViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*wildcard*"
+            }
+            # Wildcard exports should still be flagged
+            $wildcardViolations.Count | Should -BeGreaterThan 0
+        }
+
+        It "Should STILL flag .ps1 modules in signed manifests" {
+            $manifestPath = Join-Path $tempPath "SignedManifestWithScript.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    RootModule = 'MyModule.ps1'
+}
+
+# SIG # Begin signature block
+# MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
+# SIG # End signature block
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $scriptModuleViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*.ps1*"
+            }
+            # Script modules should still be flagged
+            $scriptModuleViolations.Count | Should -BeGreaterThan 0
+        }
+    }
+}
+

@@ -467,29 +467,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void CheckDotSourcing(Ast ast, string fileName, List<DiagnosticRecord> diagnosticRecords)
         {
-            // Check for dot-sourcing - PowerShell doesn't have a specific DotSourceExpressionAst
-            // We look for patterns where a script block or file is dot-sourced
-            var scriptBlocks = ast.FindAll(testAst => testAst is ScriptBlockExpressionAst, true);
+            // Dot-sourcing is detected by looking for commands where the extent text starts with a dot
+            // Example: . $PSScriptRoot\Helper.ps1
+            // Example: . .\script.ps1
+            // PowerShell doesn't have a specific DotSourceExpressionAst, so we check the command extent
+            var commands = ast.FindAll(testAst => testAst is CommandAst, true);
             
-            foreach (ScriptBlockExpressionAst sbAst in scriptBlocks)
+            foreach (CommandAst cmdAst in commands)
             {
-                // Check if preceded by a dot token (basic heuristic for dot-sourcing)
-                var parent = sbAst.Parent;
-                if (parent is CommandAst cmdAst)
+                // Check if the command extent starts with a dot followed by whitespace
+                // This indicates dot-sourcing
+                string extentText = cmdAst.Extent.Text.TrimStart();
+                if (extentText.StartsWith(". ") || extentText.StartsWith(".\t"))
                 {
-                    // Check if this looks like a dot-source pattern
-                    var cmdName = cmdAst.GetCommandName();
-                    if (cmdName != null && cmdName.StartsWith("."))
-                    {
-                        diagnosticRecords.Add(
-                            new DiagnosticRecord(
-                                String.Format(CultureInfo.CurrentCulture, Strings.UseConstrainedLanguageModeDotSourceError),
-                                sbAst.Extent,
-                                GetName(),
-                                GetDiagnosticSeverity(),
-                                fileName
-                            ));
-                    }
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture, Strings.UseConstrainedLanguageModeDotSourceError),
+                            cmdAst.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
                 }
             }
         }
