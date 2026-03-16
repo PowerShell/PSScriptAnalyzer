@@ -62,10 +62,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             "System.Net.IPAddress", "System.Net.Mail.MailAddress"
         };
 
+        /// <summary>
+        /// When true, ignores script signatures and runs all CLM checks regardless of signature status.
+        /// When false (default), scripts with valid signatures are treated as having elevated permissions
+        /// and only critical checks (dot-sourcing, parameter types, manifests) are performed.
+        /// Set to true to enforce full CLM compliance even for signed scripts.
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool IgnoreSignatures { get; set; }
+
         public UseConstrainedLanguageMode()
         {
             // This rule is disabled by default - users must explicitly enable it
             Enable = false;
+            
+            // IgnoreSignatures defaults to false (respects signatures)
+            IgnoreSignatures = false;
         }
 
         /// <summary>
@@ -78,16 +90,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true; // Can't determine, so don't flag
             }
 
+            // Handle array types (e.g., string[], System.String[], int[][])
+            // Strip array brackets and check the base type
+            string baseTypeName = typeName;
+            if (typeName.EndsWith("[]"))
+            {
+                // Remove all trailing [] pairs
+                baseTypeName = typeName.TrimEnd('[', ']');
+                
+                // Handle multi-dimensional or jagged arrays by removing all brackets
+                while (baseTypeName.EndsWith("[]"))
+                {
+                    baseTypeName = baseTypeName.Substring(0, baseTypeName.Length - 2);
+                }
+            }
+
             // Check exact match first
-            if (AllowedTypes.Contains(typeName))
+            if (AllowedTypes.Contains(baseTypeName))
             {
                 return true;
             }
 
             // Check simple name (last part after last dot)
-            if (typeName.Contains('.'))
+            if (baseTypeName.Contains('.'))
             {
-                var simpleTypeName = typeName.Substring(typeName.LastIndexOf('.') + 1);
+                var simpleTypeName = baseTypeName.Substring(baseTypeName.LastIndexOf('.') + 1);
                 if (AllowedTypes.Contains(simpleTypeName))
                 {
                     return true;
@@ -109,8 +136,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            // Basic check if the file is signed
-            bool isFileSigned = IsScriptSigned(fileName);
+            // Check if the file is signed (via signature block detection)
+            bool isFileSigned = IgnoreSignatures ? false : IsScriptSigned(fileName);
+            
+            // Note: If IgnoreSignatures is true, isFileSigned will always be false,
+            // causing all CLM checks to run regardless of actual signature status
 
             // Check if this is a module manifest (.psd1 file)
             bool isModuleManifest = fileName != null && fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase);
@@ -123,6 +153,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // For signed scripts, only check specific patterns that are still restricted
+            // (unless IgnoreSignatures is true, then this block is skipped)
             if (isFileSigned)
             {
                 // Even signed scripts have these restrictions in CLM:
@@ -136,7 +167,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return diagnosticRecords;
             }
 
-            // For unsigned scripts, perform all CLM checks
+            // For unsigned scripts (or when IgnoreSignatures is true), perform all CLM checks
             CheckAllClmRestrictions(ast, fileName, diagnosticRecords);
 
             return diagnosticRecords;
