@@ -6,7 +6,7 @@ title: UseConstrainedLanguageMode
 ---
 # UseConstrainedLanguageMode
 
-**Severity Level: Information**
+**Severity Level: Warning**
 
 ## Description
 
