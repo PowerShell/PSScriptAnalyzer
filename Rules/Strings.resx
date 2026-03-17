@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1282,6 +1282,6 @@
     <value>Module manifest field '{0}' uses wildcard ('*') which is not recommended for Constrained Language Mode. Explicitly list exported items instead.</value>
   </data>
   <data name="UseConstrainedLanguageModeScriptModuleError" xml:space="preserve">
-    <value>Module manifest field '{0}' contains script file '{1}' (.ps1). Use binary modules (.psm1 or .dll) instead for Constrained Language Mode compatibility.</value>
+    <value>Module manifest field '{0}' contains script file '{1}' (.ps1). Use a module file (.psm1) or a binary module (.dll) instead for Constrained Language Mode compatibility.</value>
   </data>
 </root>

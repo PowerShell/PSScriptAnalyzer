@@ -63,10 +63,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         };
 
         /// <summary>
-        /// When true, ignores script signatures and runs all CLM checks regardless of signature status.
-        /// When false (default), scripts with valid signatures are treated as having elevated permissions
-        /// and only critical checks (dot-sourcing, parameter types, manifests) are performed.
-        /// Set to true to enforce full CLM compliance even for signed scripts.
+        /// Cache for typed variable assignments per scope to avoid O(N*M) performance issues.
+        /// Key: Scope AST (FunctionDefinitionAst or ScriptBlockAst)
+        /// Value: Dictionary mapping variable names to their type names
+        /// </summary>
+        private Dictionary<Ast, Dictionary<string, string>> _typedVariableCache;
+
+        /// <summary>
+        /// When True, ignores the presence of script signature blocks and runs all CLM checks
+        /// regardless of whether a script appears to be signed.
+        /// When False (default), scripts that contain a PowerShell signature block (for example,
+        /// one starting with '# SIG # Begin signature block') are treated as having elevated
+        /// permissions for this rule and only critical checks (dot-sourcing, parameter types,
+        /// manifests) are performed. No cryptographic validation or trust evaluation of the
+        /// signature is performed.
         /// </summary>
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool IgnoreSignatures { get; set; }
@@ -93,17 +103,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Handle array types (e.g., string[], System.String[], int[][])
             // Strip array brackets and check the base type
             string baseTypeName = typeName;
-            if (typeName.EndsWith("[]"))
-            {
-                // Remove all trailing [] pairs
-                baseTypeName = typeName.TrimEnd('[', ']');
+           
                 
-                // Handle multi-dimensional or jagged arrays by removing all brackets
-                while (baseTypeName.EndsWith("[]"))
-                {
-                    baseTypeName = baseTypeName.Substring(0, baseTypeName.Length - 2);
-                }
+            // Handle multi-dimensional or jagged arrays by removing all brackets
+            while (baseTypeName.EndsWith("[]", StringComparison.Ordinal))
+            {
+                baseTypeName = baseTypeName.Substring(0, baseTypeName.Length - 2);
             }
+
 
             // Check exact match first
             if (AllowedTypes.Contains(baseTypeName))
@@ -133,6 +140,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(nameof(ast));
             }
+
+            // Initialize cache for this analysis to avoid O(N*M) performance issues
+            _typedVariableCache = new Dictionary<Ast, Dictionary<string, string>>();
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
@@ -675,7 +685,52 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Looks for a typed assignment to a variable (e.g., [Type]$var = ...)
+        /// Builds and caches typed variable assignments for a given scope.
+        /// This is called once per scope to avoid O(N*M) performance issues.
+        /// </summary>
+        private Dictionary<string, string> GetOrBuildTypedVariableCache(Ast scope)
+        {
+            if (scope == null)
+            {
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            // Check if we already have cached results for this scope
+            if (_typedVariableCache.TryGetValue(scope, out var cachedResults))
+            {
+                return cachedResults;
+            }
+
+            // Build the cache for this scope
+            var typedVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Find all assignment statements in this scope
+            var assignments = scope.FindAll(testAst => testAst is AssignmentStatementAst, true);
+
+            foreach (AssignmentStatementAst assignment in assignments)
+            {
+                // Check if the left side is a convert expression with a variable
+                if (assignment.Left is ConvertExpressionAst convertExpr &&
+                    convertExpr.Child is VariableExpressionAst assignedVar)
+                {
+                    var varName = assignedVar.VariablePath.UserPath;
+                    var typeName = convertExpr.Type.TypeName.FullName;
+                    
+                    // Store in cache (first assignment wins)
+                    if (!typedVariables.ContainsKey(varName))
+                    {
+                        typedVariables[varName] = typeName;
+                    }
+                }
+            }
+
+            // Cache the results
+            _typedVariableCache[scope] = typedVariables;
+            return typedVariables;
+        }
+
+        /// <summary>
+        /// Looks for a typed assignment to a variable using cached results.
         /// </summary>
         private string FindTypedAssignment(VariableExpressionAst varExpr)
         {
@@ -700,19 +755,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            // Find all assignment statements in this scope
-            var assignments = searchScope.FindAll(testAst => 
-                testAst is AssignmentStatementAst, true);
+            // Use cached results instead of re-scanning the entire scope
+            var typedVariables = GetOrBuildTypedVariableCache(searchScope);
             
-            foreach (AssignmentStatementAst assignment in assignments)
+            if (typedVariables.TryGetValue(varName, out string typeName))
             {
-                // Check if the left side is a convert expression with our variable
-                if (assignment.Left is ConvertExpressionAst convertExpr &&
-                    convertExpr.Child is VariableExpressionAst assignedVar &&
-                    string.Equals(assignedVar.VariablePath.UserPath, varName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return convertExpr.Type.TypeName.FullName;
-                }
+                return typeName;
             }
             
             return null;

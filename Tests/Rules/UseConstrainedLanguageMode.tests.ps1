@@ -339,8 +339,8 @@ enum MyEnum {
         }
     }
 
-    Context "Informational severity" {
-        It "Should have Information severity" {
+    Context "Rule severity" {
+        It "Should have Warning severity" {
             $def = 'Add-Type -AssemblyName System.Windows.Forms'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
@@ -350,27 +350,27 @@ enum MyEnum {
 
     Context "When type constraints are used" {
         It "Should flag disallowed type constraint on parameter" {
-            $def = 'function Test { param([System.Net.WebClient]$Client) }'
+            $def = 'function Test { param([System.IO.File]$FileHelper) }'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -BeGreaterThan 0
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*not permitted*"
         }
 
         It "Should flag disallowed type constraint on variable declaration" {
-            $def = '[System.Net.WebClient]$client = $null'
+            $def = '[System.IO.File]$fileHelper = $null'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -BeGreaterThan 0
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*not permitted*"
         }
 
         It "Should flag disallowed type cast on variable assignment" {
-            $def = '$client = [System.Net.WebClient]$value'
+            $def = '$fileHelper = [System.IO.File]$value'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -BeGreaterThan 0
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*not permitted*"
         }
 
         It "Should NOT flag allowed type constraint" {
@@ -441,8 +441,8 @@ $result = $client.DownloadString("http://example.com")
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             # Should flag both the type constraint AND the member access
             $matchingViolations.Count | Should -BeGreaterThan 1
-            # At least one violation should mention DownloadString
-            ($matchingViolations.Message | Where-Object { $_ -like "*DownloadString*" }).Count | Should -BeGreaterThan 0
+            # At least one violation should mention ReadAllText
+            ($matchingViolations.Message | Where-Object { $_ -like "*ReadAllText*" }).Count | Should -BeGreaterThan 0
         }
 
         It "Should NOT flag method invocation on allowed types" {
@@ -458,19 +458,19 @@ function Test {
         }
 
         It "Should NOT flag static method calls on disallowed types (already caught by type expression check)" {
-            $def = '[System.Net.WebClient]::New()'
+            $def = '[System.IO.File]::Exists("test.txt")'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             # Should only flag once for the type expression, not for member access
             $matchingViolations.Count | Should -Be 1
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*"
         }
 
         It "Should flag chained method calls on disallowed types" {
             $def = @'
 function Test {
-    param([System.Net.WebClient]$Client)
-    $result = $Client.DownloadString("http://example.com").ToUpper()
+    param([System.IO.FileInfo]$FileHelper)
+    $result = $FileHelper.OpenText().ReadToEnd()
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -483,13 +483,13 @@ function Test {
             $def = @'
 function Complex-Test {
     param(
-        [System.Net.WebClient]$WebClient,
-        [System.Net.Sockets.TcpClient]$TcpClient,
+        [System.IO.File]$FileHelper,
+        [System.IO.Directory]$DirHelper,
         [string]$SafeString
     )
     
-    $data = $WebClient.DownloadData("http://test.com")
-    $TcpClient.Connect("localhost", 8080)
+    $data = $FileHelper.ReadAllBytes("C:\test.bin")
+    $DirHelper.GetFiles("C:\temp")
     $upper = $SafeString.ToUpper()
 }
 '@
@@ -526,8 +526,8 @@ Add-Type -TypeDefinition "public class Test { }"
         It "Should NOT flag disallowed types in signed scripts" {
             $scriptPath = Join-Path $tempPath "SignedWithDisallowedType.ps1"
             $scriptContent = @'
-$client = New-Object System.Net.WebClient
-$data = $client.DownloadString("http://example.com")
+$fileHelper = New-Object System.IO.FileInfo("C:\test.txt")
+$data = $fileHelper.OpenText()
 
 # SIG # Begin signature block
 # MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
@@ -536,7 +536,7 @@ $data = $client.DownloadString("http://example.com")
             Set-Content -Path $scriptPath -Value $scriptContent
             $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
             $typeViolations = $violations | Where-Object { 
-                $_.RuleName -eq $violationName -and $_.Message -like "*WebClient*type*" 
+                $_.RuleName -eq $violationName -and $_.Message -like "*FileInfo*type*" 
             }
             $typeViolations | Should -BeNullOrEmpty
         }
@@ -582,7 +582,7 @@ class MyClass {
             $scriptPath = Join-Path $tempPath "SignedWithBadParam.ps1"
             $scriptContent = @'
 function Test {
-    param([System.Net.WebClient]$Client)
+    param([System.IO.File]$FileHelper)
     Write-Output "Test"
 }
 
@@ -593,7 +593,7 @@ function Test {
             Set-Content -Path $scriptPath -Value $scriptContent
             $violations = Invoke-ScriptAnalyzer -Path $scriptPath -Settings $settings
             $paramViolations = $violations | Where-Object { 
-                $_.RuleName -eq $violationName -and $_.Message -like "*WebClient*"
+                $_.RuleName -eq $violationName -and $_.Message -like "*File*"
             }
             # Parameter type constraints should still be flagged
             $paramViolations.Count | Should -BeGreaterThan 0
@@ -643,5 +643,71 @@ function Test {
             $scriptModuleViolations.Count | Should -BeGreaterThan 0
         }
     }
+
+    Context "Performance with large scripts" {
+        It "Should handle scripts with many typed variables and member invocations efficiently" {
+            # This test verifies the O(N+M) cache optimization
+            # Without caching, this would be O(N*M) and very slow
+            
+            # Build a script with many typed variables and member invocations
+            $scriptBuilder = [System.Text.StringBuilder]::new()
+            [void]$scriptBuilder.AppendLine('function Test-Performance {')
+            [void]$scriptBuilder.AppendLine('    param([string]$Path)')
+            
+            # Add 30 typed variable assignments
+            for ($i = 1; $i -le 30; $i++) {
+                [void]$scriptBuilder.AppendLine("    [System.IO.File]`$file$i = `$null")
+            }
+            
+            # Add 50 member invocations (testing cache reuse)
+            for ($i = 1; $i -le 50; $i++) {
+                $varNum = ($i % 30) + 1
+                [void]$scriptBuilder.AppendLine("    `$result$i = `$file$varNum.ReadAllText(`$Path)")
+            }
+            
+            [void]$scriptBuilder.AppendLine('}')
+            $def = $scriptBuilder.ToString()
+            
+            # Measure performance
+            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $stopwatch.Stop()
+            
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            
+            # Should detect violations (30 type constraints + 50 member accesses = 80+)
+            $matchingViolations.Count | Should -BeGreaterThan 50
+            
+            # Performance check: Should complete quickly (under 500ms)
+            # With cache: O(N+M) = 30+50 = 80 operations
+            # Without cache: O(N*M) = 50*30 = 1,500 operations (much slower)
+            $stopwatch.ElapsedMilliseconds | Should -BeLessThan 500
+        }
+
+        It "Should cache results per scope correctly" {
+            # Test that cache is scoped properly and doesn't leak between functions
+            $def = @'
+function Function1 {
+    [System.IO.File]$file1 = $null
+    $result1 = $file1.ReadAllText("C:\test1.txt")
 }
 
+function Function2 {
+    [System.IO.Directory]$file1 = $null
+    $result2 = $file1.GetFiles("C:\temp")
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            
+            # Should detect violations in both functions
+            # Each function has: 1 type constraint + 1 member access = 2 violations each
+            $matchingViolations.Count | Should -BeGreaterOrEqual 4
+            
+            # Verify both File and Directory are mentioned
+            $messages = $matchingViolations.Message -join ' '
+            $messages | Should -BeLike "*File*"
+            $messages | Should -BeLike "*Directory*"
+        }
+    }
+}
