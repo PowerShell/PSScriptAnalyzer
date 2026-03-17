@@ -76,11 +76,11 @@ Add-Type -TypeDefinition @"
         }
 
         It "Should flag New-Object with disallowed TypeName" {
-            $def = 'New-Object -TypeName System.Net.WebClient'
+            $def = 'New-Object -TypeName System.IO.File'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -Be 1
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*not permitted*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.File*not permitted*"
         }
     }
 
@@ -172,11 +172,11 @@ enum MyEnum {
 
     Context "When type expressions are used" {
         It "Should flag static type reference with new()" {
-            $def = '$instance = [System.Net.WebClient]::new()'
+            $def = '$instance = [System.IO.Directory]::new()'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -BeGreaterThan 0
-            $matchingViolations[0].Message | Should -BeLike "*System.Net.WebClient*"
+            $matchingViolations[0].Message | Should -BeLike "*System.IO.Directory*"
         }
 
         It "Should flag static method call on disallowed type" {
@@ -388,9 +388,9 @@ enum MyEnum {
         It "Should flag multiple type issues in same script" {
             $def = @'
 function Test {
-    param([System.Net.WebClient]$Client)
-    [System.Net.Sockets.TcpClient]$tcp = $null
-    $web = [System.Net.WebClient]::new()
+    param([System.IO.File]$FileHelper)
+    [System.IO.Directory]$dirHelper = $null
+    $pathHelper = [System.IO.Path]::new()
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -401,41 +401,89 @@ function Test {
         }
     }
 
+    Context "When PSCustomObject type cast is used" {
+        It "Should flag [PSCustomObject]@{} syntax" {
+            $def = '$obj = [PSCustomObject]@{ Name = "Test"; Value = 42 }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*PSCustomObject*"
+        }
+        
+        It "Should flag multiple [PSCustomObject]@{} instances" {
+            $def = @'
+$obj1 = [PSCustomObject]@{ Name = "Test1" }
+$obj2 = [PSCustomObject]@{ Name = "Test2" }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 2
+        }
+        
+        It "Should NOT flag PSCustomObject as parameter type" {
+            $def = 'function Test { param([PSCustomObject]$InputObject) }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+        
+        It "Should NOT flag New-Object PSObject" {
+            $def = '$obj = New-Object PSObject -Property @{ Name = "Test" }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+        
+        It "Should NOT flag plain hashtables" {
+            $def = '$obj = @{ Name = "Test"; Value = 42 }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
+        }
+        
+        It "Should NOT flag [PSCustomObject] with variable (not hashtable literal)" {
+            $def = '$hash = @{}; $obj = [PSCustomObject]$hash'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            # This is a type cast but not the @{} literal pattern
+            # Since PSCustomObject is in allowed list, this won't be flagged
+            $matchingViolations | Should -BeNullOrEmpty
+        }
+
+    }
+
     Context "When instance methods are invoked on disallowed types" {
         It "Should flag method invocation on parameter with disallowed type constraint" {
             $def = @'
-function Download-File {
-    param([System.Net.WebClient]$Client, [string]$Url)
-    $Client.DownloadString($Url)
+function Read-File {
+    param([System.IO.File]$FileHelper, [string]$Path)
+    $FileHelper.ReadAllText($Path)
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             # Should flag both the type constraint AND the member access
             $matchingViolations.Count | Should -BeGreaterThan 1
-            # At least one violation should mention DownloadString
-            ($matchingViolations.Message | Where-Object { $_ -like "*DownloadString*" }).Count | Should -BeGreaterThan 0
+            # At least one violation should mention ReadAllText
+            ($matchingViolations.Message | Where-Object { $_ -like "*ReadAllText*" }).Count | Should -BeGreaterThan 0
         }
 
         It "Should flag property access on variable with disallowed type constraint" {
             $def = @'
 function Test {
-    param([System.Net.WebClient]$Client)
-    $baseAddr = $Client.BaseAddress
+    param([System.IO.FileInfo]$FileHelper)
+    $fullPath = $FileHelper.FullName
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             # Should flag both the type constraint AND the member access
             $matchingViolations.Count | Should -BeGreaterThan 1
-            # At least one violation should mention BaseAddress
-            ($matchingViolations.Message | Where-Object { $_ -like "*BaseAddress*" }).Count | Should -BeGreaterThan 0
+            # At least one violation should mention FullName
+            ($matchingViolations.Message | Where-Object { $_ -like "*FullName*" }).Count | Should -BeGreaterThan 0
         }
 
         It "Should flag method invocation on typed variable assignment" {
             $def = @'
-[System.Net.WebClient]$client = $null
-$result = $client.DownloadString("http://example.com")
+[System.IO.File]$fileHelper = $null
+$result = $fileHelper.ReadAllText("C:\test.txt")
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }

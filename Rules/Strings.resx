@@ -1284,4 +1284,7 @@
   <data name="UseConstrainedLanguageModeScriptModuleError" xml:space="preserve">
     <value>Module manifest field '{0}' contains script file '{1}' (.ps1). Use a module file (.psm1) or a binary module (.dll) instead for Constrained Language Mode compatibility.</value>
   </data>
+  <data name="UseConstrainedLanguageModePSCustomObjectError" xml:space="preserve">
+    <value>[PSCustomObject]@{{}} syntax is not permitted in Constrained Language Mode. Use New-Object PSObject -Property @{{}} or plain hashtables instead.</value>
+  </data>
 </root>

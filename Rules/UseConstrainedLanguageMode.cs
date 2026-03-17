@@ -442,6 +442,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (ConvertExpressionAst convertExpr in convertExpressions)
             {
                 var typeName = convertExpr.Type.TypeName.FullName;
+                
+                // Special case: [PSCustomObject]@{} is not allowed in CLM
+                // Even though PSCustomObject is an allowed type for parameters,
+                // the type cast syntax with hashtable literal is blocked in CLM
+                if (typeName.Equals("PSCustomObject", StringComparison.OrdinalIgnoreCase) &&
+                    convertExpr.Child is HashtableAst)
+                {
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture,
+                                Strings.UseConstrainedLanguageModePSCustomObjectError),
+                            convertExpr.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName
+                        ));
+                    continue; // Already flagged, skip general type check
+                }
+                
                 if (!IsTypeAllowed(typeName))
                 {
                     diagnosticRecords.Add(
