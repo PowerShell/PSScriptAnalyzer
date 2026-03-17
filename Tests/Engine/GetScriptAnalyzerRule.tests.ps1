@@ -63,7 +63,7 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 72
+            $expectedNumRules = 73
 			      $defaultRules.Count | Should -Be $expectedNumRules
 		}
 
