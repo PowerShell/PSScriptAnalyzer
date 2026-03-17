@@ -155,7 +155,7 @@ enum Enum {
 #### IncludeValuelessEnumMembers: bool (Default value is `$true`)
 
 Include enum members in the alignment that don't have an initial value - that
-is to say they don't have an equals sign. Enum's don't need to be given a value
+is to say they don't have an equals sign. Enums don't need to be given a value
 when they're defined.
 
 Consider the following:

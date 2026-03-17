@@ -87,7 +87,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // As an optimisation, we first build a dictionary of all of the
             // assignment operators in the script, keyed by line number. We do
-            // this by doing a single scan of the tokens. This makes it trvially
+            // this by doing a single scan of the tokens. This makes it trivially
             // fast to find the `Equals` token for a given assignment.
 
             // Note: In instances where there is a parse error, we do not have
@@ -569,7 +569,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Filter out everything from assignmentSites that is not on
-            // it's own line. Do this by grouping by the start line number
+            // its own line. Do this by grouping by the start line number
             // of the lhsTokenExtent, and only keeping groups with a count
             // of 1.
             assignmentSites = assignmentSites
