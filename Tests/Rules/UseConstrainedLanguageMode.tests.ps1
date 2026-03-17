@@ -344,7 +344,7 @@ enum MyEnum {
             $def = 'Add-Type -AssemblyName System.Windows.Forms'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
-            $matchingViolations[0].Severity | Should -Be 'Information'
+            $matchingViolations[0].Severity | Should -Be 'Warning'
         }
     }
 
