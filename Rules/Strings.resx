@@ -1247,6 +1247,7 @@
   </data>
   <data name="UseSingleValueFromPipelineParameterName" xml:space="preserve">
     <value>UseSingleValueFromPipelineParameter</value>
+  </data>
   <data name="UseConsistentParametersKindCommonName" xml:space="preserve">
     <value>Use correct function parameters definition kind.</value>
   </data>
