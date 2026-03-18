@@ -267,9 +267,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            this.severity = (severityList.Count() == 0) ? null : severityList.ToArray();
-            this.includeRule = (includeRuleList.Count() == 0) ? null : includeRuleList.ToArray();
-            this.excludeRule = (excludeRuleList.Count() == 0) ? null : excludeRuleList.ToArray();
+            this.severity = (severityList.Count == 0) ? null : severityList.ToArray();
+            this.includeRule = (includeRuleList.Count == 0) ? null : includeRuleList.ToArray();
+            this.excludeRule = (excludeRuleList.Count == 0) ? null : excludeRuleList.ToArray();
             if (settings != null
                 && settings.ContainsKey("Rules"))
             {
@@ -609,7 +609,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
 
                 // no hashtable, raise warning
-                if (hashTableAsts.Count() == 0)
+                if (!hashTableAsts.Any())
                 {
                     writer.WriteError(new ErrorRecord(new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
                         Strings.ConfigurationFileHasNoHashTable, ErrorCategory.ResourceUnavailable, profile));
