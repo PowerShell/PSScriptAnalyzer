@@ -104,7 +104,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 binaryExpressionAst.Extent.EndColumnNumber,
                 $"{binaryExpressionAst.Right.Extent.Text} {binaryExpressionAst.ErrorPosition.Text} {binaryExpressionAst.Left.Extent.Text}",
                 binaryExpressionAst.Extent.File,
-                Strings.PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription
+                Strings.PossibleIncorrectComparisonWithNullSuggestedCorrectionDescription
                 );
 
             yield return correction;

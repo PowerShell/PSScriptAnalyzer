@@ -124,7 +124,7 @@
     <value>Avoid Using Cmdlet Aliases or omitting the 'Get-' prefix.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
-    <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
+    <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently cause problems, it can, so it should be avoided where possible. To fix a violation of this rule, use Write-Error or throw statements in catch blocks.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockCommonName" xml:space="preserve">
     <value>Avoid Using Empty Catch Block</value>
@@ -136,7 +136,7 @@
     <value>Avoid Using Invoke-Expression</value>
   </data>
   <data name="AvoidUsingPositionalParametersDescription" xml:space="preserve">
-    <value>Readability and clarity should be the goal of any script we expect to maintain over time. When calling a command that takes parameters, where possible consider using name parameters as opposed to positional parameters. To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.</value>
+    <value>Readability and clarity should be the goal of any script we expect to maintain over time. When calling a command that takes parameters, where possible consider using named parameters as opposed to positional parameters. To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.</value>
   </data>
   <data name="AvoidUsingPositionalParametersCommonName" xml:space="preserve">
     <value>Avoid Using Positional Parameters</value>
@@ -178,7 +178,7 @@
     <value>No Global Variables</value>
   </data>
   <data name="PossibleIncorrectComparisonWithNullDescription" xml:space="preserve">
-    <value>Checks that $null is on the left side of any equaltiy comparisons (eq, ne, ceq, cne, ieq, ine). When there is an array on the left side of a null equality comparison, PowerShell will check for a $null IN the array rather than if the array is null. If the two sides of the comaprision are switched this is fixed. Therefore, $null should always be on the left side of equality comparisons just in case.</value>
+    <value>Checks that $null is on the left side of any equality comparisons (eq, ne, ceq, cne, ieq, ine). When there is an array on the left side of a null equality comparison, PowerShell will check for a $null IN the array rather than if the array is null. If the two sides of the comparison are switched this is fixed. Therefore, $null should always be on the left side of equality comparisons just in case.</value>
   </data>
   <data name="PossibleIncorrectComparisonWithNullError" xml:space="preserve">
     <value>$null should be on the left side of equality comparisons.</value>
@@ -618,7 +618,7 @@
   <data name="UseShouldProcessForStateChangingFunctionsCommonName" xml:space="preserve">
     <value>Use ShouldProcess For State Changing Functions</value>
   </data>
-  <data name="UseShouldProcessForStateChangingFunctionsDescrption" xml:space="preserve">
+  <data name="UseShouldProcessForStateChangingFunctionsDescription" xml:space="preserve">
     <value>Functions that have verbs like New, Start, Stop, Set, Reset, Restart that change system state should support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsError" xml:space="preserve">
@@ -703,7 +703,7 @@
     <value>PowerShell help file needs to use UTF8 Encoding.</value>
   </data>
   <data name="UseUTF8EncodingForHelpFileError" xml:space="preserve">
-    <value>File {0} has to use UTF8 instead of {1} encoding because it is a powershell help file.</value>
+    <value>File {0} has to use UTF8 instead of {1} encoding because it is a PowerShell help file.</value>
   </data>
   <data name="UseUTF8EncodingForHelpFileName" xml:space="preserve">
     <value>UseUTF8EncodingForHelpFile</value>
@@ -742,7 +742,7 @@
     <value>Misleading Backtick</value>
   </data>
   <data name="MisleadingBacktickDescription" xml:space="preserve">
-    <value>Ending a line with an escaped whitepsace character is misleading. A trailing backtick is usually used for line continuation. Users typically don't intend to end a line with escaped whitespace.</value>
+    <value>Ending a line with an escaped whitespace character is misleading. A trailing backtick is usually used for line continuation. Users typically don't intend to end a line with escaped whitespace.</value>
   </data>
   <data name="MisleadingBacktickName" xml:space="preserve">
     <value>MisleadingBacktick</value>
@@ -786,16 +786,16 @@
   <data name="UseToExportFieldsInManifestCorrectionDescription" xml:space="preserve">
     <value>Replace {0} with {1}</value>
   </data>
-  <data name="UseLiteralInitilializerForHashtableCommonName" xml:space="preserve">
+  <data name="UseLiteralInitializerForHashtableCommonName" xml:space="preserve">
     <value>Create hashtables with literal initializers</value>
   </data>
-  <data name="UseLiteralInitilializerForHashtableDescription" xml:space="preserve">
+  <data name="UseLiteralInitializerForHashtableDescription" xml:space="preserve">
     <value>Use literal initializer, @{{}}, for creating a hashtable as they are case-insensitive by default</value>
   </data>
-  <data name="UseLiteralInitilializerForHashtableError" xml:space="preserve">
-    <value>Create hashtables with literal initliazers</value>
+  <data name="UseLiteralInitializerForHashtableError" xml:space="preserve">
+    <value>Create hashtables with literal initializers</value>
   </data>
-  <data name="UseLiteralInitilializerForHashtableName" xml:space="preserve">
+  <data name="UseLiteralInitializerForHashtableName" xml:space="preserve">
     <value>UseLiteralInitializerForHashtable</value>
   </data>
   <data name="UseCompatibleCmdletsName" xml:space="preserve">
@@ -874,7 +874,7 @@
     <value>The type accelerator '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
   </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
-    <value>Avoid global functiosn and aliases</value>
+    <value>Avoid global functions and aliases</value>
   </data>
   <data name="AvoidGlobalFunctionsDescription" xml:space="preserve">
     <value>Checks that global functions and aliases are not used. Global functions are strongly discouraged as they can cause errors across different systems.</value>
@@ -979,7 +979,7 @@
     <value>Use consistent indentation</value>
   </data>
   <data name="UseConsistentIndentationDescription" xml:space="preserve">
-    <value>Each statement block should have a consistent indenation.</value>
+    <value>Each statement block should have a consistent indentation.</value>
   </data>
   <data name="UseConsistentIndentationError" xml:space="preserve">
     <value>Indentation not consistent</value>
@@ -991,7 +991,7 @@
     <value>Use whitespaces</value>
   </data>
   <data name="UseConsistentWhitespaceDescription" xml:space="preserve">
-    <value>Check for whitespace between keyword and open paren/curly, around assigment operator ('='), around arithmetic operators and after separators (',' and ';')</value>
+    <value>Check for whitespace between keyword and open paren/curly, around assignment operator ('='), around arithmetic operators and after separators (',' and ';')</value>
   </data>
   <data name="UseConsistentWhitespaceErrorBeforeOpeningBrace" xml:space="preserve">
     <value>Use space before open brace.</value>
@@ -1015,10 +1015,10 @@
     <value>Use SupportsShouldProcess</value>
   </data>
   <data name="UseSupportsShouldProcessDescription" xml:space="preserve">
-    <value>Commands typically provide Confirm and Whatif parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a commands need Confirm and Whatif parameters, then it should support ShouldProcess.</value>
+    <value>Commands typically provide Confirm and WhatIf parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a command needs Confirm and WhatIf parameters, then it should support ShouldProcess.</value>
   </data>
   <data name="UseSupportsShouldProcessError" xml:space="preserve">
-    <value>Whatif and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
+    <value>WhatIf and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
   </data>
   <data name="AlignAssignmentStatementName" xml:space="preserve">
     <value>AlignAssignmentStatement</value>
@@ -1042,10 +1042,10 @@
     <value>Use a different variable name</value>
   </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariableCommonName" xml:space="preserve">
-    <value>Changing automtic variables might have undesired side effects</value>
+    <value>Changing automatic variables might have undesired side effects</value>
   </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariableDescription" xml:space="preserve">
-    <value>This automatic variables is built into PowerShell and readonly.</value>
+    <value>This automatic variable is built into PowerShell and readonly.</value>
   </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariableError" xml:space="preserve">
     <value>The Variable '{0}' cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
@@ -1077,7 +1077,7 @@
   <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfRedirectionOperator</value>
   </data>
-  <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
+  <data name="PossibleIncorrectComparisonWithNullSuggestedCorrectionDescription" xml:space="preserve">
     <value>Use $null on the left hand side for safe comparison with $null.</value>
   </data>
   <data name="UseConsistentWhitespaceErrorAfterOpeningBrace" xml:space="preserve">
@@ -1177,7 +1177,7 @@
     <value>Avoid multiple type specifiers on parameters</value>
   </data>
   <data name="AvoidMultipleTypeAttributesDescription" xml:space="preserve">
-    <value>Prameter should not have more than one type specifier.</value>
+    <value>Parameter should not have more than one type specifier.</value>
   </data>
   <data name="AvoidMultipleTypeAttributesError" xml:space="preserve">
     <value>Parameter '{0}' has more than one type specifier.</value>
@@ -1219,7 +1219,7 @@
     <value>Avoid sending credentials and secrets over unencrypted connections.</value>
   </data>
   <data name="AvoidUsingAllowUnencryptedAuthenticationError" xml:space="preserve">
-    <value>The insecure AllowUsingUnencryptedAuthentication switch was used. This should be avoided except for compatability with legacy systems.</value>
+    <value>The insecure AllowUnencryptedAuthentication switch was used. This should be avoided except for compatibility with legacy systems.</value>
   </data>
   <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
