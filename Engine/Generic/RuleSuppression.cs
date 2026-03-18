@@ -340,7 +340,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                     if (targetAsts != null)
                     {
-                        if (targetAsts.Count() == 0)
+                        if (!targetAsts.Any())
                         {
                             if (String.IsNullOrWhiteSpace(scopeAst.Extent.File))
                             {
