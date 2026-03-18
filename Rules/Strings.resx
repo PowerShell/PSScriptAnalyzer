@@ -1224,6 +1224,33 @@
   <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
   </data>
+  <data name="UseConsistentParameterSetNameCommonName" xml:space="preserve">
+    <value>Use Consistent Parameter Set Name</value>
+  </data>
+  <data name="UseConsistentParameterSetNameDescription" xml:space="preserve">
+    <value>Parameter set names are case-sensitive in PowerShell. This rule checks for case mismatches between DefaultParameterSetName and ParameterSetName values, case mismatches between different ParameterSetName values, and missing DefaultParameterSetName when parameter sets are used.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameMissingDefaultError" xml:space="preserve">
+    <value>Param block uses parameter sets but does not specify a DefaultParameterSetName. Consider adding DefaultParameterSetName to the CmdletBinding attribute.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameCaseMismatchDefaultError" xml:space="preserve">
+    <value>DefaultParameterSetName '{0}' does not match the case of ParameterSetName '{1}'. Parameter set names are case-sensitive.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameCaseMismatchParameterError" xml:space="preserve">
+    <value>ParameterSetName '{0}' does not match the case of '{1}'. Parameter set names are case-sensitive and should use consistent casing.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameMultipleDeclarationsError" xml:space="preserve">
+    <value>Parameter '{0}' is declared in parameter-set '{1}' multiple times.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameNewLineError" xml:space="preserve">
+    <value>Parameter set names should not contain new lines.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameCaseMismatchSuggestedCorrectionDescription" xml:space="preserve">
+    <value>Rename ParameterSet '{0}' to '{1}'.</value>
+  </data>
+  <data name="UseConsistentParameterSetNameName" xml:space="preserve">
+    <value>UseConsistentParameterSetName</value>
+  </data>
   <data name="AvoidReservedWordsAsFunctionNamesCommonName" xml:space="preserve">
     <value>Avoid reserved words as function names</value>
   </data>
