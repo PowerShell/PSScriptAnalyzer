@@ -9,7 +9,8 @@ $PSModuleRoot = $PSModule.ModuleBase
 
 # Import the appropriate nested binary module based on the current PowerShell version
 $binaryModuleRoot = $PSModuleRoot
-[Version] $minimumPowerShellCoreVersion = '7.4.13'
+# This should be the equivalent of 7.4.x i.e. latest major/minor supported but lowest patch.
+[Version] $minimumPowerShellCoreVersion = '7.4.6'
 if ($PSVersionTable.PSVersion.Major -ge 6) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
     # Minimum PowerShell Core version given by PowerShell Core support itself and
