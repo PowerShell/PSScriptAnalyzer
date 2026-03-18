@@ -62,7 +62,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseLiteralInitilializerForHashtableCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseLiteralInitializerForHashtableCommonName);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseLiteralInitilializerForHashtableDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseLiteralInitializerForHashtableDescription);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
-                Strings.UseLiteralInitilializerForHashtableName);
+                Strings.UseLiteralInitializerForHashtableName);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 || !HasIgnoreCaseComparerArg(methodCallAst.Arguments))
             {
                 var dr = new DiagnosticRecord(
-                    Strings.UseLiteralInitilializerForHashtableDescription,
+                    Strings.UseLiteralInitializerForHashtableDescription,
                     methodCallAst.Extent,
                     GetName(),
                     GetDiagnosticSeverity(),
@@ -205,7 +205,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var dr = new DiagnosticRecord(
-                Strings.UseLiteralInitilializerForHashtableDescription,
+                Strings.UseLiteralInitializerForHashtableDescription,
                 commandAst.Extent,
                 GetName(),
                 GetDiagnosticSeverity(),
