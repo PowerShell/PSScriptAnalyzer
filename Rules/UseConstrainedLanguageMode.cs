@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             "Experimental", "ExperimentalFeature", "float", "guid", "hashtable", "int",
             "int16", "int32", "int64", "ipaddress", "IPEndpoint", "long", "mailaddress",
             "Microsoft.PowerShell.Commands.ModuleSpecification", "NoRunspaceAffinity",
-            "NullString", "Object[]", "ObjectSecurity", "ordered", "OutputType", "Parameter",
+            "NullString", "Object", "ObjectSecurity", "ordered", "OutputType", "Parameter",
             "PhysicalAddress", "pscredential", "pscustomobject", "PSDefaultValue",
             "pslistmodifier", "psobject", "psprimitivedictionary", "PSTypeNameAttribute",
             "regex", "sbyte", "securestring", "semver", "short", "single", "string",

@@ -155,9 +155,10 @@ Add-Type -TypeDefinition @"
 #### Correct
 
 ```powershell
-# Code sign your module using Add-Type
-# Use allowed cmdlets instead
-# Or pre-compile and load the assembly
+ # Code sign your scripts/modules using proper signing tools
+ #   (for example, Set-AuthenticodeSignature or external signing processes)
+ # Use allowed cmdlets instead of Add-Type-defined types where possible
+ # Or pre-compile, sign, and load the assembly (for example, via Add-Type -Path)
 ```
 
 ### Example 2: COM Objects
@@ -370,5 +371,7 @@ Use `.psm1` (script modules) or `.dll` (binary modules) for better performance a
 
 ## More Information
 
-- [About Language Modes](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_language_modes)
+- [About Language Modes](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_language_modes)
 - [PowerShell Constrained Language Mode](https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode/)
+- [PowerShell Module Function Export in Constrained Language](https://devblogs.microsoft.com/powershell/powershell-module-function-export-in-constrained-language/)
+- [PowerShell Constrained Language Mode and the Dot-Source Operator](https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode-and-the-dot-source-operator/)

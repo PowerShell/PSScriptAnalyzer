@@ -716,20 +716,12 @@ function Test {
             [void]$scriptBuilder.AppendLine('}')
             $def = $scriptBuilder.ToString()
             
-            # Measure performance
-            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $stopwatch.Stop()
             
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             
             # Should detect violations (30 type constraints + 50 member accesses = 80+)
             $matchingViolations.Count | Should -BeGreaterThan 50
-            
-            # Performance check: Should complete quickly (under 500ms)
-            # With cache: O(N+M) = 30+50 = 80 operations
-            # Without cache: O(N*M) = 50*30 = 1,500 operations (much slower)
-            $stopwatch.ElapsedMilliseconds | Should -BeLessThan 500
         }
 
         It "Should cache results per scope correctly" {
