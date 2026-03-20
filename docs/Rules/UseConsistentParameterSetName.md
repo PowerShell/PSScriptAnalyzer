@@ -24,7 +24,7 @@ The rule performs five different checks:
 1. **Case mismatch between DefaultParameterSetName and ParameterSetName** - Ensures consistent
    casing
 1. **Case mismatch between different ParameterSetName values** - Ensures all references to the same
-  parameter set use identical casing
+   parameter set use identical casing
 1. **Parameter set names containing newlines** - Warns against using newline characters in parameter
    set names
 

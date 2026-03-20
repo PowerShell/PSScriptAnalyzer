@@ -150,7 +150,7 @@ enum Enum {
 
 #### IncludeValuelessEnumMembers: bool (Default value is `$true`)
 
-Include enum members in the alignment that don't have an explicitly assigned value. Enum's don't
+Include enum members in the alignment that don't have an explicitly assigned value. Enums don't
 need to be given a value when they're defined.
 
 Consider the following:
