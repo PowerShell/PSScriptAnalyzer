@@ -1,6 +1,6 @@
 ---
 description: Use consistent parameter set names and proper parameter set configuration.
-ms.date: 08/19/2025
+ms.date: 03/20/2026
 ms.topic: reference
 title: UseConsistentParameterSetName
 ---
@@ -11,18 +11,25 @@ title: UseConsistentParameterSetName
 
 ## Description
 
-Parameter set names in PowerShell are case-sensitive, unlike most other PowerShell elements. This rule ensures consistent casing and proper configuration of parameter sets to avoid runtime errors and improve code clarity.
+Parameter set names in PowerShell are case-sensitive, unlike most other PowerShell elements. This
+rule ensures consistent casing and proper configuration of parameter sets to avoid runtime errors
+and improve code clarity.
 
 The rule performs five different checks:
 
-1. **Missing DefaultParameterSetName** - Warns when parameter sets are used but no default is specified
-2. **Multiple parameter declarations** - Detects when a parameter is declared multiple times in the same parameter set. This is ultimately a runtime exception - this check helps catch it sooner.
-3. **Case mismatch between DefaultParameterSetName and ParameterSetName** - Ensures consistent casing
-4. **Case mismatch between different ParameterSetName values** - Ensures all references to the same parameter set use identical casing
-5. **Parameter set names containing newlines** - Warns against using newline characters in parameter set names
+1. **Missing DefaultParameterSetName** - Warns when parameter sets are used but no default is
+   specified
+1. **Multiple parameter declarations** - Detects when a parameter is declared multiple times in the
+   same parameter set. This is ultimately a runtime exception - this check helps catch it sooner.
+1. **Case mismatch between DefaultParameterSetName and ParameterSetName** - Ensures consistent
+   casing
+1. **Case mismatch between different ParameterSetName values** - Ensures all references to the same
+  parameter set use identical casing
+1. **Parameter set names containing newlines** - Warns against using newline characters in parameter
+   set names
 
 > [!NOTE]
-> This rule is not enabled by default. The user needs to enable it through settings.
+> This rule isn't enabled by default. The user needs to enable it through settings.
 
 ## How
 
@@ -43,7 +50,7 @@ function Get-Data {
     param(
         [Parameter(ParameterSetName='ByName')]
         [string]$Name,
-        
+
         [Parameter(ParameterSetName='ByID')]
         [int]$ID
     )
@@ -55,7 +62,7 @@ function Get-Data {
     param(
         [Parameter(ParameterSetName='byname')]
         [string]$Name,
-        
+
         [Parameter(ParameterSetName='ByID')]
         [int]$ID
     )
@@ -67,7 +74,7 @@ function Get-Data {
     param(
         [Parameter(ParameterSetName='ByName')]
         [string]$Name,
-        
+
         [Parameter(ParameterSetName='byname')]
         [string]$DisplayName
     )
@@ -100,11 +107,11 @@ function Get-Data {
     param(
         [Parameter(ParameterSetName='ByName', Mandatory)]
         [string]$Name,
-        
+
         [Parameter(ParameterSetName='ByName')]
         [Parameter(ParameterSetName='ByID')]
         [string]$ComputerName,
-        
+
         [Parameter(ParameterSetName='ByID', Mandatory)]
         [int]$ID
     )
@@ -129,7 +136,9 @@ Rules = @{
 
 ## Notes
 
-- Parameter set names are case-sensitive in PowerShell, making this different from most other PowerShell elements
+- Parameter set names are case-sensitive in PowerShell, making this different from most other
+  PowerShell elements
 - The first occurrence of a parameter set name in your code is treated as the canonical casing
-- Parameters without [Parameter()] attributes are automatically part of all parameter sets
-- It's a PowerShell best practice to always specify a DefaultParameterSetName when using parameter sets
+- Parameters without `[Parameter()]` attributes are automatically part of all parameter sets
+- It's a PowerShell best practice to always specify a `DefaultParameterSetName` when using parameter
+  sets
