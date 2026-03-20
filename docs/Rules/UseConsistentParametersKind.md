@@ -1,3 +1,4 @@
+---
 description: Use the same pattern when defining parameters.
 ms.date: 03/20/2026
 ms.topic: reference
