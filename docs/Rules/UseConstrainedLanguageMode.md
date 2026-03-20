@@ -137,6 +137,7 @@ Use modules with Import-Module instead of dot-sourcing when possible.
 
 - Replace wildcard exports (`*`) with explicit lists
 - Use `.psm1` or `.dll` instead of `.ps1` for RootModule/NestedModules
+- Don't use ScriptsToProcess as it loads in the caller's scope and will be blocked. 
 
 ## Examples
 

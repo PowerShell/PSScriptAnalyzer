@@ -538,7 +538,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Check if the command extent starts with a dot followed by whitespace
                 // This indicates dot-sourcing
                 string extentText = cmdAst.Extent.Text.TrimStart();
-                if (extentText.StartsWith(". ") || extentText.StartsWith(".\t"))
+                if (extentText.StartsWith(".") && extentText.Length > 1 && char.IsWhiteSpace(extentText[1]))
                 {
                     diagnosticRecords.Add(
                         new DiagnosticRecord(
@@ -800,8 +800,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Check for wildcard exports in FunctionsToExport, CmdletsToExport, AliasesToExport
             CheckWildcardExports(hashtableAst, fileName, diagnosticRecords);
-            
-            // Check for .ps1 files in RootModule and NestedModules
+
+            // Check for .ps1 files in RootModule, NestedModules, and ScriptsToProcess
             CheckScriptModules(hashtableAst, fileName, diagnosticRecords);
         }
 
@@ -810,8 +810,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void CheckWildcardExports(HashtableAst hashtableAst, string fileName, List<DiagnosticRecord> diagnosticRecords)
         {
-            //AliasesToExport and VariablesToExport can use wildcards in CLM, but it is not recommended for performance reasons. We will flag it as an informational message to encourage best practices.
-            string[] exportFields = { "FunctionsToExport", "CmdletsToExport", "AliasesToExport", "VariablesToExport" };
+            //AliasesToExport and VariablesToExport can use wildcards in CLM, but it is not recommended for performance reasons.
+            string[] exportFields = { "FunctionsToExport", "CmdletsToExport"};
 
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
@@ -868,9 +868,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                             }
                                         }
                                     }
+                                    else if (expr is StringConstantExpressionAst strElement && strElement.Value == "*")
+                                    {
+                                        // Handle single-item array expressions like @('*')
+                                        hasWildcard = true;
+                                        wildcardExtent = strElement.Extent;
+                                        break;
+                                    }
                                     if (hasWildcard) break;
                                 }
-                            }
+                            } 
                         }
 
                         if (hasWildcard && wildcardExtent != null)
@@ -892,11 +899,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Checks for .ps1 files in RootModule and NestedModules which are not recommended for CLM.
+        /// Checks for .ps1 files in RootModule, NestedModules, and ScriptsToProcess which are not recommended for CLM.
         /// </summary>
         private void CheckScriptModules(HashtableAst hashtableAst, string fileName, List<DiagnosticRecord> diagnosticRecords)
         {
-            string[] moduleFields = { "RootModule", "ModuleToProcess", "NestedModules" };
+            string[] moduleFields = { "RootModule", "NestedModules", "ScriptsToProcess" };
 
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
@@ -929,6 +936,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
+        /// Helper method to get the appropriate error message for .ps1 file usage in module manifests.
+        /// </summary>
+        private string GetPs1FileErrorMessage(string fieldName, string scriptFileName)
+        {
+            if (fieldName.Equals("ScriptsToProcess", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(CultureInfo.CurrentCulture,
+                    Strings.UseConstrainedLanguageModeScriptsToProcessError,
+                    scriptFileName);
+            }
+            else
+            {
+                return String.Format(CultureInfo.CurrentCulture,
+                    Strings.UseConstrainedLanguageModeScriptModuleError,
+                    fieldName,
+                    scriptFileName);
+            }
+        }
+
+        /// <summary>
         /// Helper method to check if an expression contains .ps1 file references.
         /// </summary>
         private void CheckForPs1Files(ExpressionAst valueAst, string fieldName, string fileName, List<DiagnosticRecord> diagnosticRecords)
@@ -939,10 +966,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     diagnosticRecords.Add(
                         new DiagnosticRecord(
-                            String.Format(CultureInfo.CurrentCulture,
-                                Strings.UseConstrainedLanguageModeScriptModuleError,
-                                fieldName,
-                                stringValue.Value),
+                            GetPs1FileErrorMessage(fieldName, stringValue.Value),
                             stringValue.Extent,
                             GetName(),
                             GetDiagnosticSeverity(),
@@ -960,10 +984,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         diagnosticRecords.Add(
                             new DiagnosticRecord(
-                                String.Format(CultureInfo.CurrentCulture,
-                                    Strings.UseConstrainedLanguageModeScriptModuleError,
-                                    fieldName,
-                                    strElement.Value),
+                                GetPs1FileErrorMessage(fieldName, strElement.Value),
                                 strElement.Extent,
                                 GetName(),
                                 GetDiagnosticSeverity(),
@@ -990,10 +1011,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 {
                                     diagnosticRecords.Add(
                                         new DiagnosticRecord(
-                                            String.Format(CultureInfo.CurrentCulture,
-                                                Strings.UseConstrainedLanguageModeScriptModuleError,
-                                                fieldName,
-                                                strElement.Value),
+                                            GetPs1FileErrorMessage(fieldName, strElement.Value),
                                             strElement.Extent,
                                             GetName(),
                                             GetDiagnosticSeverity(),
@@ -1001,6 +1019,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                         ));
                                 }
                             }
+                        }
+                        else if (expr is StringConstantExpressionAst strElement &&
+                            strElement.Value != null &&
+                            strElement.Value.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
+                        {
+                            diagnosticRecords.Add(
+                                    new DiagnosticRecord(
+                                        GetPs1FileErrorMessage(fieldName, strElement.Value),
+                                        strElement.Extent,
+                                        GetName(),
+                                        GetDiagnosticSeverity(),
+                                        fileName
+                                    ));
                         }
                     }
                 }

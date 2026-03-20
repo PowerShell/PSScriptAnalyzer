@@ -235,6 +235,22 @@ enum MyEnum {
             $matchingViolations[0].Message | Should -BeLike "*FunctionsToExport*wildcard*"
         }
 
+                It "Should flag wildcard array in FunctionsToExport" {
+            $manifestPath = Join-Path $tempPath "WildcardFunctions.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    FunctionsToExport = @('*')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*FunctionsToExport*wildcard*"
+        }
+
         It "Should flag wildcard in CmdletsToExport" {
             $manifestPath = Join-Path $tempPath "WildcardCmdlets.psd1"
             $manifestContent = @'
@@ -249,22 +265,6 @@ enum MyEnum {
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             $matchingViolations.Count | Should -BeGreaterThan 0
             $matchingViolations[0].Message | Should -BeLike "*CmdletsToExport*wildcard*"
-        }
-
-        It "Should flag wildcard in array of exports" {
-            $manifestPath = Join-Path $tempPath "WildcardArray.psd1"
-            $manifestContent = @'
-@{
-    ModuleVersion = '1.0.0'
-    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
-    AliasesToExport = @('Get-Foo', '*', 'Set-Bar')
-}
-'@
-            Set-Content -Path $manifestPath -Value $manifestContent
-            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
-            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
-            $matchingViolations.Count | Should -BeGreaterThan 0
-            $matchingViolations[0].Message | Should -BeLike "*AliasesToExport*wildcard*"
         }
 
         It "Should NOT flag explicit list of exports" {
@@ -336,6 +336,73 @@ enum MyEnum {
             $scriptModuleViolations | Should -BeNullOrEmpty
         }
 
+        It "Should flag .ps1 file in ScriptsToProcess" {
+            $manifestPath = Join-Path $tempPath "ScriptsToProcess.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    ScriptsToProcess = @('Init.ps1', 'Setup.ps1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -BeGreaterThan 0
+            $matchingViolations[0].Message | Should -BeLike "*ScriptsToProcess*Init.ps1*"
+        }
+
+        It "Should use different error message for ScriptsToProcess" {
+            $manifestPath = Join-Path $tempPath "ScriptsToProcessMessage.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    ScriptsToProcess = 'Init.ps1'
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 1
+            # ScriptsToProcess should have a specific message about caller's session state
+            $matchingViolations[0].Message | Should -BeLike "*caller*session state*"
+            $matchingViolations[0].Message | Should -BeLike "*Init.ps1*"
+        }
+
+        It "Should flag single-item array in ScriptsToProcess" {
+            $manifestPath = Join-Path $tempPath "ScriptsToProcessArray.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    ScriptsToProcess = @('Init.ps1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 1
+            $matchingViolations[0].Message | Should -BeLike "*ScriptsToProcess*Init.ps1*"
+        }
+
+        It "Should NOT flag .psm1 files in ScriptsToProcess" {
+            $manifestPath = Join-Path $tempPath "ScriptsToProcessPsm1.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    ScriptsToProcess = @('Init.psm1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $scriptViolations = $violations | Where-Object { 
+                $_.RuleName -eq $violationName -and $_.Message -like "*ScriptsToProcess*" 
+            }
+            $scriptViolations | Should -BeNullOrEmpty
+        }
+
         It "Should flag both wildcard and .ps1 issues in same manifest" {
             $manifestPath = Join-Path $tempPath "MultipleIssues.psd1"
             $manifestContent = @'
@@ -352,6 +419,33 @@ enum MyEnum {
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
             # Should have at least 3 violations: RootModule .ps1, FunctionsToExport *, CmdletsToExport *
             $matchingViolations.Count | Should -BeGreaterOrEqual 3
+        }
+
+        It "Should flag ScriptsToProcess and RootModule with different messages" {
+            $manifestPath = Join-Path $tempPath "MixedScriptFields.psd1"
+            $manifestContent = @'
+@{
+    ModuleVersion = '1.0.0'
+    GUID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+    RootModule = 'MyModule.ps1'
+    ScriptsToProcess = @('Init.ps1')
+}
+'@
+            Set-Content -Path $manifestPath -Value $manifestContent
+            $violations = Invoke-ScriptAnalyzer -Path $manifestPath -Settings $settings
+            $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
+            $matchingViolations.Count | Should -Be 2
+
+            # Check that we have both types of messages
+            $scriptsToProcessMsg = $matchingViolations | Where-Object { $_.Message -like "*caller*session state*" }
+            $rootModuleMsg = $matchingViolations | Where-Object { $_.Message -like "*RootModule*" -and $_.Message -notlike "*caller*session state*" }
+
+            $scriptsToProcessMsg.Count | Should -Be 1
+            $rootModuleMsg.Count | Should -Be 1
+
+            # Verify the specific field names are mentioned
+            $scriptsToProcessMsg[0].Message | Should -BeLike "*Init.ps1*"
+            $rootModuleMsg[0].Message | Should -BeLike "*MyModule.ps1*"
         }
     }
 
@@ -628,6 +722,7 @@ class MyClass {
             $scriptPath = Join-Path $tempPath "SignedWithDotSource.ps1"
             $scriptContent = @'
 . .\Helper.ps1
+.      .\U  tility.ps1
 
 # SIG # Begin signature block
 # MIIFFAYJKoZIhvcNAQcCoIIFBTCCBQECAQExCzAJ...
