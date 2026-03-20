@@ -1263,6 +1263,60 @@
   <data name="AvoidReservedWordsAsFunctionNamesError" xml:space="preserve">
     <value>The reserved word '{0}' was used as a function name. This should be avoided.</value>
   </data>
+  <data name="UseConstrainedLanguageModeName" xml:space="preserve">
+    <value>UseConstrainedLanguageMode</value>
+  </data>
+  <data name="UseConstrainedLanguageModeCommonName" xml:space="preserve">
+    <value>Consider Constrained Language Mode Restrictions</value>
+  </data>
+  <data name="UseConstrainedLanguageModeDescription" xml:space="preserve">
+    <value>Identifies script patterns that are restricted in Constrained Language Mode. Constrained Language Mode limits the types, cmdlets, and .NET methods that can be used to help secure PowerShell in environments requiring additional restrictions.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeAddTypeError" xml:space="preserve">
+    <value>Add-Type is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeComObjectError" xml:space="preserve">
+    <value>New-Object with the COM object '{0}' is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeXamlError" xml:space="preserve">
+    <value>XAML usage is not permitted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeDotSourceError" xml:space="preserve">
+    <value>Dot-sourcing may be restricted in Constrained Language Mode depending on the source location. Ensure scripts are from trusted locations if running in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeInvokeExpressionError" xml:space="preserve">
+    <value>Invoke-Expression is restricted in Constrained Language Mode. Consider alternative approaches if this script will run in a restricted environment.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeNewObjectError" xml:space="preserve">
+    <value>New-Object with type '{0}' is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeConstrainedTypeError" xml:space="preserve">
+    <value>Type constraint [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeTypeExpressionError" xml:space="preserve">
+    <value>Type expression [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeConvertExpressionError" xml:space="preserve">
+    <value>Type cast [{0}] is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeMemberAccessError" xml:space="preserve">
+    <value>Member '{1}' accessed on type [{0}] which is not permitted in Constrained Language Mode. Consider using an allowed type.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeClassError" xml:space="preserve">
+    <value>PowerShell class '{0}' is not permitted in Constrained Language Mode. Consider using alternative approaches such as hashtables or PSCustomObject.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeWildcardExportError" xml:space="preserve">
+    <value>Module manifest field '{0}' uses wildcard ('*') which is not recommended for Constrained Language Mode. Explicitly list exported items instead.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeScriptModuleError" xml:space="preserve">
+    <value>Module manifest field '{0}' contains script file '{1}' (.ps1). Use a module file (.psm1) or a binary module (.dll) instead for Constrained Language Mode compatibility.</value>
+  </data>
+  <data name="UseConstrainedLanguageModeScriptsToProcessError" xml:space="preserve">
+    <value>Module manifest field 'ScriptsToProcess' contains script file '{0}' (.ps1). Scripts in ScriptsToProcess run in the caller's session state and are restricted in Constrained Language Mode. Consider moving this logic to module initialization code</value>
+  </data>
+  <data name="UseConstrainedLanguageModePSCustomObjectError" xml:space="preserve">
+    <value>[PSCustomObject]@{{}} syntax is not permitted in Constrained Language Mode. Use New-Object PSObject -Property @{{}} or plain hashtables instead.</value>
+  </data>
   <data name="UseSingleValueFromPipelineParameterCommonName" xml:space="preserve">
     <value>Use a single ValueFromPipeline parameter per parameter set</value>
   </data>

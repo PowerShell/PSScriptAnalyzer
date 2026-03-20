@@ -71,6 +71,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [UseConsistentParameterSetName](./UseConsistentParameterSetName.md)                               | Warning     |         No         |                 |
 | [UseConsistentParametersKind](./UseConsistentParametersKind.md)                                   | Warning     |         No         |       Yes       |
 | [UseConsistentWhitespace](./UseConsistentWhitespace.md)                                           | Warning     |         No         |       Yes       |
+| [UseConstrainedLanguageMode](./UseConstrainedLanguageMode.md)                                     | Warning     |         No         |       Yes       |
 | [UseCorrectCasing](./UseCorrectCasing.md)                                                         | Information |         No         |       Yes       |
 | [UseDeclaredVarsMoreThanAssignments](./UseDeclaredVarsMoreThanAssignments.md)                     | Warning     |        Yes         |                 |
 | [UseLiteralInitializerForHashtable](./UseLiteralInitializerForHashtable.md)                       | Warning     |        Yes         |                 |
