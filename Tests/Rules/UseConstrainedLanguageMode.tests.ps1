@@ -1,6 +1,22 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+# Tests for UseConstrainedLanguageMode rule
+#
+# Some tests are Windows-specific (COM objects, XAML) and will be skipped on non-Windows platforms.
 
+BeforeDiscovery {
+    # Detect OS for platform-specific tests
+    $script:IsWindowsOS = $true
+    $script:IsLinuxOS = $false
+    $script:IsMacOSOS = $false
+    
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        # PowerShell Core has built-in OS detection variables
+        $script:IsWindowsOS = $IsWindows
+        $script:IsLinuxOS = $IsLinux
+        $script:IsMacOSOS = $IsMacOS
+    }
+}
 BeforeAll {
     $testRootDirectory = Split-Path -Parent $PSScriptRoot
     Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
@@ -20,7 +36,7 @@ BeforeAll {
 }
 
 Describe "UseConstrainedLanguageMode" {
-    Context "When Add-Type is used" {
+Context "When Add-Type is used" {
         It "Should detect Add-Type usage" {
             $def = @'
 Add-Type -TypeDefinition @"
@@ -43,7 +59,7 @@ Add-Type -TypeDefinition @"
     }
 
     Context "When New-Object with COM is used" {
-        It "Should detect disallowed New-Object -ComObject usage" {
+        It "Should detect disallowed New-Object -ComObject usage" -Skip:(-not $script:IsWindowsOS) {
             $def = 'New-Object -ComObject "Excel.Application"'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $matchingViolations = $violations | Where-Object { $_.RuleName -eq $violationName }
@@ -51,19 +67,19 @@ Add-Type -TypeDefinition @"
             $matchingViolations[0].Message | Should -BeLike "*COM object*"
         }
 
-        It "Should NOT flag allowed COM objects - Scripting.Dictionary" {
+        It "Should NOT flag allowed COM objects - Scripting.Dictionary" -Skip:(-not $script:IsWindowsOS) {
             $def = 'New-Object -ComObject "Scripting.Dictionary"'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
         }
 
-        It "Should NOT flag allowed COM objects - Scripting.FileSystemObject" {
+        It "Should NOT flag allowed COM objects - Scripting.FileSystemObject" -Skip:(-not $script:IsWindowsOS) {
             $def = 'New-Object -ComObject "Scripting.FileSystemObject"'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
         }
 
-        It "Should NOT flag allowed COM objects - VBScript.RegExp" {
+        It "Should NOT flag allowed COM objects - VBScript.RegExp" -Skip:(-not $script:IsWindowsOS) {
             $def = 'New-Object -ComObject "VBScript.RegExp"'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations | Where-Object { $_.RuleName -eq $violationName } | Should -BeNullOrEmpty
@@ -85,7 +101,7 @@ Add-Type -TypeDefinition @"
     }
 
     Context "When XAML is used" {
-        It "Should detect XAML usage" {
+        It "Should detect XAML usage" -Skip:(-not $script:IsWindowsOS) {
             $def = @'
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
