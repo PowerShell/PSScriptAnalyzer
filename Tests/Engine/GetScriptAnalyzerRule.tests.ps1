@@ -63,8 +63,13 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 72
-			      $defaultRules.Count | Should -Be $expectedNumRules
+            # Dynamically count the expected number of rules from source files
+            # by finding all C# files with [Export(typeof(I...Rule))] attributes
+            $rulesRoot = Resolve-Path "$PSScriptRoot/../../Rules"
+            $expectedNumRules = (Get-ChildItem -Path $rulesRoot -Filter '*.cs' -Recurse |
+                Select-String -Pattern 'Export\(typeof\s*\(I\w+Rule\)\)' |
+                Select-Object -ExpandProperty Path -Unique).Count
+            $defaultRules.Count | Should -Be $expectedNumRules
 		}
 
         It "is a positional parameter" {
