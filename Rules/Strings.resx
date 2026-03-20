@@ -1313,6 +1313,7 @@
   </data>
   <data name="UseConstrainedLanguageModePSCustomObjectError" xml:space="preserve">
     <value>[PSCustomObject]@{{}} syntax is not permitted in Constrained Language Mode. Use New-Object PSObject -Property @{{}} or plain hashtables instead.</value>
+  </data>
   <data name="UseSingleValueFromPipelineParameterCommonName" xml:space="preserve">
     <value>Use a single ValueFromPipeline parameter per parameter set</value>
   </data>
