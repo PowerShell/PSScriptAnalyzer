@@ -1,5 +1,46 @@
 ﻿# CHANGELOG
 
+## [1.25.0](https://github.com/PowerShell/PSScriptAnalyzer/releases/tag/1.25.0)
+
+### What's Changed
+* Add configuration instructions for UseCorrectCasing (again) by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/2090
+* Fix for PSUseConsistantWhiteSpace when using statement is present by @AlexandraDorey in https://github.com/PowerShell/PSScriptAnalyzer/pull/2091
+* Exclude PSNativeCommandArgumentPassing variable by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2093
+* Update version check in PSScriptAnalyzer.psm1 to align with SMA version for PowerShell 7 by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2107
+* Change CommandInfo lookup for commands in the form `module\cmdletName` by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2125
+* PSAvoidDefaultValueForMandatoryParameter: Fix param block and parameter set handling by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2121
+* Add AvoidReservedWordsAsFunctionNames Rule by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2128
+* Update .NET SDK, PowerShell SDK, Newtonsoft.Json and codeowners by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2143
+* Preserve braced member access in `UseConsistentWhitespace` by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2140
+* Update docs and diagnostic message for UseCorrectCasing by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2138
+* Fix SuppressMessage CustomRule  by @HeyItsGilbert in https://github.com/PowerShell/PSScriptAnalyzer/pull/2142
+* Sync rules docs from docs repo by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/2144
+* Allow contributors to run CI manually by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2153
+* Remove Conditional Compilation and Runtime Checks for v3 or v4 by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2150
+* Add UseConsistentParametersKind rule by @Haimasker in https://github.com/PowerShell/PSScriptAnalyzer/pull/2149
+* Fix typos in resource strings and associated C# references by @casuffitsharp in https://github.com/PowerShell/PSScriptAnalyzer/pull/2163
+* Optimise LINQ queries by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2160
+* AlignAssignmentStatement overhaul to fix issues and include handing of Enums. by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2132
+* Dynamically count expected rules in GetScriptAnalyzerRule test by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2167
+* Add UseConsistentParameterSetName Rule by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2124
+* feat(tests): added closing bracket test for formatting presets by @o-l-a-v in https://github.com/PowerShell/PSScriptAnalyzer/pull/2161
+* Add UseSingleValueFromPipelineParameter Rule by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2119
+* Added user-friendly installation instructions by @admercs in https://github.com/PowerShell/PSScriptAnalyzer/pull/2141
+* Update .NET SDK, PowerShell SDK dependencies by @Copilot in https://github.com/PowerShell/PSScriptAnalyzer/pull/2168
+* Add Optional PSUseConstrainedLanguageMode rule by @joshcorr in https://github.com/PowerShell/PSScriptAnalyzer/pull/2165
+
+### New Contributors
+* @AlexandraDorey made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2091
+* @HeyItsGilbert made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2142
+* @Haimasker made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2149
+* @casuffitsharp made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2163
+* @o-l-a-v made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2161
+* @admercs made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2141
+* @Copilot made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2168
+* @joshcorr made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2165
+
+**Full Changelog**: https://github.com/PowerShell/PSScriptAnalyzer/compare/1.24.0...1.25.0
+
 ## [1.24.0](https://github.com/PowerShell/PSScriptAnalyzer/releases/tag/1.24.0)
 
 ### What's Changed
