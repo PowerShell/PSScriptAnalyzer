@@ -55,7 +55,7 @@ function g {
 When the rule sets parameters definition kind to `ParamBlock`:
 
 ```powershell
-# Inorrect
+# Incorrect
 function f([Parameter()]$FirstParam) {
     return
 }
