@@ -1,6 +1,6 @@
 ---
 description: Use at most a single ValueFromPipeline parameter per parameter set.
-ms.date: 08/08/2025
+ms.date: 03/20/2026
 ms.topic: reference
 title: UseSingleValueFromPipelineParameter
 ---
@@ -10,18 +10,15 @@ title: UseSingleValueFromPipelineParameter
 
 ## Description
 
-Parameter sets should have at most one parameter marked as 
-`ValueFromPipeline = true`.
+Parameter sets should have at most one parameter marked as `ValueFromPipeline = true`.
 
-This rule identifies functions where multiple parameters within the same
-parameter set have `ValueFromPipeline` set to `true` (either explicitly or
-implicitly).
+This rule identifies functions where multiple parameters within the same parameter set have
+`ValueFromPipeline` set to `true` (either explicitly or implicitly).
 
 ## How
 
-Ensure that only one parameter per parameter set accepts pipeline input by
-value. If you need multiple parameters to accept different types of pipeline
-input, use separate parameter sets.
+Ensure that only one parameter per parameter set accepts pipeline input by value. If you need
+multiple parameters to accept different types of pipeline input, use separate parameter sets.
 
 ## Example
 
@@ -33,11 +30,11 @@ function Process-Data {
     param(
         [Parameter(ValueFromPipeline)]
         [string] $InputData,
-        
+
         [Parameter(ValueFromPipeline)]
         [string] $ProcessingMode
     )
-    
+
     process {
         Write-Output "$ProcessingMode`: $InputData"
     }
@@ -53,7 +50,7 @@ function Process-Data {
     param(
         [Parameter(ValueFromPipeline)]
         [string] $InputData,
-        
+
         [Parameter(Mandatory)]
         [string] $ProcessingMode
     )
@@ -62,10 +59,11 @@ function Process-Data {
     }
 }
 ```
+
 ## Suppression
 
-To suppress this rule for a specific parameter set, use the `SuppressMessage`
-attribute with the parameter set name:
+To suppress this rule for a specific parameter set, use the `SuppressMessage` attribute with the
+parameter set name:
 
 ```powershell
 function Process-Data {
@@ -74,7 +72,7 @@ function Process-Data {
     param(
         [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
         [string] $InputData,
-        
+
         [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
         [string] $ProcessingMode
     )
@@ -92,10 +90,10 @@ For the default parameter set, use `'default'` as the suppression target:
 
 ## Notes
 
-- This rule applies to both explicit `ValueFromPipeline = $true` and implicit 
-  `ValueFromPipeline` (which is the same as using  `= $true`)
+- This rule applies to both explicit `ValueFromPipeline = $true` and implicit `ValueFromPipeline`
+  (which is the same as using `= $true`)
 - Parameters with `ValueFromPipeline=$false` are not flagged by this rule
-- The rule correctly handles the default parameter set (`__AllParameterSets`)
-  and named parameter sets
-- Different parameter sets can each have their own single `ValueFromPipeline`
-  parameter without triggering this rule
+- The rule correctly handles the default parameter set (`__AllParameterSets`) and named parameter
+  sets
+- Different parameter sets can each have their own single `ValueFromPipeline` parameter without
+  triggering this rule

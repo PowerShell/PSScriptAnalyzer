@@ -1,26 +1,36 @@
+---
+description: Use the same pattern when defining parameters.
+ms.date: 03/20/2026
+ms.topic: reference
+title: UseConsistentParametersKind
+---
 # UseConsistentParametersKind
 
 **Severity Level: Warning**
 
 ## Description
 
-All functions should have same parameters definition kind specified in the rule.
-Possible kinds are:
-1. `Inline`, i.e.:
-```PowerShell
-function f([Parameter()]$FirstParam) {
-    return
-}
-```
-2. `ParamBlock`, i.e.:
-```PowerShell
-function f {
-    param([Parameter()]$FirstParam)
-    return
-}
-```
+All functions should use the same pattern when defining parameters. Possible pattern types are:
 
-* For information: in simple scenarios both function definitions above may be considered as equal. Using this rule as-is is more for consistent code-style than functional, but it can be useful in combination with other rules.
+1. `Inline`
+
+   ```powershell
+   function f([Parameter()]$FirstParam) {
+       return
+   }
+   ```
+
+1. `ParamBlock`
+
+   ```powershell
+   function f {
+       param([Parameter()]$FirstParam)
+       return
+   }
+   ```
+
+In simple scenarios, both function definitions shown are considered to be equal. The purpose of this
+rule is to enforce consistent code style across the codebase.
 
 ## How to Fix
 
@@ -28,8 +38,9 @@ Rewrite function so it defines parameters as specified in the rule
 
 ## Example
 
-### When the rule sets parameters definition kind to 'Inline':
-```PowerShell
+When the rule sets parameters definition kind to `Inline`:
+
+```powershell
 # Correct
 function f([Parameter()]$FirstParam) {
     return
@@ -42,9 +53,10 @@ function g {
 }
 ```
 
-### When the rule sets parameters definition kind to 'ParamBlock':
-```PowerShell
-# Inorrect
+When the rule sets parameters definition kind to `ParamBlock`:
+
+```powershell
+# Incorrect
 function f([Parameter()]$FirstParam) {
     return
 }
