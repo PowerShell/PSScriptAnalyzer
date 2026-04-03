@@ -1,6 +1,6 @@
 ---
 description: List of PSScriptAnalyzer rules
-ms.date: 03/27/2024
+ms.date: 03/20/2026
 ms.topic: reference
 title: List of PSScriptAnalyzer rules
 ---
