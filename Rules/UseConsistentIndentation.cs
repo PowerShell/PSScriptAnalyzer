@@ -130,9 +130,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
-            var currentIndenationLevelIncreaseDueToPipelines = 0;
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
+            // Sort by end position so that inner (nested) pipelines appear before outer ones.
+            // This is required by MatchingPipelineAstEnd, whose early-break optimization
+            // would otherwise skip nested pipelines that end before their outer pipeline.
+            pipelineAsts.Sort((a, b) =>
+            {
+                int lineCmp = a.Extent.EndScriptPosition.LineNumber.CompareTo(b.Extent.EndScriptPosition.LineNumber);
+                return lineCmp != 0 ? lineCmp : a.Extent.EndScriptPosition.ColumnNumber.CompareTo(b.Extent.EndScriptPosition.ColumnNumber);
+            });
+            // Track pipeline indentation increases per PipelineAst instead of as a single
+            // flat counter. A flat counter caused all accumulated pipeline indentation to be
+            // subtracted when *any* pipeline ended, instead of only the contribution from
+            // that specific pipeline — leading to runaway indentation with nested pipelines.
+            var pipelineIndentationIncreases = new Dictionary<PipelineAst, int>();
             /*
                 When an LParen and LBrace are on the same line, it can lead to too much de-indentation.
                 In order to prevent the RParen code from de-indenting too much, we keep a stack of when we skipped the indentation
@@ -188,18 +200,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                         {
                             AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
-                            currentIndenationLevelIncreaseDueToPipelines++;
+                            // Attribute this increase to the innermost pipeline containing
+                            // this pipe token so it is only reversed when that specific
+                            // pipeline ends, not when an unrelated outer pipeline ends.
+                            PipelineAst containingPipeline = FindInnermostContainingPipeline(pipelineAsts, token);
+                            if (containingPipeline != null)
+                            {
+                                if (!pipelineIndentationIncreases.ContainsKey(containingPipeline))
+                                    pipelineIndentationIncreases[containingPipeline] = 0;
+                                pipelineIndentationIncreases[containingPipeline]++;
+                            }
                             break;
                         }
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
                         {
-                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst =>
-                                PositionIsEqual(LastPipeOnFirstLineWithPipeUsage((PipelineAst)pipelineAst).Extent.EndScriptPosition,
-                                   tokens[tokenIndex - 1].Extent.EndScriptPosition));
-                            if (isFirstPipeInPipeline)
+                            // Capture which specific PipelineAst this is the first pipe for,
+                            // so the indentation increase is attributed to that pipeline only.
+                            PipelineAst firstPipePipeline = pipelineAsts
+                                .Cast<PipelineAst>()
+                                .FirstOrDefault(pipelineAst =>
+                                    PositionIsEqual(LastPipeOnFirstLineWithPipeUsage(pipelineAst).Extent.EndScriptPosition,
+                                       tokens[tokenIndex - 1].Extent.EndScriptPosition));
+                            if (firstPipePipeline != null)
                             {
                                 AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
-                                currentIndenationLevelIncreaseDueToPipelines++;
+                                if (!pipelineIndentationIncreases.ContainsKey(firstPipePipeline))
+                                    pipelineIndentationIncreases[firstPipePipeline] = 0;
+                                pipelineIndentationIncreases[firstPipePipeline]++;
                             }
                         }
                         break;
@@ -290,8 +317,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline ||
                     pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                 {
-                    indentationLevel = ClipNegative(indentationLevel - currentIndenationLevelIncreaseDueToPipelines);
-                    currentIndenationLevelIncreaseDueToPipelines = 0;
+                    // Only subtract the indentation contributed by this specific pipeline,
+                    // leaving contributions from outer/unrelated pipelines intact.
+                    if (pipelineIndentationIncreases.TryGetValue(matchingPipeLineAstEnd, out int contribution))
+                    {
+                        indentationLevel = ClipNegative(indentationLevel - contribution);
+                        pipelineIndentationIncreases.Remove(matchingPipeLineAstEnd);
+                    }
                 }
             }
 
@@ -430,6 +462,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return matchingPipeLineAstEnd;
+        }
+
+        /// <summary>
+        /// Finds the innermost (smallest) PipelineAst whose extent fully contains the given token.
+        /// Used to attribute pipeline indentation increases to the correct pipeline when
+        /// using IncreaseIndentationAfterEveryPipeline.
+        /// </summary>
+        private static PipelineAst FindInnermostContainingPipeline(List<Ast> pipelineAsts, Token token)
+        {
+            PipelineAst best = null;
+            int bestSize = int.MaxValue;
+            foreach (var ast in pipelineAsts)
+            {
+                var pipeline = (PipelineAst)ast;
+                int pipelineStart = pipeline.Extent.StartOffset;
+                int pipelineEnd = pipeline.Extent.EndOffset;
+                int pipelineSize = pipelineEnd - pipelineStart;
+                if (pipelineStart <= token.Extent.StartOffset &&
+                    token.Extent.EndOffset <= pipelineEnd &&
+                    pipelineSize < bestSize)
+                {
+                    best = pipeline;
+                    bestSize = pipelineSize;
+                }
+            }
+            return best;
         }
 
         private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)

@@ -549,6 +549,370 @@ foo |
         }
     }
 
+    Context "When a nested multi-line pipeline is inside a pipelined script block" {
+
+        It "Should preserve indentation with nested pipeline using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+        Get-Process |
+            Select-Object -Last 1
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+        Get-Process |
+            Select-Object -Last 1
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+$Test |
+ForEach-Object {
+    Get-Process |
+    Select-Object -Last 1
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+    Get-Process |
+            Select-Object -Last 1
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should recover indentation after nested pipeline block using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+function foo {
+    $Test |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $thisLineShouldBeAtOneIndent
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+function foo {
+    $Test |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $thisLineShouldBeAtOneIndent
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+function foo {
+    $Test |
+    ForEach-Object {
+        Get-Process |
+        Select-Object -Last 1
+    }
+    $thisLineShouldBeAtOneIndent
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+function foo {
+    $Test |
+        ForEach-Object {
+        Get-Process |
+                Select-Object -Last 1
+    }
+    $thisLineShouldBeAtOneIndent
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should handle multiple sequential nested pipeline blocks using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+function foo {
+    $a |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $b |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $stillCorrect
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+function foo {
+    $a |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $b |
+        ForEach-Object {
+            Get-Process |
+                Select-Object -Last 1
+        }
+    $stillCorrect
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+function foo {
+    $a |
+    ForEach-Object {
+        Get-Process |
+        Select-Object -Last 1
+    }
+    $b |
+    ForEach-Object {
+        Get-Process |
+        Select-Object -Last 1
+    }
+    $stillCorrect
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+function foo {
+    $a |
+        ForEach-Object {
+        Get-Process |
+                Select-Object -Last 1
+    }
+    $b |
+        ForEach-Object {
+        Get-Process |
+                Select-Object -Last 1
+    }
+    $stillCorrect
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should handle inner pipeline with 3+ elements using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+        Get-Process |
+            Where-Object Path |
+            Select-Object -Last 1
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+        Get-Process |
+            Where-Object Path |
+                Select-Object -Last 1
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+$Test |
+ForEach-Object {
+    Get-Process |
+    Where-Object Path |
+    Select-Object -Last 1
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+$Test |
+    ForEach-Object {
+    Get-Process |
+            Where-Object Path |
+            Select-Object -Last 1
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should handle outer pipeline on same line as command using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+$Test | ForEach-Object {
+    Get-Process |
+        Select-Object -Last 1
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+$Test | ForEach-Object {
+    Get-Process |
+        Select-Object -Last 1
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+$Test | ForEach-Object {
+    Get-Process |
+    Select-Object -Last 1
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+$Test | ForEach-Object {
+    Get-Process |
+        Select-Object -Last 1
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should handle deeply nested pipelines (3 levels) using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                IdempotentScriptDefinition = @'
+$a |
+    ForEach-Object {
+        $b |
+            ForEach-Object {
+                Get-Process |
+                    Select-Object -Last 1
+            }
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                IdempotentScriptDefinition = @'
+$a |
+    ForEach-Object {
+        $b |
+            ForEach-Object {
+                Get-Process |
+                    Select-Object -Last 1
+            }
+    }
+'@
+            }
+            @{
+                PipelineIndentation = 'NoIndentation'
+                IdempotentScriptDefinition = @'
+$a |
+ForEach-Object {
+    $b |
+    ForEach-Object {
+        Get-Process |
+        Select-Object -Last 1
+    }
+}
+'@
+            }
+            @{
+                PipelineIndentation = 'None'
+                IdempotentScriptDefinition = @'
+$a |
+    ForEach-Object {
+    $b |
+            ForEach-Object {
+        Get-Process |
+                    Select-Object -Last 1
+    }
+}
+'@
+            }
+        ) {
+            param ($PipelineIndentation, $IdempotentScriptDefinition)
+
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+
+        It "Should handle single-line inner pipeline inside multi-line outer pipeline using <PipelineIndentation>" -TestCases @(
+            @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+            @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+            @{ PipelineIndentation = 'NoIndentation' }
+            @{ PipelineIndentation = 'None' }
+        ) {
+            param ($PipelineIndentation)
+
+            $idempotentScriptDefinition = @'
+$Test | ForEach-Object {
+    Get-Process | Select-Object -Last 1
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $IdempotentScriptDefinition
+        }
+    }
+
     Context "When tabs instead of spaces are used for indentation" {
         BeforeEach {
             $settings.Rules.PSUseConsistentIndentation.Kind = 'tab'
