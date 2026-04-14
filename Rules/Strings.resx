@@ -933,6 +933,18 @@
   <data name="AvoidSemicolonsAsLineTerminatorsError" xml:space="preserve">
     <value>Line ends with a semicolon</value>
   </data>
+    <data name="AvoidUsingArrayListCommonName" xml:space="preserve">
+    <value>Avoid using the ArrayList class</value>
+  </data>
+  <data name="AvoidUsingArrayListDescription" xml:space="preserve">
+      <value>Avoid using the ArrayList class in PowerShell scripts. Consider using generic collections or fixed arrays instead.</value>
+  </data>
+  <data name="AvoidUsingArrayListName" xml:space="preserve">
+      <value>AvoidUsingArrayList</value>
+  </data>
+  <data name="AvoidUsingArrayListError" xml:space="preserve">
+      <value>The ArrayList class is used in '{0}'. Consider using a generic collection or a fixed array instead.</value>
+  </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
   </data>

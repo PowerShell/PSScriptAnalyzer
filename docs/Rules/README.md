@@ -28,6 +28,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md)                           | Warning     |        Yes         |                 |
 | [AvoidTrailingWhitespace](./AvoidTrailingWhitespace.md)                                           | Warning     |        Yes         |                 |
 | [AvoidUsingAllowUnencryptedAuthentication](./AvoidUsingAllowUnencryptedAuthentication.md)         | Warning     |        Yes         |                 |
+| [AvoidUsingArrayList](./AvoidUsingArrayList.md)                                                   | Warning     |        Yes         |                 |
 | [AvoidUsingBrokenHashAlgorithms](./AvoidUsingBrokenHashAlgorithms.md)                             | Warning     |        Yes         |                 |
 | [AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md)                                           | Warning     |        Yes         | Yes<sup>2</sup> |
 | [AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md)                           | Error       |        Yes         |                 |
