@@ -143,15 +143,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Track pipeline indentation increases per PipelineAst instead of as a single
             // flat counter. A flat counter caused all accumulated pipeline indentation to be
             // subtracted when *any* pipeline ended, instead of only the contribution from
-            // that specific pipeline — leading to runaway indentation with nested pipelines.
+            // that specific pipeline - leading to runaway indentation with nested pipelines.
             var pipelineIndentationIncreases = new Dictionary<PipelineAst, int>();
-            /*
-                When an LParen and LBrace are on the same line, it can lead to too much de-indentation.
-                In order to prevent the RParen code from de-indenting too much, we keep a stack of when we skipped the indentation
-                caused by tokens that require a closing RParen (which are LParen, AtParen and DollarParen).
-            */
-            var lParenSkippedIndentation = new Stack<bool>();
-            
+            // When multiple openers appear on the same line (e.g. ({ or @(@{),
+            // only the last unclosed opener should affect indentation. We
+            // track, for every opener, whether its indentation increment was
+            // skipped so that the matching closer knows not to decrement.
+            var openerSkippedIndentation = new Stack<bool>();
+
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
                 var token = tokens[tokenIndex];
@@ -165,27 +164,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     case TokenKind.AtCurly:
                     case TokenKind.LCurly:
-                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
-                        break;
-
                     case TokenKind.DollarParen:
                     case TokenKind.AtParen:
-                        lParenSkippedIndentation.Push(false);
-                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        if (HasUnclosedOpenerBeforeLineEnd(tokens, tokenIndex))
+                        {
+                            openerSkippedIndentation.Push(true);
+                        }
+                        else
+                        {
+                            indentationLevel++;
+                            openerSkippedIndentation.Push(false);
+                        }
                         break;
 
                     case TokenKind.LParen:
                         AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
-                        // When a line starts with a parenthesis and it is not the last non-comment token of that line,
-                        // then indentation does not need to be increased.
+                        // When a line starts with a parenthesis and it is not the
+                        // last non-comment token of that line, indentation does
+                        // not need to be increased.
                         if ((tokenIndex == 0 || tokens[tokenIndex - 1].Kind == TokenKind.NewLine) &&
                             NextTokenIgnoringComments(tokens, tokenIndex)?.Kind != TokenKind.NewLine)
                         {
-                            onNewLine = false;
-                            lParenSkippedIndentation.Push(true);
+                            openerSkippedIndentation.Push(true);
                             break;
                         }
-                        lParenSkippedIndentation.Push(false);
+                        // General case: skip when another opener follows so that
+                        // only the last unclosed opener on a line is indent-affecting.
+                        if (HasUnclosedOpenerBeforeLineEnd(tokens, tokenIndex))
+                        {
+                            openerSkippedIndentation.Push(true);
+                            break;
+                        }
+                        openerSkippedIndentation.Push(false);
                         indentationLevel++;
                         break;
 
@@ -232,23 +243,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.RParen:
-                        bool matchingLParenIncreasedIndentation = false;
-                        if (lParenSkippedIndentation.Count > 0)
-                        {
-                            matchingLParenIncreasedIndentation = lParenSkippedIndentation.Pop();
-                        }
-                        if (matchingLParenIncreasedIndentation)
-                        {
-                            onNewLine = false;
-                            break;
-                        }
-                        indentationLevel = ClipNegative(indentationLevel - 1);
-                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
-                        break;
-
                     case TokenKind.RCurly:
-                        indentationLevel = ClipNegative(indentationLevel - 1);
-                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        if (openerSkippedIndentation.Count > 0 && openerSkippedIndentation.Pop())
+                        {
+                            // The matching opener skipped its increment, so we
+                            // skip the decrement but still enforce indentation.
+                            AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        }
+                        else
+                        {
+                            indentationLevel = ClipNegative(indentationLevel - 1);
+                            AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        }
                         break;
 
                     case TokenKind.NewLine:
@@ -328,6 +334,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        /// <summary>
+        /// Scans forward from the current opener to the end of the line.
+        /// Returns true if there is at least one unclosed opener when
+        /// the line ends, meaning the current opener should skip its
+        /// indentation increment.  If the current opener's own closer
+        /// is found on the same line (depth drops below zero), returns
+        /// false so that it indents normally.
+        /// </summary>
+        private static bool HasUnclosedOpenerBeforeLineEnd(Token[] tokens, int currentIndex)
+        {
+            int depth = 0;
+            for (int i = currentIndex + 1; i < tokens.Length; i++)
+            {
+                switch (tokens[i].Kind)
+                {
+                    case TokenKind.NewLine:
+                    case TokenKind.LineContinuation:
+                    case TokenKind.EndOfInput:
+                        return depth > 0;
+
+                    case TokenKind.LCurly:
+                    case TokenKind.AtCurly:
+                    case TokenKind.LParen:
+                    case TokenKind.AtParen:
+                    case TokenKind.DollarParen:
+                        depth++;
+                        break;
+
+                    case TokenKind.RCurly:
+                    case TokenKind.RParen:
+                        depth--;
+                        if (depth < 0)
+                        {
+                            // Our own closer was found on this line.
+                            return false;
+                        }
+                        break;
+                }
+            }
+
+            return depth > 0;
         }
 
         private static Token NextTokenIgnoringComments(Token[] tokens, int startIndex)

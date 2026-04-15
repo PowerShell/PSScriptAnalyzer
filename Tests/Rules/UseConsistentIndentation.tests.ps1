@@ -913,6 +913,122 @@ $Test | ForEach-Object {
         }
     }
 
+    Context "When multiple openers appear on the same line" {
+        It "Should not double-indent for paren-then-brace: .foreach({" {
+            $def = @'
+@('a', 'b').foreach({
+        $_.ToUpper()
+    })
+'@
+            $expected = @'
+@('a', 'b').foreach({
+    $_.ToUpper()
+})
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should not double-indent for brace-then-paren: {(" {
+            $def = @'
+@('a', 'b').foreach({(
+        $_.ToUpper()
+    )})
+'@
+            $expected = @'
+@('a', 'b').foreach({(
+    $_.ToUpper()
+)})
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should not double-indent for array-then-hashtable on same line: @(@{" {
+            $idempotentScriptDefinition = @'
+$x = @(@{
+    key = 'value'
+})
+'@
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
+
+        It "Should not double-indent when non-opener tokens separate openers: ([PSCustomObject]@{" {
+            $def = @'
+$list.Add([PSCustomObject]@{
+        Name = "Test"
+        Value = 123
+    })
+'@
+            $expected = @'
+$list.Add([PSCustomObject]@{
+    Name = "Test"
+    Value = 123
+})
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should indent normally when all openers are closed on the same line" {
+            $idempotentScriptDefinition = @'
+$list.Add([PSCustomObject]@{Name = "Test"; Value = 123})
+'@
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
+
+        It "Should handle closing brace and paren on separate lines" {
+            $def = @'
+@('a', 'b').foreach({
+            $_.ToUpper()
+        }
+    )
+'@
+            $expected = @'
+@('a', 'b').foreach({
+    $_.ToUpper()
+}
+)
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should handle nested .foreach({ }) calls" {
+            $def = @'
+@(1, 2).foreach({
+@('a', 'b').foreach({
+"$_ and $_"
+})
+})
+'@
+            $expected = @'
+@(1, 2).foreach({
+    @('a', 'b').foreach({
+        "$_ and $_"
+    })
+})
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should still indent each opener separately when on different lines" {
+            $idempotentScriptDefinition = @'
+$x = @(
+    @{
+        key = 'value'
+    }
+)
+'@
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
+
+        It "Should still indent normally for sub-expressions" {
+            $idempotentScriptDefinition = @'
+$(
+    Get-Process
+)
+'@
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
+    }
+
     Context "When tabs instead of spaces are used for indentation" {
         BeforeEach {
             $settings.Rules.PSUseConsistentIndentation.Kind = 'tab'
