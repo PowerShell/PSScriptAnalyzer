@@ -1,6 +1,6 @@
 ---
 description: Avoid using ArrayList
-ms.date: 08/31/2025
+ms.date: 04/15/2026
 ms.topic: reference
 title: AvoidUsingArrayList
 ---
