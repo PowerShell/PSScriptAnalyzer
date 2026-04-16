@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     break;
                 }
             }
-            if (ArrayListName == null) { ArrayListName = new Regex(@"^(System\.)?Collections\.ArrayList", RegexOptions.IgnoreCase); }
+            if (ArrayListName == null) { ArrayListName = new Regex(@"^(System\.)?Collections\.ArrayList$", RegexOptions.IgnoreCase); }
 
             // Find all type initializers that create a new instance of the ArrayList class.
             IEnumerable<Ast> typeAsts = ast.FindAll(testAst =>
