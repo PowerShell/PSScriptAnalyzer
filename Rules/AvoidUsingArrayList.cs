@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // If there is an using statement for the Collections namespace, check for the full typename.
             // Otherwise also check for the bare ArrayList name.
-            Regex ArrayListName = null;
+            Regex arrayListName = null;
             var sbAst = ast as ScriptBlockAst;
             foreach (UsingStatementAst usingAst in sbAst.UsingStatements)
             {
@@ -51,11 +51,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     )
                 )
                 {
-                    ArrayListName = new Regex(@"^((System\.)?Collections\.)?ArrayList$", RegexOptions.IgnoreCase);
+                    arrayListName = new Regex(@"^((System\.)?Collections\.)?ArrayList$", RegexOptions.IgnoreCase);
                     break;
                 }
             }
-            if (ArrayListName == null) { ArrayListName = new Regex(@"^(System\.)?Collections\.ArrayList$", RegexOptions.IgnoreCase); }
+            if (arrayListName == null) { arrayListName = new Regex(@"^(System\.)?Collections\.ArrayList$", RegexOptions.IgnoreCase); }
 
             // Find all type initializers that create a new instance of the ArrayList class.
             IEnumerable<Ast> typeAsts = ast.FindAll(testAst =>
@@ -67,7 +67,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 (
                     testAst is TypeExpressionAst typeAst &&
                     typeAst.TypeName != null &&
-                    ArrayListName.IsMatch(typeAst.TypeName.Name) &&
+                    arrayListName.IsMatch(typeAst.TypeName.Name) &&
                     typeAst.Parent is InvokeMemberExpressionAst parentAst &&
                     parentAst.Member != null &&
                     parentAst.Member is StringConstantExpressionAst memberAst &&
@@ -105,8 +105,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Check for -TypeName parameter
                 if (
                     bindingResult.BoundParameters.ContainsKey("TypeName") &&
-                    ArrayListName != null &&
-                    ArrayListName.IsMatch(bindingResult.BoundParameters["TypeName"].ConstantValue as string)
+                    arrayListName != null &&
+                    arrayListName.IsMatch(bindingResult.BoundParameters["TypeName"].ConstantValue as string)
                 )
                 {
                     yield return new DiagnosticRecord(
