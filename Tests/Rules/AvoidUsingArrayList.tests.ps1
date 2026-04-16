@@ -6,7 +6,7 @@ BeforeAll {
     $ruleMessage = "The ArrayList class is used in '*'. Consider using a generic collection or a fixed array instead."
 }
 
-Describe "AvoidUsingWriteHost" {
+Describe "AvoidArrayList" {
     Context "When there are violations" {
         $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
         It "has ArrayList violations" {
