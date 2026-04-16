@@ -10,8 +10,5 @@
         "**/bower_components": true,
         "/PSCompatibilityCollector/profiles": true,
         "/PSCompatibilityCollector/optional_profiles": true
-    },
-    "cSpell.words": [
-        "CORECLR"
-    ]
+    }
 }
