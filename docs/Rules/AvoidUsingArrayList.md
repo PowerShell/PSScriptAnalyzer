@@ -1,5 +1,5 @@
 ---
-description: Avoid reserved words as function names
+description: Avoid using ArrayList
 ms.date: 08/31/2025
 ms.topic: reference
 title: AvoidUsingArrayList
