@@ -15,4 +15,5 @@ $List = [ArrayLIST]@(1,2,3)
 $List = [ArrayList]::new()
 $List = [Collections.ArrayList]::New()
 $List = [System.Collections.ArrayList]::new()
+
 1..3 | ForEach-Object { $null = $List.Add($_) }
