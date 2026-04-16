@@ -12,29 +12,34 @@ BeforeAll {
 }
 
 Describe "AvoidArrayList" {
+
+    BeforeDiscovery {
+        $violationFileName = "$PSScriptRoot\AvoidUsingArrayList.ps1"
+        $violationExtents = [Parser]::ParseFile($violationFileName, [ref] $null, [ref] $null).FindAll({
+            $Args[0] -is [AssignmentStatementAst] -and
+            $Args[0].Left.Extent.Text -eq '$List'
+        }, $false).Right.Extent
+    }
+
     Context "When there are violations" {
 
         BeforeAll {
             $violationFileName = "$PSScriptRoot\AvoidUsingArrayList.ps1"
             $violations = Invoke-ScriptAnalyzer $violationFileName | Where-Object RuleName -eq $ruleName
-
-            $violationExtents = @{}
-                [Parser]::ParseFile($violationFileName, [ref] $null, [ref] $null).FindAll({
-                    $Args[0] -is [AssignmentStatementAst] -and
-                    $Args[0].Left.Extent.Text -eq '$List'
-            }, $false).Right.Extent.foreach{ $violationExtents[$_.StartLineNumber] = $_ }
+            $violationLines = @{}
+            foreach ($violation in $violations) { $violationLines[$violation.Line] = $violation }
         }
 
         It "Should return 12 violations" {
             $violations.Count | Should -Be 12
         }
 
-        It "Should return a correct violation record" -ForEach $violations {
-            $expectedViolation = $violationExtents[$_.Line]
-            $_.Extent.Text | Should -Be $expectedViolation.Text
-            $_.Message     | Should -Be ($ruleMessage -f $expectedViolation.Text)
-            $_.Severity    | Should -Be Warning
-            $_.ScriptName  | Should -Be AvoidUsingArrayList.ps1
+        It "Each violation should contain" -ForEach $violationExtents {
+            $violation = $violationLines[$_.StartLineNumber]
+            $violation.Extent.Text | Should -Be $_.Text
+            $violation.Message     | Should -Be ($ruleMessage -f $_.Text)
+            $violation.Severity    | Should -Be Warning
+            $violation.ScriptName  | Should -Be AvoidUsingArrayList.ps1
         }
     }
 

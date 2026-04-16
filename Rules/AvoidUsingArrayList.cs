@@ -81,7 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         CultureInfo.CurrentCulture,
                         Strings.AvoidUsingArrayListError,
                         typeAst.Parent.Extent.Text),
-                    typeAst.Extent,
+                    typeAst.Parent.Extent,
                     GetName(),
                     DiagnosticSeverity.Warning,
                     fileName
@@ -112,7 +112,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             CultureInfo.CurrentCulture,
                             Strings.AvoidUsingArrayListError,
                             cmd.Extent.Text),
-                        bindingResult.BoundParameters["TypeName"].Value.Extent,
+                        cmd.Extent,
                         GetName(),
                         DiagnosticSeverity.Warning,
                         fileName
