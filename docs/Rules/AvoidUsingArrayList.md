@@ -20,7 +20,7 @@ that PowerShell is a weakly typed language. However, the `ArrayList` class does 
 safety and performance benefits of generic collections. Instead of using an `ArrayList`, consider using either a
 [`System.Collections.Generic.List[Object]`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)
 class or a fixed PowerShell array.
-Besides, the `ArrayList.Add` method returns the index of the added element which often unintendedly pollutes the
+Besides, the `ArrayList.Add` method returns the index of the added element which often unintentionally pollutes the
 PowerShell pipeline and therefore might cause unexpected issues.
 
 ## How to Fix
