@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
 using System.Text.RegularExpressions;
-using System.ComponentModel;
-
 
 #if !CORECLR
 using System.ComponentModel.Composition;
