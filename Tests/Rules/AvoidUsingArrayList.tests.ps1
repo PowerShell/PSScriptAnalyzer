@@ -41,6 +41,19 @@ Describe "AvoidArrayList" {
             $violation.Severity    | Should -Be Warning
             $violation.ScriptName  | Should -Be AvoidUsingArrayList.ps1
         }
+
+
+        It "Dynamic types shouldn't error"  {
+            # but aren't covered by the rule
+
+            $scriptDefinition = {
+                $type = "System.Collections.ArrayList"
+                New-Object -TypeName '$type'
+            }.ToString()
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
     }
 
     Context "When there are no violations" {
