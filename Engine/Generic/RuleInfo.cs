@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
@@ -18,6 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string sourceName;
         private RuleSeverity ruleSeverity;
         private Type implementingType;
+        private IReadOnlyList<RuleOptionInfo> options;
 
         /// <summary>
         /// Name: The name of the rule.
@@ -91,6 +93,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Options : The configurable properties for this rule, if any.
+        /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public IReadOnlyList<RuleOptionInfo> Options
+        {
+            get { return options; }
+            private set { options = value; }
+        }
+
+        /// <summary>
         /// Constructor for a RuleInfo.
         /// </summary>
         /// <param name="name">Name of the rule.</param>
@@ -126,6 +138,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             SourceName  = sourceName;
             Severity = severity;
             ImplementingType = implementingType;
+        }
+
+        /// <summary>
+        /// Constructor for a RuleInfo.
+        /// </summary>
+        /// <param name="name">Name of the rule.</param>
+        /// <param name="commonName">Common Name of the rule.</param>
+        /// <param name="description">Description of the rule.</param>
+        /// <param name="sourceType">Source type of the rule.</param>
+        /// <param name="sourceName">Source name of the rule.</param>
+        /// <param name="severity">Severity of the rule.</param>
+        /// <param name="implementingType">The dotnet type of the rule.</param>
+        /// <param name="options">The configurable properties for this rule.</param>
+        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType, IReadOnlyList<RuleOptionInfo> options)
+        {
+            RuleName = name;
+            CommonName = commonName;
+            Description = description;
+            SourceType = sourceType;
+            SourceName = sourceName;
+            Severity = severity;
+            ImplementingType = implementingType;
+            Options = options;
         }
 
         public override string ToString()
