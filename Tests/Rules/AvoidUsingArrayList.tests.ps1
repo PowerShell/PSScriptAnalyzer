@@ -13,52 +13,211 @@ BeforeAll {
 
 Describe "AvoidArrayList" {
 
-    BeforeDiscovery {
-        $violationFileName = "$PSScriptRoot\AvoidUsingArrayList.ps1"
-        $violationExtents = [Parser]::ParseFile($violationFileName, [ref] $null, [ref] $null).FindAll({
-            $Args[0] -is [AssignmentStatementAst] -and
-            $Args[0].Left.Extent.Text -eq '$List'
-        }, $false).Right.Extent
-    }
-
     Context "When there are violations" {
 
         BeforeAll {
-            $violationFileName = "$PSScriptRoot\AvoidUsingArrayList.ps1"
-            $violations = Invoke-ScriptAnalyzer $violationFileName | Where-Object RuleName -eq $ruleName
-            $violationLines = @{}
-            foreach ($violation in $violations) { $violationLines[$violation.Line] = $violation }
+            $usingCollections = 'using namespace system.collections' + [Environment]::NewLine
         }
 
-        It "Should return 12 violations" {
-            $violations.Count | Should -Be 12
-        }
-
-        It "Each violation should contain" -ForEach $violationExtents {
-            $violation = $violationLines[$_.StartLineNumber]
-            $violation.Extent.Text | Should -Be $_.Text
-            $violation.Message     | Should -Be ($ruleMessage -f $_.Text)
-            $violation.Severity    | Should -Be Warning
-            $violation.ScriptName  | Should -Be AvoidUsingArrayList.ps1
-        }
-
-
-        It "Dynamic types shouldn't error"  {
-            # but aren't covered by the rule
-
-            $scriptDefinition = {
-                $type = "System.Collections.ArrayList"
-                New-Object -TypeName '$type'
+        It "Unquoted New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object ArrayList}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object ArrayList})
+        }
 
+        It "Single quoted New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object 'ArrayList'
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object 'ArrayList'}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object 'ArrayList'})
+        }
+
+        It "Double quoted New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object "ArrayList"
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object "ArrayList"}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object "ArrayList"})
+        }
+
+        It "New-Object with full parameter name" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object -TypeName ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object -TypeName ArrayList}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object -TypeName ArrayList})
+        }
+
+        It "New-Object with abbreviated parameter name and odd casing" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object -Type ArrayLIST
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object -Type ArrayLIST}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object -Type ArrayLIST})
+        }
+
+        It "New-Object with full type name" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object -TypeName System.Collections.ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object -TypeName System.Collections.ArrayList}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object -TypeName System.Collections.ArrayList})
+        }
+
+        It "New-Object with semi full type name and odd casing" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object COLLECTIONS.ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object COLLECTIONS.ArrayList}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object COLLECTIONS.ArrayList})
+        }
+
+        It "Type initializer with 3 parameters" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList](1,2,3)
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {[ArrayList](1,2,3)}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {[ArrayList](1,2,3)})
+        }
+
+        It "Type initializer with array parameters" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList]@(1,2,3)
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {[ArrayList]@(1,2,3)}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {[ArrayList]@(1,2,3)})
+        }
+
+        It "Type initializer with new constructor" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList]::new()
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {[ArrayList]::new()}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {[ArrayList]::new()})
+        }
+
+        It "Full type name initializer with new constructor" {
+            $scriptDefinition = $usingCollections + {
+                $List = [System.Collections.ArrayList]::new()
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {[System.Collections.ArrayList]::new()}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {[System.Collections.ArrayList]::new()})
+        }
+
+        It "Semi full type name initializer with new constructor and odd casing" {
+            $scriptDefinition = $usingCollections + {
+                $List = [COLLECTIONS.ArrayList]::new()
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {[COLLECTIONS.ArrayList]::new()}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {[COLLECTIONS.ArrayList]::new()})
+        }
+    }
+
+    Context "When there are no violations" {
+
+        BeforeAll {
+            $usingGeneric = 'using namespace System.Collections.Generic' + [Environment]::NewLine
+        }
+
+        It "New-Object List[Object]" {
+            $scriptDefinition = {
+                $List = New-Object List[Object]
+                1..3 | ForEach-Object { $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "[List[Object]]::new()" {
+            $scriptDefinition = {
+                $List = [List[Object]]::new()
+                1..3 | ForEach-Object { $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "Using the pipeline" {
+            $scriptDefinition = {
+                $List = 1..3 | ForEach-Object { $_ }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "Out of the namespace scope" {
+            $scriptDefinition = $usingGeneric + {
+                $List = New-Object ArrayList
+                $List = [ArrayList](1,2,3)
+                $List = [ArrayList]@(1,2,3)
+                $List = [ArrayList]::new()
+            }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations | Should -BeNullOrEmpty
         }
     }
 
-    Context "When there are no violations" {
-        It "returns no violations" {
-            $noViolations.Count | Should -Be 0
+    Context "Test for potential errors" {
+
+        It "Dynamic types shouldn't error"  {
+            $scriptDefinition = {
+                $type = "System.Collections.ArrayList"
+                New-Object -TypeName '$type'
+            }.ToString()
+
+            $analyzer = { Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName) }
+            $analyzer | Should -Not -Throw # but won't violate either (too complex to cover)
         }
     }
 }

@@ -933,7 +933,7 @@
   <data name="AvoidSemicolonsAsLineTerminatorsError" xml:space="preserve">
     <value>Line ends with a semicolon</value>
   </data>
-    <data name="AvoidUsingArrayListCommonName" xml:space="preserve">
+  <data name="AvoidUsingArrayListCommonName" xml:space="preserve">
     <value>Avoid using the ArrayList class</value>
   </data>
   <data name="AvoidUsingArrayListDescription" xml:space="preserve">
