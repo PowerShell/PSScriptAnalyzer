@@ -9,15 +9,13 @@ param()
 BeforeAll {
     $ruleName = "PSAvoidUsingArrayList"
     $ruleMessage = "The ArrayList class is used in '{0}'. Consider using a generic collection or a fixed array instead."
+    $usingCollections = 'using namespace system.collections' + [Environment]::NewLine
+    $usingGeneric = 'using namespace System.Collections.Generic' + [Environment]::NewLine
 }
 
 Describe "AvoidArrayList" {
 
     Context "When there are violations" {
-
-        BeforeAll {
-            $usingCollections = 'using namespace system.collections' + [Environment]::NewLine
-        }
 
         It "Unquoted New-Object type" {
             $scriptDefinition = $usingCollections + {
@@ -166,10 +164,6 @@ Describe "AvoidArrayList" {
 
     Context "When there are no violations" {
 
-        BeforeAll {
-            $usingGeneric = 'using namespace System.Collections.Generic' + [Environment]::NewLine
-        }
-
         It "New-Object List[Object]" {
             $scriptDefinition = {
                 $List = New-Object List[Object]
@@ -205,6 +199,65 @@ Describe "AvoidArrayList" {
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Disabled" {
+
+        BeforeAll {
+            $settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $false } }
+            }
+        }
+
+        It "New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "Type initializer" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList](1,2,3)
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "New constructor" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList]::new()
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Explicitly enabled" {
+
+        BeforeAll {
+            $settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $true } }
+            }
+        }
+
+        It "New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Object ArrayList}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f {New-Object ArrayList})
         }
     }
 
