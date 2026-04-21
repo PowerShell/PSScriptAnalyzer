@@ -114,8 +114,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                 foreach (IRule rule in rules)
                 {
+                    var ruleOptions = rule is ConfigurableRule
+                        ? RuleOptionInfo.GetRuleOptions(rule)
+                        : null;
+
                     WriteObject(new RuleInfo(rule.GetName(), rule.GetCommonName(), rule.GetDescription(),
-                        rule.GetSourceType(), rule.GetSourceName(), rule.GetSeverity(), rule.GetType()));
+                        rule.GetSourceType(), rule.GetSourceName(), rule.GetSeverity(), rule.GetType(), ruleOptions));
                 }
             }
         }

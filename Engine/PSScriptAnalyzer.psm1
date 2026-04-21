@@ -49,6 +49,10 @@ if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore) {
 
     }
 
+    Register-ArgumentCompleter -CommandName 'New-ScriptAnalyzerSettingsFile' `
+        -ParameterName 'BaseOnPreset' `
+        -ScriptBlock $settingPresetCompleter
+
     Function RuleNameCompleter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
 
