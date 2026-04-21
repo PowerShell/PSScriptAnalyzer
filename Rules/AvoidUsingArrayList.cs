@@ -107,7 +107,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Check for -TypeName parameter
                 if (
                     bindingResult.BoundParameters.ContainsKey("TypeName") &&
-                    bindingResult.BoundParameters["TypeName"] != null &&
+                    bindingResult.BoundParameters["TypeName"].ConstantValue != null &&
                     arrayListName.IsMatch(bindingResult.BoundParameters["TypeName"].ConstantValue as string)
                 )
                 {

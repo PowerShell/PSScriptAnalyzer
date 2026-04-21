@@ -266,7 +266,7 @@ Describe "AvoidArrayList" {
         It "Dynamic types shouldn't error"  {
             $scriptDefinition = {
                 $type = "System.Collections.ArrayList"
-                New-Object -TypeName '$type'
+                New-Object -TypeName $type
             }.ToString()
 
             $analyzer = { Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName) }
