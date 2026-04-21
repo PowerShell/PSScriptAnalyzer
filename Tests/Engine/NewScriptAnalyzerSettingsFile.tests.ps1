@@ -42,6 +42,21 @@ Describe "New-ScriptAnalyzerSettingsFile" {
             $data.ContainsKey('Severity') | Should -BeTrue
         }
 
+        It "Should contain the CustomRulePath key" {
+            $data = Import-PowerShellDataFile -Path $settingsPath
+            $data.ContainsKey('CustomRulePath') | Should -BeTrue
+        }
+
+        It "Should contain the IncludeDefaultRules key" {
+            $data = Import-PowerShellDataFile -Path $settingsPath
+            $data.ContainsKey('IncludeDefaultRules') | Should -BeTrue
+        }
+
+        It "Should contain the RecurseCustomRulePath key" {
+            $data = Import-PowerShellDataFile -Path $settingsPath
+            $data.ContainsKey('RecurseCustomRulePath') | Should -BeTrue
+        }
+
         It "Should contain the Rules key" {
             $data = Import-PowerShellDataFile -Path $settingsPath
             $data.ContainsKey('Rules') | Should -BeTrue
@@ -131,6 +146,9 @@ Describe "New-ScriptAnalyzerSettingsFile" {
             $data.ContainsKey('IncludeRules') | Should -BeTrue
             $data.ContainsKey('ExcludeRules') | Should -BeTrue
             $data.ContainsKey('Severity') | Should -BeTrue
+            $data.ContainsKey('CustomRulePath') | Should -BeTrue
+            $data.ContainsKey('IncludeDefaultRules') | Should -BeTrue
+            $data.ContainsKey('RecurseCustomRulePath') | Should -BeTrue
             $data.ContainsKey('Rules') | Should -BeTrue
         }
 

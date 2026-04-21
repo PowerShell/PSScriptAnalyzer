@@ -26,7 +26,9 @@ configuration defined by the given preset.
 
 When **BaseOnPreset** is not provided, the generated file includes all current rules in the
 `IncludeRules` list and populates the `Rules` section with all configurable properties, set to their
-default values.
+default values. Both modes also include `CustomRulePath`, `RecurseCustomRulePath`, and
+`IncludeDefaultRules` keys with descriptive comments so the file is immediately ready for
+customisation.
 
 If a settings file already exists at the target path, the cmdlet emits a terminating error unless
 the **Force** parameter is specified - in which case it is overwritten.
@@ -171,6 +173,9 @@ The cmdlet returns a **FileInfo** object representing the created settings file.
 
 The output file is always named `PSScriptAnalyzerSettings.psd1` so that the automatic settings
 discovery in `Invoke-ScriptAnalyzer` picks it up when analysing scripts in the same directory.
+
+Note: Relative paths in `CustomRulePath` are resolved from the caller's current working directory,
+not from the location of the settings file. This matches `Invoke-ScriptAnalyzer` behaviour.
 
 ## RELATED LINKS
 

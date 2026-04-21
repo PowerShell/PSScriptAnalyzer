@@ -357,4 +357,7 @@
   <data name="SettingsFileInvalidSeverity" xml:space="preserve">
     <value>Severity: '{0}' is not a valid severity. Expected one of: {1}</value>
   </data>
+  <data name="SettingsFileInvalidOptionType" xml:space="preserve">
+    <value>Rules.{0}.{1}: expected a value of type {2}.</value>
+  </data>
 </root>

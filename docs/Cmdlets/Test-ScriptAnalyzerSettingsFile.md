@@ -8,19 +8,22 @@ schema: 2.0.0
 # Test-ScriptAnalyzerSettingsFile
 
 ## SYNOPSIS
-Validates a PSScriptAnalyzer settings file.
+Validates a PSScriptAnalyzer settings file as a self-contained unit.
 
 ## SYNTAX
 
 ```
-Test-ScriptAnalyzerSettingsFile [-Path] <string> [-Quiet] [-CustomRulePath <string[]>]
- [-RecurseCustomRulePath] [<CommonParameters>]
+Test-ScriptAnalyzerSettingsFile [-Path] <string> [-Quiet] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-The `Test-ScriptAnalyzerSettingsFile` cmdlet checks whether a PSScriptAnalyzer settings file is
-valid. It verifies that:
+The `Test-ScriptAnalyzerSettingsFile` cmdlet validates a PSScriptAnalyzer settings file as a
+self-contained unit. It reads `CustomRulePath`, `RecurseCustomRulePath`, and `IncludeDefaultRules`
+directly from the file so that validation reflects the same rule set `Invoke-ScriptAnalyzer` would
+see when given the same file.
+
+The cmdlet verifies that:
 
 - The file can be parsed as a PowerShell data file.
 - All rule names referenced in `IncludeRules`, `ExcludeRules`, and `Rules` correspond to known
@@ -29,13 +32,13 @@ valid. It verifies that:
 - Rule option names in the `Rules` section correspond to actual configurable properties.
 - Rule option values that are constrained to a set of choices contain a valid value.
 
-By default the cmdlet returns `$true` when the file is valid and writes non-terminating errors
-describing each problem found when the file is invalid (no output is returned on failure, only
-errors). This allows `$ErrorActionPreference = 'Stop'` to turn validation failures into
-terminating errors.
+By default, when problems are found the cmdlet outputs a `DiagnosticRecord` for each one, with the
+source extent pointing to the offending text in the file. This is the same object type returned by
+`Invoke-ScriptAnalyzer`, so existing formatting and tooling works out of the box. When the file is
+valid, no output is produced.
 
 When `-Quiet` is specified the cmdlet returns only `$true` or `$false` and suppresses all
-error output.
+diagnostic output.
 
 ## EXAMPLES
 
@@ -45,7 +48,8 @@ error output.
 Test-ScriptAnalyzerSettingsFile -Path ./PSScriptAnalyzerSettings.psd1
 ```
 
-Returns `$true` if the file is valid. Writes non-terminating errors describing any problems found.
+Outputs a `DiagnosticRecord` for each problem found, with line and column information. Produces no
+output when the file is valid.
 
 ### EXAMPLE 2 - Validate quietly in a conditional
 
@@ -55,15 +59,17 @@ if (Test-ScriptAnalyzerSettingsFile -Path ./PSScriptAnalyzerSettings.psd1 -Quiet
 }
 ```
 
-Returns `$true` or `$false` without writing any errors.
+Returns `$true` or `$false` without producing diagnostic output.
 
-### EXAMPLE 3 - Validate with custom rules
+### EXAMPLE 3 - Validate a file that uses custom rules
 
 ```powershell
-Test-ScriptAnalyzerSettingsFile -Path ./Settings.psd1 -CustomRulePath ./MyRules
+# Settings.psd1 contains CustomRulePath and IncludeDefaultRules keys.
+# The cmdlet reads those from the file directly — no extra parameters needed.
+Test-ScriptAnalyzerSettingsFile -Path ./Settings.psd1
 ```
 
-Validates the settings file whilst also considering rules from the `./MyRules` path.
+Validates rule names against both built-in and custom rules as specified in the settings file.
 
 ## PARAMETERS
 
@@ -85,42 +91,8 @@ Accept wildcard characters: False
 
 ### -Quiet
 
-Suppresses error output and returns only `$true` or `$false`. Without this switch the cmdlet
-writes non-terminating errors for each problem found and returns `$true` only when the file is
-valid.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CustomRulePath
-
-Paths to modules or directories containing custom rules. When specified, custom rule names are
-treated as valid during validation.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases: CustomizedRulePath
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RecurseCustomRulePath
-
-Search sub-folders under the custom rule path for additional rules.
+Suppresses diagnostic output and returns only `$true` or `$false`. Without this switch the cmdlet
+outputs a `DiagnosticRecord` for each problem found and produces no output when the file is valid.
 
 ```yaml
 Type: SwitchParameter
@@ -147,17 +119,28 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
+### Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord
+
+Without `-Quiet`, a `DiagnosticRecord` is output for each problem found. Each record includes the
+error message, the source extent (file, line and column), a severity, and the rule name
+`Test-ScriptAnalyzerSettingsFile`. No output is produced when the file is valid.
+
 ### System.Boolean
 
-Returns `$true` when the settings file is valid. Without `-Quiet`, no output is returned when the
-file is invalid - problems are reported as non-terminating errors. With `-Quiet`, always returns
-`$true` or `$false`.
+With `-Quiet`, returns `$true` when the file is valid and `$false` otherwise.
 
 ## NOTES
 
-Without `-Quiet`, validation problems are reported as non-terminating errors. This means they
-respect `$ErrorActionPreference` and can be promoted to terminating errors by setting
-`-ErrorAction Stop`.
+The cmdlet reads `CustomRulePath`, `RecurseCustomRulePath`, and `IncludeDefaultRules` from the
+settings file so it validates rule names against the same set of rules that `Invoke-ScriptAnalyzer`
+would load. This means the settings file is validated as a self-contained unit without requiring
+extra command-line parameters.
+
+Note: Relative paths in `CustomRulePath` are resolved from the caller's current working directory,
+not from the location of the settings file. This matches `Invoke-ScriptAnalyzer` behaviour.
+
+The `DiagnosticRecord` objects use the same type as `Invoke-ScriptAnalyzer`, so they benefit from
+the same default formatting and can be piped to the same downstream tooling.
 
 ## RELATED LINKS
 

@@ -188,6 +188,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             WriteSeverityArray(sb, parsed.Severities);
             sb.AppendLine();
 
+            sb.AppendLine("    # Paths to modules or directories containing custom rules.");
+            sb.AppendLine("    # When specified, these rules are loaded in addition to (or instead");
+            sb.AppendLine("    # of) the built-in rules, depending on IncludeDefaultRules.");
+            sb.AppendLine("    # Note: Relative paths are resolved from the caller's working directory,");
+            sb.AppendLine("    # not the location of this settings file.");
+            WriteStringArray(sb, "CustomRulePath", parsed.CustomRulePath);
+            sb.AppendLine();
+
+            sb.AppendLine("    # When set to $true and CustomRulePath is specified, built-in rules");
+            sb.AppendLine("    # are loaded alongside custom rules. Has no effect without CustomRulePath.");
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "    IncludeDefaultRules = {0}", parsed.IncludeDefaultRules ? "$true" : "$false"));
+            sb.AppendLine();
+
+            sb.AppendLine("    # When set to $true, searches sub-folders under CustomRulePath for");
+            sb.AppendLine("    # additional rule modules. Has no effect without CustomRulePath.");
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "    RecurseCustomRulePath = {0}", parsed.RecurseCustomRulePath ? "$true" : "$false"));
+            sb.AppendLine();
+
             sb.AppendLine("    # Per-rule configuration. Only configurable rules appear here.");
             sb.AppendLine("    # Values from the preset are shown; other properties use defaults.");
 
@@ -254,6 +274,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             sb.AppendLine("    # Only report diagnostics at these severity levels.");
             sb.AppendLine("    # Leave empty to report all severities.");
             WriteSeverityArray(sb, Enumerable.Empty<string>());
+            sb.AppendLine();
+
+            sb.AppendLine("    # Paths to modules or directories containing custom rules.");
+            sb.AppendLine("    # When specified, these rules are loaded in addition to (or instead");
+            sb.AppendLine("    # of) the built-in rules, depending on IncludeDefaultRules.");
+            sb.AppendLine("    # Note: Relative paths are resolved from the caller's working directory,");
+            sb.AppendLine("    # not the location of this settings file.");
+            WriteStringArray(sb, "CustomRulePath", Enumerable.Empty<string>());
+            sb.AppendLine();
+
+            sb.AppendLine("    # When set to $true and CustomRulePath is specified, built-in rules");
+            sb.AppendLine("    # are loaded alongside custom rules. Has no effect without CustomRulePath.");
+            sb.AppendLine("    IncludeDefaultRules = $false");
+            sb.AppendLine();
+
+            sb.AppendLine("    # When set to $true, searches sub-folders under CustomRulePath for");
+            sb.AppendLine("    # additional rule modules. Has no effect without CustomRulePath.");
+            sb.AppendLine("    RecurseCustomRulePath = $false");
             sb.AppendLine();
 
             sb.AppendLine("    # Per-rule configuration. Only configurable rules appear here.");
