@@ -880,10 +880,10 @@
     <value>Avoid dynamic variable names</value>
   </data>
   <data name="AvoidDynamicVariableNamesDescription" xml:space="preserve">
-    <value>Do not dynamically create variable names in the general variable pool, this might introduce conflicts with other variables and is difficult to maintain.</value>
+    <value>Do not create variables with a dynamic name, this might introduce conflicts with other variables and is difficult to maintain.</value>
   </data>
   <data name="AvoidDynamicVariableNamesError" xml:space="preserve">
-    <value>Avoid dynamically creating variable names</value>
+    <value>'{0}' is a dynamic variable name. Please, avoid creating variables with a dynamic name</value>
   </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functions and aliases</value>

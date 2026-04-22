@@ -47,24 +47,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Use StaticParameterBinder to reliably get parameter values
                 var bindingResult = StaticParameterBinder.BindCommand(newVariableAst, true);
-
+                if (!bindingResult.BoundParameters.ContainsKey("Name")) { continue; }
+                var nameBindingResult = bindingResult.BoundParameters["Name"];
                 // Dynamic parameters return null for the ConstantValue property
-                if (
-                    bindingResult.BoundParameters.ContainsKey("Name") &&
-                    bindingResult.BoundParameters["Name"] == null
-                )
+                if (nameBindingResult.ConstantValue != null) { continue; }
+                string variableName = nameBindingResult.Value.ToString();
+                if (variableName.StartsWith("\"") && variableName.EndsWith("\""))
                 {
-                    yield return new DiagnosticRecord(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.AvoidDynamicVariableNamesError,
-                            newVariableAst.Parent.Extent.Text),
-                        newVariableAst.Parent.Extent,
-                        GetName(),
-                        DiagnosticSeverity.Warning,
-                        fileName
-                    );
+                    variableName = variableName.Substring(1, variableName.Length - 2);
                 }
+                yield return new DiagnosticRecord(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.AvoidDynamicVariableNamesError,
+                        variableName),
+                    newVariableAst.Parent.Extent,
+                    GetName(),
+                    DiagnosticSeverity.Warning,
+                    fileName,
+                    variableName
+                );
             }
         }
 

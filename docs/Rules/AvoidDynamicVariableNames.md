@@ -10,8 +10,8 @@ title: AvoidDynamicVariableNames
 
 ## Description
 
-Do not dynamically create variable names in the general variable pool, this might introduce conflicts with other
-variables and is difficult to maintain.
+Do not create variables with a dynamic name, this might introduce conflicts with
+other variables and is difficult to maintain.
 
 ## How
 
