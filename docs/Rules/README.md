@@ -34,6 +34,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error       |        Yes         |                 |
 | [AvoidUsingDeprecatedManifestFields](./AvoidUsingDeprecatedManifestFields.md)                     | Warning     |        Yes         |                 |
 | [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Information |         No         |                 |
+| [AvoidUsingDynamicVariableNames](./AvoidUsingDynamicVariableNames.md)                             | Warning     |        Yes         |                 |
 | [AvoidUsingEmptyCatchBlock](./AvoidUsingEmptyCatchBlock.md)                                       | Warning     |        Yes         |                 |
 | [AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md)                                     | Warning     |        Yes         |                 |
 | [AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md)                             | Warning     |        Yes         |                 |
