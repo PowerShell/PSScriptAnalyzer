@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
-using System.Linq;
 
 #if !CORECLR
 using System.ComponentModel.Composition;

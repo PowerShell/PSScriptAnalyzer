@@ -19,6 +19,7 @@ Describe "AvoidDynamicVariableNames" {
             $violations.Extent.Text | Should -Be {New-Variable -Name $Test}.ToString()
             $violations.Message     | Should -Be ($ruleMessage -f '$Test')
         }
+
         It "Common dynamic variable iteration" {
             $scriptDefinition = {
                 'One', 'Two', 'Three' | ForEach-Object -Begin { $i = 1 } -Process {
@@ -30,6 +31,20 @@ Describe "AvoidDynamicVariableNames" {
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Variable -Name "My$_" -Value ($i++)}.ToString()
+            $violations.Message     | Should -Be ($ruleMessage -f 'My$_')
+        }
+
+        It "Set-Variable by positional parameter" {
+            $scriptDefinition = {
+                'One', 'Two', 'Three' | ForEach-Object -Begin { $i = 1 } -Process {
+                    New-Variable "My$_" ($i++)
+                }
+                $MyTwo # returns 2
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count       | Should -Be 1
+            $violations.Severity    | Should -Be Warning
+            $violations.Extent.Text | Should -Be {New-Variable "My$_" ($i++)}.ToString()
             $violations.Message     | Should -Be ($ruleMessage -f 'My$_')
         }
     }
@@ -54,6 +69,15 @@ Describe "AvoidDynamicVariableNames" {
                     $Script:My[$_] = $i++
                 }
                 $Script:My.Two # returns 2
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "Verbatim (single quoted) name with dollar sign" {
+            $scriptDefinition = {
+                New-Variable -Name '$Sign'
+                Set-Variable -Name '$Sign' -Value 'Dollar'
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations | Should -BeNullOrEmpty
