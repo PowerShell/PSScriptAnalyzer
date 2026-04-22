@@ -276,6 +276,18 @@
   <data name="MissingModuleManifestFieldCommonName" xml:space="preserve">
     <value>Module Manifest Fields</value>
   </data>
+  <data name="MissingTryBlockName" xml:space="preserve">
+    <value>MissingTryBlock</value>
+  </data>
+  <data name="MissingTryBlockCommonName" xml:space="preserve">
+    <value>Missing try block</value>
+  </data>
+  <data name="MissingTryBlockDescription" xml:space="preserve">
+    <value>The catch and finally blocks should be preceded by a try block.</value>
+  </data>
+  <data name="MissingTryBlockError" xml:space="preserve">
+    <value>{0} is missing a try block</value>
+  </data>
   <data name="AvoidUnloadableModuleDescription" xml:space="preserve">
     <value>If a script file is in a PowerShell module folder, then that folder must be loadable.</value>
   </data>
