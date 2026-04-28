@@ -244,6 +244,30 @@ function MyFunc
                 $suppErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
             }
         }
+
+        It "Issues one unapplied suppression error when -Fix reanalyzes a file" {
+            $scriptPath = Join-Path $TestDrive 'SuppressionFix.ps1'
+            $script = @(
+                'function Test-Function1 {'
+                "    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingWriteHost','NonExistentID123')]"
+                '    param() ; Write-Host ''x'''
+                '}'
+            ) -join "`n"
+
+            [System.IO.File]::WriteAllText($scriptPath, $script + "`n")
+
+            $diagnostics = Invoke-ScriptAnalyzer `
+                -Path $scriptPath `
+                -Fix `
+                -ErrorVariable fixErr `
+                -ErrorAction SilentlyContinue
+
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].RuleName | Should -BeExactly 'PSAvoidUsingWriteHost'
+            $fixErr | Should -HaveCount 1
+            $fixErr[0].TargetObject.RuleName | Should -BeExactly 'PSAvoidUsingWriteHost'
+            $fixErr[0].TargetObject.RuleSuppressionID | Should -BeExactly 'NonExistentID123'
+        }
     }
 
     Context "RuleSuppressionID with named arguments" {

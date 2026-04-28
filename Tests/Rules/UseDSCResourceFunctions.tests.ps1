@@ -46,4 +46,34 @@ Describe "StandardDSCFunctionsInClass" {
             $noClassViolations.Count | Should -Be 0
         }
     }
+
+    Context "When a class-based DSC resource is also in DSC resource module layout" {
+        It "does not duplicate the unapplied suppression error" {
+            $resourceRoot = Join-Path $TestDrive 'DSCResources'
+            $resourceDir = Join-Path $resourceRoot 'MyRes'
+            $resourcePath = Join-Path $resourceDir 'MyRes.psm1'
+            $schemaPath = Join-Path $resourceDir 'MyRes.schema.mof'
+
+            New-Item -ItemType Directory -Path $resourceDir -Force | Out-Null
+            [System.IO.File]::WriteAllText($resourcePath, @'
+[System.Diagnostics.CodeAnalysis.SuppressMessage('PSDSCStandardDSCFunctionsInResource', 'BadDscId', Scope='Class', Target='MyRes')]
+[DscResource()]
+class MyRes {
+    [DscProperty(Key)] [string] $Name
+    [MyRes] Get() { return $this }
+}
+'@.TrimStart() + "`n")
+            Set-Content -Path $schemaPath -Value ''
+
+            Invoke-ScriptAnalyzer `
+                -Path $resourcePath `
+                -ErrorVariable dscErr `
+                -ErrorAction SilentlyContinue |
+                Out-Null
+
+            $dscErr | Should -HaveCount 1
+            $dscErr[0].TargetObject.RuleName | Should -BeExactly $violationName
+            $dscErr[0].TargetObject.RuleSuppressionID | Should -BeExactly 'BadDscId'
+        }
+    }
 }
