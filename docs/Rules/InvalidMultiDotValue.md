@@ -2,9 +2,9 @@
 description: Invalid version construction
 ms.date: 04/24/2024
 ms.topic: reference
-title: InvalidVersionConstruction
+title: InvalidMultiDotValue
 ---
-# InvalidVersionConstruction
+# InvalidMultiDotValue
 
 **Severity Level: Error**
 

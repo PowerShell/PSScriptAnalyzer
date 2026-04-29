@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
-using System.Runtime.CompilerServices;
 
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -19,12 +18,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
 
     /// <summary>
-    /// Rule that warns when reserved words are used as function names
+    /// Rule that warns when an unquoted value contains multiple dots,
+    /// which is likely an attempt to construct a version number (e.g., 1.2.3)
+    /// that is not properly quoted and thus misinterpreted as a double with member access.
     /// </summary>
     public class InvalidMultiDotValue : IScriptRule
     {
         /// <summary>
-        /// Analyzes the PowerShell AST for uses of reserved words as function names.
+        /// Analyzes the PowerShell unquoted values that contain multiple dots.
         /// </summary>
         /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
@@ -90,7 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 GetSourceName(),
                 Strings.InvalidMultiDotValueName);
 
-        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
+        public RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         public string GetSourceName() => Strings.SourceName;
 

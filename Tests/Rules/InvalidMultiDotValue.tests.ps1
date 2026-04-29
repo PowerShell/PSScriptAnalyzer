@@ -146,14 +146,10 @@ Describe "InvalidMultiDotValue" {
         }
     }
 
-    Context "Suppressed" {
+    Context "Fixing" {
 
         BeforeAll { # See request: #1938
-            $tempFile = join-Path -Path  "$([System.IO.Path]::GetTempPath())" -ChildPath "$([Guid]::NewGuid().Guid).ps1"
-        }
-
-        AfterAll {
-            if (Test-Path -LiteralPath $tempFile) { Remove-Item -LiteralPath $tempFile -ErrorAction SilentlyContinue }
+            $tempFile = Join-Path $TestDrive 'TestScript.ps1'
         }
 
         It "Version" {
