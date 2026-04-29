@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class MissingTryBlock : IScriptRule
     {
         /// <summary>
-        /// Analyzes the PowerShell AST for catch - or finally blocks that misses the try block.
+        /// Analyzes the PowerShell AST for catch or finally blocks that miss the try block.
         /// </summary>
         /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
