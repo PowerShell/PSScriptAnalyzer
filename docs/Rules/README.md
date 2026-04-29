@@ -14,6 +14,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidAssignmentToAutomaticVariable](./AvoidAssignmentToAutomaticVariable.md)                     | Warning     |        Yes         |                 |
 | [AvoidDefaultValueForMandatoryParameter](./AvoidDefaultValueForMandatoryParameter.md)             | Warning     |        Yes         |                 |
 | [AvoidDefaultValueSwitchParameter](./AvoidDefaultValueSwitchParameter.md)                         | Warning     |        Yes         |                 |
+| [AvoidDynamicallyCreatingVariableNames](./AvoidDynamicallyCreatingVariableNames.md)               | Information |        Yes         |                 |
 | [AvoidExclaimOperator](./AvoidExclaimOperator.md)                                                 | Warning     |         No         |                 |
 | [AvoidGlobalAliases<sup>1</sup>](./AvoidGlobalAliases.md)                                         | Warning     |        Yes         |                 |
 | [AvoidGlobalFunctions](./AvoidGlobalFunctions.md)                                                 | Warning     |        Yes         |                 |
@@ -34,7 +35,6 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error       |        Yes         |                 |
 | [AvoidUsingDeprecatedManifestFields](./AvoidUsingDeprecatedManifestFields.md)                     | Warning     |        Yes         |                 |
 | [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Information |         No         |                 |
-| [AvoidDynamicallyCreatingVariableNames](./AvoidDynamicallyCreatingVariableNames.md)               | Information |        Yes         |                 |
 | [AvoidUsingEmptyCatchBlock](./AvoidUsingEmptyCatchBlock.md)                                       | Warning     |        Yes         |                 |
 | [AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md)                                     | Warning     |        Yes         |                 |
 | [AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md)                             | Warning     |        Yes         |                 |
