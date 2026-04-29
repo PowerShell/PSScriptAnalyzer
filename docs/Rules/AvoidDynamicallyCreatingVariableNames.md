@@ -38,9 +38,9 @@ $My = @{}
 $My.Two # returns 2
 ```
 
-When it concerns a specific scope, option or visibility, put the concerned dictionary (hash table) in that
-scope, option or visibility. In example, if the values should be read only and available in the script scope,
-put the _hash table_ in the script scope and make it read only.:
+When a specific scope, option, or visibility is required, put the dictionary (hash table) in that
+scope and apply the appropriate option or visibility. For example, if the values should be read-only and
+available in the script scope, put the _hash table_ in the script scope and make it read-only.
 
 ```powershell
 New-Variable -Name My -Value @{} -Option ReadOnly -Scope Script
