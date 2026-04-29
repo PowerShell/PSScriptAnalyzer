@@ -61,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         CultureInfo.CurrentCulture,
                         Strings.AvoidDynamicallyCreatingVariableNamesError,
                         variableName),
-                    newVariableAst.Parent.Extent,
+                    newVariableAst.Extent,
                     GetName(),
                     DiagnosticSeverity.Information,
                     fileName,
