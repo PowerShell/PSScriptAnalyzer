@@ -14,7 +14,7 @@ Describe "MissingTryBlock" {
             $scriptDefinition = { catch { "An error occurred." } }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations.Count             | Should -Be 1
-            $violations.Severity          | Should -Be Error
+            $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be catch
             $violations.Message           | Should -Be 'Catch is missing a try block'
             $violations.RuleSuppressionID | Should -Be catch
@@ -24,7 +24,7 @@ Describe "MissingTryBlock" {
             $scriptDefinition = { finally { "Finalizing..." } }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations.Count             | Should -Be 1
-            $violations.Severity          | Should -Be Error
+            $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be finally
             $violations.Message           | Should -Be 'Finally is missing a try block'
             $violations.RuleSuppressionID | Should -Be finally
@@ -36,7 +36,7 @@ Describe "MissingTryBlock" {
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations.Count             | Should -Be 1
-            $violations.Severity          | Should -Be Error
+            $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be catch
             $violations.Message           | Should -Be 'Catch is missing a try block'
             $violations.RuleSuppressionID | Should -Be catch
@@ -49,11 +49,11 @@ Describe "MissingTryBlock" {
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations.Count                | Should -Be 2
-            $violations[0].Severity          | Should -Be Error
+            $violations[0].Severity          | Should -Be Warning
             $violations[0].Extent.Text       | Should -Be catch
             $violations[0].Message           | Should -Be 'Catch is missing a try block'
             $violations[0].RuleSuppressionID | Should -Be catch
-            $violations[1].Severity          | Should -Be Error
+            $violations[1].Severity          | Should -Be Warning
             $violations[1].Extent.Text       | Should -Be finally
             $violations[1].Message           | Should -Be 'Finally is missing a try block'
             $violations[1].RuleSuppressionID | Should -Be finally
