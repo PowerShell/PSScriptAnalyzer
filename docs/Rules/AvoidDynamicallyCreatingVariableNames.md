@@ -2,9 +2,9 @@
 description: Avoid dynamic variable names, instead use a hash table or similar dictionary type.
 ms.date: 04/21/2026
 ms.topic: reference
-title: AvoidDynamicVariableNames
+title: AvoidDynamicallyCreatingVariableNames
 ---
-# AvoidDynamicVariableNames
+# AvoidDynamicallyCreatingVariableNames
 
 **Severity Level: Information**
 
