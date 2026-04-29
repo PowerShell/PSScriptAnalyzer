@@ -6,7 +6,7 @@ title: AvoidDynamicVariableNames
 ---
 # AvoidDynamicVariableNames
 
-**Severity Level: Warning**
+**Severity Level: Information**
 
 ## Description
 

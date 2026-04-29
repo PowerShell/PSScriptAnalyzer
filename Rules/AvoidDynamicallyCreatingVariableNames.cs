@@ -5,6 +5,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation.Language;
 
 #if !CORECLR
@@ -18,29 +19,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
 
     /// <summary>
-    /// Rule that warns when reserved words are used as function names
+    /// Rule that informs the user when they create variables with dynamic names in the general variable scope.
+    /// This might lead to conflicts with other variables.
     /// </summary>
-    public class AvoidDynamicVariableNames : IScriptRule
+    public class AvoidDynamicallyCreatingVariableNames : IScriptRule
     {
         /// <summary>
-        /// Analyzes the PowerShell AST for uses of reserved words as function names.
+        /// Analyzes the PowerShell AST for uses of "New-Variable" command with a dynamic name argument.
         /// </summary>
         /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
         /// <returns>A collection of diagnostic records for each violation.</returns>
+
+        readonly HashSet<string> cmdList = Helper.Instance.CmdletNameAndAliases("New-Variable").ToHashSet(StringComparer.OrdinalIgnoreCase);
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Find all FunctionDefinitionAst in the Ast
-            var newVariableAsts = ast.FindAll(testAst =>
+            // Find all "New-Variable" commands in the Ast
+            IEnumerable<CommandAst> newVariableAsts = ast.FindAll(testAst =>
                 testAst is CommandAst cmdAst &&
-                (
-                    String.Equals(cmdAst.GetCommandName(), "New-Variable", StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(cmdAst.GetCommandName(), "Set-Variable", StringComparison.OrdinalIgnoreCase)
-                ),
+                cmdList.Contains(cmdAst.GetCommandName()),
                 true
-            );
+            ).Cast<CommandAst>();
 
             foreach (CommandAst newVariableAst in newVariableAsts)
             {
@@ -58,28 +59,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield return new DiagnosticRecord(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.AvoidDynamicVariableNamesError,
+                        Strings.AvoidDynamicallyCreatingVariableNamesError,
                         variableName),
                     newVariableAst.Parent.Extent,
                     GetName(),
-                    DiagnosticSeverity.Warning,
+                    DiagnosticSeverity.Information,
                     fileName,
                     variableName
                 );
             }
         }
 
-        public string GetCommonName() => Strings.AvoidDynamicVariableNamesCommonName;
+        public string GetCommonName() => Strings.AvoidDynamicallyCreatingVariableNamesCommonName;
 
-        public string GetDescription() => Strings.AvoidDynamicVariableNamesDescription;
+        public string GetDescription() => Strings.AvoidDynamicallyCreatingVariableNamesDescription;
 
         public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
-                Strings.AvoidDynamicVariableNamesName);
+                Strings.AvoidDynamicallyCreatingVariableNamesName);
 
-        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
+        public RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         public string GetSourceName() => Strings.SourceName;
 
