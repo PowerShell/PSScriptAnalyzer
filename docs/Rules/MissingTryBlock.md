@@ -6,7 +6,7 @@ title: MissingTryBlock
 ---
 # MissingTryBlock
 
-**Severity Level: Error**
+**Severity Level: Warning**
 
 ## Description
 

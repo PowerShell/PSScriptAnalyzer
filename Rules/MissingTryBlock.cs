@@ -18,12 +18,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
 
     /// <summary>
-    /// Rule that warns when reserved words are used as function names
+    /// Rule that warns when catch or finally blocks are used without a corresponding try block
     /// </summary>
     public class MissingTryBlock : IScriptRule
     {
         /// <summary>
-        /// Analyzes the PowerShell AST for uses of reserved words as function names.
+        /// Analyzes the PowerShell AST for catch - or finally blocks that misses the try block.
         /// </summary>
         /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         CultureInfo.CurrentCulture.TextInfo.ToTitleCase(missingTryAst.Value)),
                     missingTryAst.Extent,
                     GetName(),
-                    DiagnosticSeverity.Error,
+                    DiagnosticSeverity.Warning,
                     fileName,
                     missingTryAst.Value
                 );
