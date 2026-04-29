@@ -1,5 +1,5 @@
 ---
-description: Invalid version construction
+description: Invalid unquoted multi-dot value construction
 ms.date: 04/24/2024
 ms.topic: reference
 title: InvalidMultiDotValue
