@@ -32,11 +32,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Find all FunctionDefinitionAst in the Ast
+            // Find the bare word 'catch' or 'finally' StringConstantExpressionAst nodes used as commands
             var missingTryAsts = ast.FindAll(testAst =>
                 // Normally should be part of a TryStatementAst
                 testAst is StringConstantExpressionAst stringAst &&
-                // Catch or finally are reserved keywords and should be bare words
+                // Check whether "catch" or "finally" are bare words
                 stringAst.StringConstantType == StringConstantType.BareWord &&
                 (
                     String.Equals(stringAst.Value, "catch", StringComparison.OrdinalIgnoreCase) ||
