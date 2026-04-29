@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var missingTryAsts = ast.FindAll(testAst =>
                 // Normally should be part of a TryStatementAst
                 testAst is StringConstantExpressionAst stringAst &&
-                // Catch of finally  are reserved keywords and should be bare words
+                // Catch or finally are reserved keywords and should be bare words
                 stringAst.StringConstantType == StringConstantType.BareWord &&
                 (
                     String.Equals(stringAst.Value, "catch", StringComparison.OrdinalIgnoreCase) ||
