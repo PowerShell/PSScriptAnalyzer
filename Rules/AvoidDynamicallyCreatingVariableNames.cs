@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
         /// <returns>A collection of diagnostic records for each violation.</returns>
 
-        readonly HashSet<string> cmdList = Helper.Instance.CmdletNameAndAliases("New-Variable").ToHashSet(StringComparer.OrdinalIgnoreCase);
+        readonly HashSet<string> cmdList = new HashSet<string>(Helper.Instance.CmdletNameAndAliases("New-Variable"), StringComparer.OrdinalIgnoreCase);
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);

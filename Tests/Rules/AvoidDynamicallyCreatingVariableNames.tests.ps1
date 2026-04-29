@@ -7,7 +7,7 @@ param()
 
 BeforeAll {
     $ruleName = "PSAvoidDynamicallyCreatingVariableNames"
-    $ruleMessage = "'{0}' is a dynamic variable name. Please, avoid creating variables with a dynamic name"
+    $ruleMessage = "'{0}' is a dynamic variable name. Please avoid creating variables with a dynamic name"
 }
 
 Describe "AvoidDynamicallyCreatingVariableNames" {
