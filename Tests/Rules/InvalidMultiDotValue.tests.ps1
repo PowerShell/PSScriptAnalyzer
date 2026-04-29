@@ -67,8 +67,8 @@ Describe "InvalidMultiDotValue" {
         }
 
         # Even an IP address is apparently expect below.
-        # The violation message and description presumes a version
-        # is expected because this is more common used type.
+        # The violation message and description presume a version
+        # is expected because this is the more commonly used type.
         It "IP Address" {
             $scriptDefinition = { $IP = [System.Net.IPAddress]127.0.0.1 }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)

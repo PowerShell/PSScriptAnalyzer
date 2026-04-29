@@ -40,6 +40,6 @@ $version = [Version]'1.2.3'
 $version = [Version]::new(1, 2, 3)
 ```
 
-```PowerShell
+```powershell
 $IP = [System.Net.IPAddress]'127.0.0.1'
 ```

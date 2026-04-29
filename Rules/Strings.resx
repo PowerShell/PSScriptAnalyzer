@@ -1222,7 +1222,7 @@
     <value>The insecure AllowUnencryptedAuthentication switch was used. This should be avoided except for compatibility with legacy systems.</value>
   </data>
   <data name="InvalidMultiDotValueCommonName" xml:space="preserve">
-    <value>Invalid multi dot version</value>
+    <value>Invalid Multi-Dot Value</value>
   </data>
   <data name="InvalidMultiDotValueDescription" xml:space="preserve">
     <value>PowerShell does not support an implicit value with multiple dots. Any unquoted value with 2 or more dots will result in `$null`.</value>

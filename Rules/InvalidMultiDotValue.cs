@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
 
     /// <summary>
-    /// Rule that warns when an unquoted value contains multiple dots,
+    /// Rule that reports an error when an unquoted value contains multiple dots,
     /// which is likely an attempt to construct a version number (e.g., 1.2.3)
     /// that is not properly quoted and thus misinterpreted as a double with member access.
     /// </summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Find all FunctionDefinitionAst in the Ast
+            // Find all MemberExpressionAst nodes representing invalid unquoted multi-dot values
             IEnumerable<Ast> invalidAsts = ast.FindAll(testAst =>
                 // An expression with 3 or more dots is seen as a double with an additional property
                 testAst is MemberExpressionAst memberAst &&
