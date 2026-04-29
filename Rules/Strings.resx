@@ -280,7 +280,7 @@
     <value>MissingTryBlock</value>
   </data>
   <data name="MissingTryBlockCommonName" xml:space="preserve">
-    <value>Missing try block</value>
+    <value>Missing Try Block</value>
   </data>
   <data name="MissingTryBlockDescription" xml:space="preserve">
     <value>The catch and finally blocks should be preceded by a try block.</value>
