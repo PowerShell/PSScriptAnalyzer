@@ -1221,6 +1221,21 @@
   <data name="AvoidUsingAllowUnencryptedAuthenticationError" xml:space="preserve">
     <value>The insecure AllowUnencryptedAuthentication switch was used. This should be avoided except for compatibility with legacy systems.</value>
   </data>
+  <data name="InvalidMultiDotValueCommonName" xml:space="preserve">
+    <value>Invalid Multi-Dot Value</value>
+  </data>
+  <data name="InvalidMultiDotValueDescription" xml:space="preserve">
+    <value>PowerShell does not support an implicit value with multiple dots. Any unquoted value with 2 or more dots will result in `$null`.</value>
+  </data>
+  <data name="InvalidMultiDotValueName" xml:space="preserve">
+    <value>InvalidMultiDotValue</value>
+  </data>
+  <data name="InvalidMultiDotValueError" xml:space="preserve">
+    <value>The unquoted '{0}' expression is not a valid syntax. Types with multiple dots need to be constructed from either a quoted string or individual components.</value>
+  </data>
+  <data name="InvalidMultiDotValueCorrectionDescription" xml:space="preserve">
+    <value>Quote the value that contains multiple dots</value>
+  </data>
   <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
   </data>
