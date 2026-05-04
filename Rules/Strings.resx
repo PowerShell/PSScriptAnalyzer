@@ -873,6 +873,18 @@
   <data name="UseCompatibleTypesTypeAcceleratorError" xml:space="preserve">
     <value>The type accelerator '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
   </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesName" xml:space="preserve">
+    <value>AvoidDynamicallyCreatingVariableNames</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesCommonName" xml:space="preserve">
+    <value>Avoid dynamically creating variable names</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesDescription" xml:space="preserve">
+    <value>Do not create variables with a dynamic name, as this might introduce conflicts with other variables and is difficult to maintain.</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesError" xml:space="preserve">
+    <value>'{0}' is a dynamic variable name. Please avoid creating variables with a dynamic name</value>
+  </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functions and aliases</value>
   </data>
