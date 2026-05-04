@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     // Rule name is inconsistent.
     /// <summary>
     /// AvoidInvokingEmptyMembers: Analyzes the script to check if any non-constant members have been invoked.
-    /// </summary>    
+    /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
@@ -55,10 +55,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
-        
+
         }
 
-        
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
@@ -86,13 +86,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidInvokingEmptyMembersDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

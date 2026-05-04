@@ -41,9 +41,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Did not detect the presence of BOM
                 // Make sure there is no byte > 127 (0x7F) to ensure file is ASCII encoded
                 // Else emit rule violation
-                                
+
                 if (0 != byteStream.Count(o => o > 0x7F))
-                { 
+                {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseBOMForUnicodeEncodedFileError, System.IO.Path.GetFileName(fileName), null),
                                 null, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
@@ -58,7 +58,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Analyze BOM
             if (byteStream.Length >= 4 && byteStream[0] == 0x00 && byteStream[1] == 0x00 && byteStream[2] == 0xFE && byteStream[3] == 0xFF)
             {
-                // UTF-32, big-endian 
+                // UTF-32, big-endian
                 return Encoding.GetEncoding("utf-32BE");
             }
             else if (byteStream.Length >= 4 && byteStream[0] == 0xFF && byteStream[1] == 0xFE && byteStream[2] == 0x00 && byteStream[3] == 0x00)
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Did not detect BOM OR Unknown File encoding
             return null;
-            
+
         }
 
         /// <summary>
@@ -119,13 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseBOMForUnicodeEncodedFileDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

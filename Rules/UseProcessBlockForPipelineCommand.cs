@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             IEnumerable<Ast> scriptblockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
-            
+
             foreach (ScriptBlockAst scriptblockAst in scriptblockAsts)
             {
                 if (scriptblockAst.ProcessBlock != null
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                
+
                 foreach (ParameterAst paramAst in scriptblockAst.ParamBlock.Parameters)
                 {
                     foreach (AttributeBaseAst paramAstAttribute in paramAst.Attributes)
@@ -80,10 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandDescription);
         }
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         public RuleSeverity GetSeverity()
         {

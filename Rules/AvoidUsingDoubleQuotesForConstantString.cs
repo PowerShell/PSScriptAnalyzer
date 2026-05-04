@@ -52,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         This because one would then have to escape this single quote, which would make the string less readable.
                         If an interpolated string contains a backtick character, then do not warn as well.
                         This is because we'd have to replace the backtick in some cases like `$ and in others like `a it would not be possible at all.
-                        Therefore to keep it simple, all interpolated strings with a backtick are being excluded. 
+                        Therefore to keep it simple, all interpolated strings with a backtick are being excluded.
                     */
                     case StringConstantType.DoubleQuoted:
                         if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.Extent.Text.Contains("`"))
@@ -150,12 +150,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }

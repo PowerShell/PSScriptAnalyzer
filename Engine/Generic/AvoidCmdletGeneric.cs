@@ -77,11 +77,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <returns>The source name of the rule.</returns>
         public abstract string GetSourceName();
 
-        /// <summary>
-        /// GetSourceType: Retrieves the source type of the rule.
-        /// </summary>
-        /// <returns>The source type of the rule.</returns>
-        public abstract  SourceType GetSourceType();
+        public abstract RuleSourceType SourceType { get; }
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

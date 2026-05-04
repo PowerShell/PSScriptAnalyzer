@@ -85,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // This rule is disabled by default - users must explicitly enable it
             Enable = false;
-            
+
             // IgnoreSignatures defaults to false (respects signatures)
             IgnoreSignatures = false;
         }
@@ -103,8 +103,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Handle array types (e.g., string[], System.String[], int[][])
             // Strip array brackets and check the base type
             string baseTypeName = typeName;
-           
-                
+
+
             // Handle multi-dimensional or jagged arrays by removing all brackets
             while (baseTypeName.EndsWith("[]", StringComparison.Ordinal))
             {
@@ -148,13 +148,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Check if the file is signed (via signature block detection)
             bool isFileSigned = IgnoreSignatures ? false : IsScriptSigned(fileName);
-            
+
             // Note: If IgnoreSignatures is true, isFileSigned will always be false,
             // causing all CLM checks to run regardless of actual signature status
 
             // Check if this is a module manifest (.psd1 file)
             bool isModuleManifest = fileName != null && fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase);
-            
+
             if (isModuleManifest)
             {
                 // Perform PSD1-specific checks
@@ -167,13 +167,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (isFileSigned)
             {
                 // Even signed scripts have these restrictions in CLM:
-                
+
                 // 1. Check for dot-sourcing (still restricted in CLM even for signed scripts)
                 CheckDotSourcing(ast, fileName, diagnosticRecords);
-                
+
                 // 2. Check for type constraints on parameters (still need to be validated)
                 CheckParameterTypeConstraints(ast, fileName, diagnosticRecords);
-                
+
                 return diagnosticRecords;
             }
 
@@ -210,7 +210,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Read the file content
                 string content = System.IO.File.ReadAllText(fileName);
-                
+
                 // Check for signature block marker
                 // A signed PowerShell script contains a signature block that starts with:
                 // # SIG # Begin signature block
@@ -267,12 +267,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Use StaticParameterBinder to reliably get parameter values
                 var bindingResult = StaticParameterBinder.BindCommand(cmd, true);
-                
+
                 // Check for -ComObject parameter
                 if (bindingResult.BoundParameters.ContainsKey("ComObject"))
                 {
                     string comObjectValue = null;
-                    
+
                     // Try to get the value from the AST directly first
                     if (bindingResult.BoundParameters["ComObject"].Value is StringConstantExpressionAst strAst)
                     {
@@ -283,14 +283,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         // Fall back to ConstantValue
                         comObjectValue = bindingResult.BoundParameters["ComObject"].ConstantValue as string;
                     }
-                    
+
                     // Only flag if COM object name was found AND it's not in the allowed list
                     if (!string.IsNullOrWhiteSpace(comObjectValue) && !AllowedComObjects.Contains(comObjectValue))
                     {
                         diagnosticRecords.Add(
                             new DiagnosticRecord(
-                                String.Format(CultureInfo.CurrentCulture, 
-                                    Strings.UseConstrainedLanguageModeComObjectError, 
+                                String.Format(CultureInfo.CurrentCulture,
+                                    Strings.UseConstrainedLanguageModeComObjectError,
                                     comObjectValue),
                                 cmd.Extent,
                                 GetName(),
@@ -299,25 +299,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             ));
                     }
                 }
-                
+
                 // Check for -TypeName parameter
                 if (bindingResult.BoundParameters.ContainsKey("TypeName"))
                 {
                     var typeNameValue = bindingResult.BoundParameters["TypeName"].ConstantValue as string;
-                    
+
                     // If ConstantValue is null, try to extract from the AST Value
                     if (typeNameValue == null && bindingResult.BoundParameters["TypeName"].Value is StringConstantExpressionAst typeStrAst)
                     {
                         typeNameValue = typeStrAst.Value;
                     }
-                    
+
                     // Only flag if type name was found AND it's not in the allowed list
                     if (!string.IsNullOrWhiteSpace(typeNameValue) && !IsTypeAllowed(typeNameValue))
                     {
                         diagnosticRecords.Add(
                             new DiagnosticRecord(
-                                String.Format(CultureInfo.CurrentCulture, 
-                                    Strings.UseConstrainedLanguageModeNewObjectError, 
+                                String.Format(CultureInfo.CurrentCulture,
+                                    Strings.UseConstrainedLanguageModeNewObjectError,
                                     typeNameValue),
                                 cmd.Extent,
                                 GetName(),
@@ -380,7 +380,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 diagnosticRecords.Add(
                     new DiagnosticRecord(
-                        String.Format(CultureInfo.CurrentCulture, 
+                        String.Format(CultureInfo.CurrentCulture,
                             Strings.UseConstrainedLanguageModeClassError,
                             classDef.Name),
                         classDef.Extent,
@@ -394,11 +394,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             CheckParameterTypeConstraints(ast, fileName, diagnosticRecords);
 
             // Check for disallowed type constraints on variables (e.g., [System.Net.WebClient]$client)
-            var typeConstraints = ast.FindAll(testAst => 
-                testAst is TypeConstraintAst typeConstraint && 
+            var typeConstraints = ast.FindAll(testAst =>
+                testAst is TypeConstraintAst typeConstraint &&
                 !(typeConstraint.Parent is ParameterAst), // Exclude parameters - handled above
                 true);
-                
+
             foreach (TypeConstraintAst typeConstraint in typeConstraints)
             {
                 var typeName = typeConstraint.TypeName.FullName;
@@ -442,7 +442,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (ConvertExpressionAst convertExpr in convertExpressions)
             {
                 var typeName = convertExpr.Type.TypeName.FullName;
-                
+
                 // Special case: [PSCustomObject]@{} is not allowed in CLM
                 // Even though PSCustomObject is an allowed type for parameters,
                 // the type cast syntax with hashtable literal is blocked in CLM
@@ -460,7 +460,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         ));
                     continue; // Already flagged, skip general type check
                 }
-                
+
                 if (!IsTypeAllowed(typeName))
                 {
                     diagnosticRecords.Add(
@@ -478,9 +478,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Check for member invocations on disallowed types
             // This includes method calls and property access on variables with type constraints
-            var memberInvocations = ast.FindAll(testAst => 
+            var memberInvocations = ast.FindAll(testAst =>
                 testAst is InvokeMemberExpressionAst || testAst is MemberExpressionAst, true);
-            
+
             foreach (Ast memberAst in memberInvocations)
             {
                 // Skip static member access - already handled by TypeExpressionAst check
@@ -488,15 +488,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                
+
                 if (memberAst is MemberExpressionAst memAst && memAst.Static)
                 {
                     continue;
                 }
 
                 // Get the expression being invoked on (e.g., the variable in $var.Method())
-                ExpressionAst targetExpr = memberAst is InvokeMemberExpressionAst invExpr 
-                    ? invExpr.Expression 
+                ExpressionAst targetExpr = memberAst is InvokeMemberExpressionAst invExpr
+                    ? invExpr.Expression
                     : ((MemberExpressionAst)memberAst).Expression;
 
                 // Check if the target has a type constraint
@@ -532,7 +532,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Example: . .\script.ps1
             // PowerShell doesn't have a specific DotSourceExpressionAst, so we check the command extent
             var commands = ast.FindAll(testAst => testAst is CommandAst, true);
-            
+
             foreach (CommandAst cmdAst in commands)
             {
                 // Check if the command extent starts with a dot followed by whitespace
@@ -559,12 +559,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // Find all parameter definitions
             var parameters = ast.FindAll(testAst => testAst is ParameterAst, true);
-            
+
             foreach (ParameterAst param in parameters)
             {
                 // Check for type constraints on parameters
                 var typeConstraints = param.Attributes.OfType<TypeConstraintAst>();
-                
+
                 foreach (var typeConstraint in typeConstraints)
                 {
                     var typeName = typeConstraint.TypeName.FullName;
@@ -613,7 +613,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     var typeConstraint = parameterAst.Attributes
                         .OfType<TypeConstraintAst>()
                         .FirstOrDefault();
-                    
+
                     if (typeConstraint != null)
                     {
                         return typeConstraint.TypeName.FullName;
@@ -631,7 +631,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Check if this is a member expression that might have a known return type
             // For now, we'll be conservative and only check direct type constraints
-            
+
             return null;
         }
 
@@ -646,7 +646,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var varName = varExpr.VariablePath.UserPath;
-            
+
             // Walk up to find the containing function or script block
             Ast current = varExpr.Parent;
             while (current != null)
@@ -665,7 +665,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
                         }
                     }
-                    
+
                     // Check function parameters (for functions with parameters outside param block)
                     if (funcAst.Parameters != null)
                     {
@@ -677,10 +677,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
                         }
                     }
-                    
+
                     break; // Don't check outer function scopes
                 }
-                
+
                 if (current is ScriptBlockAst scriptAst)
                 {
                     var paramBlock = scriptAst.ParamBlock;
@@ -696,10 +696,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                     break; // Don't check outer script block scopes
                 }
-                
+
                 current = current.Parent;
             }
-            
+
             return null;
         }
 
@@ -734,7 +734,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     var varName = assignedVar.VariablePath.UserPath;
                     var typeName = convertExpr.Type.TypeName.FullName;
-                    
+
                     // Store in cache (first assignment wins)
                     if (!typedVariables.ContainsKey(varName))
                     {
@@ -759,16 +759,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var varName = varExpr.VariablePath.UserPath;
-            
+
             // Walk up to find the containing function or script block
             Ast searchScope = varExpr.Parent;
-            while (searchScope != null && 
-                   !(searchScope is FunctionDefinitionAst) && 
+            while (searchScope != null &&
+                   !(searchScope is FunctionDefinitionAst) &&
                    !(searchScope is ScriptBlockAst))
             {
                 searchScope = searchScope.Parent;
             }
-            
+
             if (searchScope == null)
             {
                 return null;
@@ -776,12 +776,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Use cached results instead of re-scanning the entire scope
             var typedVariables = GetOrBuildTypedVariableCache(searchScope);
-            
+
             if (typedVariables.TryGetValue(varName, out string typeName))
             {
                 return typeName;
             }
-            
+
             return null;
         }
 
@@ -792,7 +792,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // Find the hashtable in the manifest
             var hashtableAst = ast.Find(x => x is HashtableAst, false) as HashtableAst;
-            
+
             if (hashtableAst == null)
             {
                 return;
@@ -818,7 +818,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (kvp.Item1 is StringConstantExpressionAst keyAst)
                 {
                     string keyName = keyAst.Value;
-                    
+
                     if (exportFields.Contains(keyName, StringComparer.OrdinalIgnoreCase))
                     {
                         // Check if the value contains a wildcard
@@ -827,7 +827,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                         // The value in a hashtable is a StatementAst, need to extract the expression
                         var valueExpr = GetExpressionFromStatement(kvp.Item2);
-                        
+
                         if (valueExpr is StringConstantExpressionAst stringValue)
                         {
                             if (stringValue.Value == "*")
@@ -877,7 +877,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     }
                                     if (hasWildcard) break;
                                 }
-                            } 
+                            }
                         }
 
                         if (hasWildcard && wildcardExtent != null)
@@ -910,7 +910,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (kvp.Item1 is StringConstantExpressionAst keyAst)
                 {
                     string keyName = keyAst.Value;
-                    
+
                     if (moduleFields.Contains(keyName, StringComparer.OrdinalIgnoreCase))
                     {
                         var valueExpr = GetExpressionFromStatement(kvp.Item2);
@@ -1090,12 +1090,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }

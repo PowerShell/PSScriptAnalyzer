@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     var attributes = typeAllowList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
-                    String paramName = paramAst.Name.VariablePath.ToString();                    
+                    String paramName = paramAst.Name.VariablePath.ToString();
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var usrExt = usernameAst.Extent;
             var pwdExt = passwordAst.Extent;
             IScriptExtent startExt, endExt;
-            var usrBeforePwd 
+            var usrBeforePwd
                 = (usrExt.StartLineNumber == pwdExt.StartLineNumber
                     && usrExt.StartColumnNumber < pwdExt.StartColumnNumber)
                     || usrExt.StartLineNumber < pwdExt.StartLineNumber;
@@ -170,13 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

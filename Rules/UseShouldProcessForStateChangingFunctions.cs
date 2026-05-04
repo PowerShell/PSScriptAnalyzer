@@ -32,17 +32,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);            
+            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);
             foreach (FunctionDefinitionAst funcDefAst in funcDefWithNoShouldProcessAttrAsts)
             {
                 yield return new DiagnosticRecord(
-                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name), 
-                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),                    
-                    this.GetName(), 
-                    DiagnosticSeverity.Warning, 
+                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name),
+                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),
+                    this.GetName(),
+                    DiagnosticSeverity.Warning,
                     fileName);
             }
-                            
+
         }
         /// <summary>
         /// Checks if the ast defines a state changing function
@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return false;
             }
-            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name) 
+            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name)
                     && (funcDefAst.Body.ParamBlock == null
                         || funcDefAst.Body.ParamBlock.Attributes == null
                         || !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes));
@@ -105,14 +105,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: built-in, managed or module.
-        /// </summary>
-        /// <returns>Source type {PS, PSDSC}</returns>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

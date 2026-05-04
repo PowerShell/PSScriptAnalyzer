@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast is null) 
+            if (ast is null)
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
@@ -42,13 +42,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesError, paramAst.Name),
                         paramAst.Name.Extent,
-                        GetName(), 
-                        DiagnosticSeverity.Warning, 
+                        GetName(),
+                        DiagnosticSeverity.Warning,
                         fileName);
                 }
             }
         }
-    
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
@@ -76,13 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning or information.

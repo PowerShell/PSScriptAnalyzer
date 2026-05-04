@@ -14,7 +14,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string name;
         private string commonName;
         private string description;
-        private SourceType sourceType;
+        private RuleSourceType sourceType;
         private string sourceName;
         private RuleSeverity ruleSeverity;
         private Type implementingType;
@@ -54,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         ///
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public SourceType SourceType
+        public RuleSourceType SourceType
         {
             get { return sourceType; }
             private set { sourceType = value; }
@@ -98,7 +98,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="description">Description of the rule.</param>
         /// <param name="sourceType">Source type of the rule.</param>
         /// <param name="sourceName">Source name of the rule.</param>
-        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity)
+        public RuleInfo(string name, string commonName, string description, RuleSourceType sourceType, string sourceName, RuleSeverity severity)
         {
             RuleName        = name;
             CommonName  = commonName;
@@ -117,7 +117,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="sourceType">Source type of the rule.</param>
         /// <param name="sourceName">Source name of the rule.</param>
         /// <param name="implementingType">The dotnet type of the rule.</param>
-        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType)
+        public RuleInfo(string name, string commonName, string description, RuleSourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType)
         {
             RuleName        = name;
             CommonName  = commonName;

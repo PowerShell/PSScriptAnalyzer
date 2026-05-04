@@ -75,9 +75,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="paramAst">The parameter AST to examine</param>
         /// <param name="comparer">String comparer for case-insensitive attribute name matching</param>
         /// <returns>
-        /// True if the parameter has at least one [Parameter] attribute and ALL of them 
+        /// True if the parameter has at least one [Parameter] attribute and ALL of them
         /// have the Mandatory named argument set to true (explicitly or implicitly).
-        /// False if the parameter has no [Parameter] attributes or if any [Parameter] 
+        /// False if the parameter has no [Parameter] attributes or if any [Parameter]
         /// attribute does not have Mandatory=true.
         /// </returns>
         private static bool HasMandatoryInAllParameterAttributes(ParameterAst paramAst)
@@ -122,13 +122,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterDescription);
         }
 
-        /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

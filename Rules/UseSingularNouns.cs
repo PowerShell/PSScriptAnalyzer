@@ -27,12 +27,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// CmdletSingularNoun: Analyzes scripts to check that all defined cmdlets use singular nouns.
-    /// 
+    ///
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
-    public class CmdletSingularNoun : ConfigurableRule 
+    public class CmdletSingularNoun : ConfigurableRule
     {
         [ConfigurableRuleProperty(defaultValue: new string[] { "Data", "Windows" })]
         public string[] NounAllowList { get; set; }
@@ -124,13 +124,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

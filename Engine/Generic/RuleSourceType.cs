@@ -4,9 +4,9 @@
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
-    /// Represents a source name of a script analyzer rule.
+    /// Represents a source type of a script analyzer rule.
     /// </summary>
-    public enum SourceType : uint
+    public enum RuleSourceType : uint
     {
         /// <summary>
         /// BUILTIN: Indicates the script analyzer rule is contributed as a built-in rule.

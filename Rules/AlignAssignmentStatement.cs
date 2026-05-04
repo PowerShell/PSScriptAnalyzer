@@ -481,7 +481,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Next we need to find the location of the equals sign for this
                 // member. We know the line it should be on. We can
                 // search all of the equals signs on that line.
-                // 
+                //
                 // Unlike hashtables, we don't have an extent for the LHS and
                 // RHS of the member. We have the extent of the entire
                 // member, the name of the member, and the extent of the
@@ -699,12 +699,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }
