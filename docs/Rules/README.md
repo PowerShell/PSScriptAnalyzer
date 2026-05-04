@@ -50,6 +50,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [DSCUseVerboseMessageInDSCResource](./DSCUseVerboseMessageInDSCResource.md)                       | Error       |        Yes         |                 |
 | [MisleadingBacktick](./MisleadingBacktick.md)                                                     | Warning     |        Yes         |                 |
 | [MissingModuleManifestField](./MissingModuleManifestField.md)                                     | Warning     |        Yes         |                 |
+| [MissingTryBlock](./MissingTryBlock.md)                                                           | Warning     |        Yes         |                 |
 | [PlaceCloseBrace](./PlaceCloseBrace.md)                                                           | Warning     |         No         |       Yes       |
 | [PlaceOpenBrace](./PlaceOpenBrace.md)                                                             | Warning     |         No         |       Yes       |
 | [PossibleIncorrectComparisonWithNull](./PossibleIncorrectComparisonWithNull.md)                   | Warning     |        Yes         |                 |
