@@ -245,7 +245,7 @@ function MyFunc
             }
         }
 
-        It "Issues one unapplied suppression error when -Fix reanalyzes a file" {
+        It "Issues one unapplied suppression error when -Fix reanalyzes a file" -Skip:$testingLibraryUsage {
             $scriptPath = Join-Path $TestDrive 'SuppressionFix.ps1'
             $script = @(
                 'function Test-Function1 {'
