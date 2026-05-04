@@ -432,9 +432,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Strings.UseConsistentParameterSetNameDescription
             );
 
-        /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
         public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>

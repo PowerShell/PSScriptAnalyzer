@@ -385,7 +385,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return null;
             }
-            
+
             for (int i = startIndex + 1; i < tokens.Length; i++)
             {
                 switch (tokens[i].Kind)
@@ -397,18 +397,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return tokens[i];
                 }
             }
-            
+
             // We've run out of tokens
             return null;
         }
-        
+
         private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int startIndex)
         {
             if (startIndex >= tokens.Length - 1)
             {
                 return false;
             }
-            
+
             Token nextToken = null;
             for (int i = startIndex + 1; i < tokens.Length; i++)
             {
@@ -427,7 +427,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return false;
                 }
             }
-            
+
             // We've run out of tokens but haven't seen a newline
             return false;
         }
@@ -599,13 +599,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         private void AddViolation(
             Token token,
