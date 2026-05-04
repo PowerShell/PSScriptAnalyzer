@@ -108,13 +108,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]

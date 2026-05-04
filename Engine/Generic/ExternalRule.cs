@@ -42,10 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return this.param;
         }
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Module;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Module;
 
         public string GetParameterType()
         {
@@ -71,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         #endregion
 
         #region Constructors
-        
+
         public ExternalRule()
         {
 

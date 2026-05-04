@@ -209,13 +209,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
 
         private DiagnosticRecord GetViolationForBraceShouldNotFollowEmptyLine(
             Token[] tokens,

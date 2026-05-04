@@ -48,7 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
                             System.Diagnostics.Debug.Assert(
-                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
+                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message),
                                 Strings.NullErrorMessage);
                             var hashTableAst = ast.Find(x => x is HashtableAst, false);
                             if (hashTableAst == null)
@@ -56,10 +56,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 yield break;
                             }
                             yield return new DiagnosticRecord(
-                                errorRecord.Exception.Message, 
-                                hashTableAst.Extent, 
-                                GetName(), 
-                                DiagnosticSeverity.Warning, 
+                                errorRecord.Exception.Message,
+                                hashTableAst.Extent,
+                                GetName(),
+                                DiagnosticSeverity.Warning,
                                 fileName,
                                 suggestedCorrections:GetCorrectionExtent(hashTableAst as HashtableAst));
                         }
@@ -133,7 +133,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             correctionExtents.Add(correctionExtent);
             return correctionExtents;
         }
-        
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
@@ -161,13 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return String.Format(CultureInfo.CurrentCulture, Strings.MissingModuleManifestFieldDescription);
         }
 
-        /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

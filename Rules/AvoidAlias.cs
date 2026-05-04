@@ -53,7 +53,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return;
             }
-            // Fallback for object from legacy allowlist argument name 
+            // Fallback for object from legacy allowlist argument name
             if (obj == null) {
                 obj = objLegacy;
             }
@@ -260,13 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

@@ -67,12 +67,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         };
                         diagnosticRecords.Add(new DiagnosticRecord(
                                 string.Format(
-                                    CultureInfo.CurrentCulture, 
+                                    CultureInfo.CurrentCulture,
                                     Strings.AvoidExclaimOperatorError
-                                ), 
-                                unaryExpressionAst.Extent, 
+                                ),
+                                unaryExpressionAst.Extent,
                                 GetName(),
-                                GetDiagnosticSeverity(), 
+                                GetDiagnosticSeverity(),
                                 fileName,
                                 suggestedCorrections: corrections
                         ));
@@ -135,13 +135,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }
 

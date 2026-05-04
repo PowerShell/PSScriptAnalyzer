@@ -181,13 +181,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
 
         private bool IsOperator(Token token)
         {
@@ -243,7 +237,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                
+
                 yield return new DiagnosticRecord(
                     GetError(ErrorKind.BeforeOpeningBrace),
                     lcurly.Value.Extent,
@@ -520,7 +514,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
         }
-        
+
         private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode)
         {
             return tokenNode.Previous.Value.Kind == TokenKind.LParen;

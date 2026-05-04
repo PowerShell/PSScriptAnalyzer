@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// DscTestsPresent: Checks that DSC tests for given resource are present.
     /// Rule expects directory Tests to be present:
     ///     For non-class based resources it should exist at the same folder level as DSCResources folder.
-    ///     For class based resources it should be present at the same folder level as resource psm1 file. 
+    ///     For class based resources it should be present at the same folder level as resource psm1 file.
     /// Tests folder should contain test script for given resource - file name should contain resource's name.
     /// </summary>
 #if !CORECLR
@@ -141,13 +141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.DscTestsPresentDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning or information.

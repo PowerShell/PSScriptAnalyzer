@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    
+
     /// <summary>
     /// Rule that identifies parameter blocks with multiple parameters in
     /// the same parameter set that are marked as ValueFromPipeline=true, which
@@ -56,16 +56,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // implicitly). Flatten the results into a single collection of
                 // Annonymous objects relating the parameter with it's attribute
                 // and then group them by parameter set name.
-                // 
-                // 
+                //
+                //
                 // https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_parameter_sets?#reserved-parameter-set-name
-                // 
+                //
                 // The default parameter set name is '__AllParameterSets'.
                 // Not specifying a parameter set name and using the parameter
                 // set name '__AllParameterSets' are equivalent, so we shouldn't
                 // treat them like they're different just because one is an
                 // empty string and the other is not.
-                // 
+                //
                 // Filter the list to only keep parameter sets that have more
                 // than one ValueFromPipeline parameter.
                 var parameterSetGroups = paramBlock.FindAll(n => n is ParameterAst, true)
@@ -183,6 +183,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override string GetSourceName() => Strings.SourceName;
 
-        public override SourceType GetSourceType() => SourceType.Builtin;
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }

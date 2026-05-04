@@ -62,7 +62,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         || !CompareParamAsts(paramAst, paramNames[paramAst.Name.VariablePath.UserPath]))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);   
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                     }
                 }
             }
@@ -118,14 +118,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return true;
         }
-        
+
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
         public string GetName()
-        {            
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalParametersDSCName);
         }
 
@@ -147,13 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

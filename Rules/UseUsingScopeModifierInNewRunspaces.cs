@@ -66,13 +66,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
@@ -115,11 +109,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             private readonly Dictionary<string, HashSet<string>> _varsDeclaredPerSession;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
-        
+
             private readonly UseUsingScopeModifierInNewRunspaces _rule;
-        
+
             private readonly string _analyzedFilePath;
-        
+
             public SyntaxCompatibilityVisitor(UseUsingScopeModifierInNewRunspaces rule, string analyzedScriptPath)
             {
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
@@ -154,15 +148,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string cmdName = commandAst.GetCommandName();
                 if (cmdName == null)
                 {
-                    // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }` 
+                    // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }`
                     return AstVisitAction.SkipChildren;
                 }
-                
+
                 // We need this information, because some cmdlets can have more than one ScriptBlock parameter
                 var scriptBlockParameterAst = commandAst.CommandElements[
                         commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as CommandParameterAst;
 
-                if (IsInlineScriptBlock(cmdName) || 
+                if (IsInlineScriptBlock(cmdName) ||
                     IsJobScriptBlock(cmdName, scriptBlockParameterAst) ||
                     IsForeachScriptBlock(cmdName, scriptBlockParameterAst) ||
                     IsInvokeCommandComputerScriptBlock(cmdName, commandAst) ||
@@ -192,7 +186,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     return AstVisitAction.SkipChildren;
                 }
-                
+
                 return AstVisitAction.Continue;
             }
 
@@ -231,7 +225,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     case VariableExpressionAst variable:
                         variableExpressionAst = variable;
-                        return true; 
+                        return true;
 
                     case AttributedExpressionAst attributedAst:
                         return TryGetVariableFromExpression(attributedAst.Child, out variableExpressionAst);
@@ -266,12 +260,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (VariableExpressionAst variable in ast.FindAll(IsNonUsingNonSpecialVariableExpressionAst, true))
                 {
                     var varName = string.Format(variable.VariablePath.UserPath, StringComparer.OrdinalIgnoreCase);
-                    
+
                     if (varsInAssignments.Contains(varName))
                     {
-                        yield break;    
+                        yield break;
                     }
-                    
+
                     yield return variable;
                 }
             }
@@ -282,8 +276,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             private static bool IsNonUsingNonSpecialVariableExpressionAst(Ast ast)
             {
-                return ast is VariableExpressionAst variable && 
-                       !(variable.Parent is UsingExpressionAst) && 
+                return ast is VariableExpressionAst variable &&
+                       !(variable.Parent is UsingExpressionAst) &&
                        !Helper.Instance.HasSpecialVars(variable.VariablePath.UserPath);
             }
 
@@ -470,7 +464,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // 'pa' is the shortest unambiguous form for the '-Parallel' parameter
                 return s_foreachObjectCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
-                    (scriptBlockParameterAst != null && 
+                    (scriptBlockParameterAst != null &&
                         scriptBlockParameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase));
             }
 
@@ -486,7 +480,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // 'ini' is the shortest unambiguous form for the '-InitializationScript' parameter
                 return (s_jobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) ||
                         s_threadJobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase)) &&
-                    !(scriptBlockParameterAst != null && 
+                    !(scriptBlockParameterAst != null &&
                         scriptBlockParameterAst.ParameterName.StartsWith("ini", StringComparison.OrdinalIgnoreCase));
             }
 
@@ -509,7 +503,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Inside DSC Script resource, GetScript is of the form 'Script foo { GetScript = {} }'
                 // If we reach this point in the code, we are sure there are at least two CommandElements, so the index of [1] will not fail.
-                return s_dscScriptResourceCommandNames.Contains(cmdName, StringComparer.OrdinalIgnoreCase) && 
+                return s_dscScriptResourceCommandNames.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
                     commandAst.CommandElements[1].ToString() == "=";
             }
         }

@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         // The list of PowerShell reserved words.
         // https://learn.microsoft.com/en-gb/powershell/module/microsoft.powershell.core/about/about_reserved_words
-        // 
+        //
         // The Below are omitted as they don't pose an issue being a function
         // name:
         // assembly, base, command, hidden, in, inlinescript, interface, module,
@@ -98,6 +98,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetSourceName() => Strings.SourceName;
 
-        public SourceType GetSourceType() => SourceType.Builtin;
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null)
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
-            }            
+            }
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             }
         }
-        
+
         /// <summary>
         /// AnalyzeDSCClass: This function returns nothing in the case of dsc class.
         /// </summary>
@@ -94,13 +94,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.UseVerboseMessageInDSCResourceDescription);
         }
 
-        /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

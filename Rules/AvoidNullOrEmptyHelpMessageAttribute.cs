@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 [Export(typeof(IScriptRule))]
 #endif
     public class AvoidNullOrEmptyHelpMessageAttribute : IScriptRule
-    {               
+    {
         /// <summary>
         /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                                           
+
                 foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
                 {
                     if (paramAst == null)
@@ -57,19 +57,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             continue;
                         }
-                                               
+
                         foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
                             if (namedArgument == null || !(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
                             {
                                 continue;
                             }
-                            
+
                             string errCondition;
                             if (namedArgument.ExpressionOmitted || HasEmptyStringInExpression(namedArgument.Argument))
                             {
                                 errCondition = "empty";
-                            }                                                        
+                            }
                             else if (HasNullInExpression(namedArgument.Argument))
                             {
                                 errCondition = "null";
@@ -84,16 +84,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                                                 Strings.AvoidNullOrEmptyHelpMessageAttributeError,
                                                                 paramAst.Name.VariablePath.UserPath);
                                 yield return new DiagnosticRecord(message,
-                                                                    paramAst.Extent, 
-                                                                    GetName(), 
-                                                                    DiagnosticSeverity.Warning, 
-                                                                    fileName, 
+                                                                    paramAst.Extent,
+                                                                    GetName(),
+                                                                    DiagnosticSeverity.Warning,
+                                                                    fileName,
                                                                     paramAst.Name.VariablePath.UserPath);
-                            }                            
-                        }                                                
+                            }
+                        }
                     }
                 }
-                
+
             }
         }
 
@@ -148,13 +148,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidNullOrEmptyHelpMessageAttributeDescription);
         }
 
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule, builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.

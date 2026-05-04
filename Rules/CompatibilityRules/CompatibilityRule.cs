@@ -118,13 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return RuleSeverity.Warning;
         }
 
-        /// <summary>
-        /// Gets the source type of this rule.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override RuleSourceType SourceType => RuleSourceType.Builtin;
 
         /// <summary>
         /// Gets the name of the source of this rule.
