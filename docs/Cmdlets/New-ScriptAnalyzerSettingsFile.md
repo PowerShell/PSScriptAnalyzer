@@ -26,9 +26,7 @@ configuration defined by the given preset.
 
 When **BaseOnPreset** is not provided, the generated file includes all current rules in the
 `IncludeRules` list and populates the `Rules` section with all configurable properties, set to their
-default values. Both modes also include `CustomRulePath`, `RecurseCustomRulePath`, and
-`IncludeDefaultRules` keys with descriptive comments so the file is immediately ready for
-customization.
+default values.
 
 If a settings file already exists at the target path, the cmdlet emits a terminating error unless
 the **Force** parameter is specified - in which case it's overwritten.
@@ -41,7 +39,7 @@ the **Force** parameter is specified - in which case it's overwritten.
 New-ScriptAnalyzerSettingsFile
 ```
 
-Creates `PSScriptAnalyzerSettings.psd1` in the current working directory incluindg all rules and
+Creates `PSScriptAnalyzerSettings.psd1` in the current working directory including all rules and
 all configurable options set to their defaults.
 
 ### EXAMPLE 2 - Create a settings file based on a preset

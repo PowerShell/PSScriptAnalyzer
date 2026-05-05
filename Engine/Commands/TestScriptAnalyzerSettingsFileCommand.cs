@@ -583,10 +583,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return value is string s && int.TryParse(s, out _);
             }
 
-            // String property — almost anything is acceptable since ToString works.
+            // String property — only accept actual strings so that non-string
+            // values for constrained options (with PossibleValues) are caught by
+            // the type check rather than silently skipping enum validation.
             if (targetType == typeof(string))
             {
-                return true;
+                return value is string;
             }
 
             // Array property — accept arrays or a single element of the right kind.
