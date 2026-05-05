@@ -1447,10 +1447,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptDefinition">The script to be analyzed.</param>
         /// <param name="scriptAst">Parsed AST of <paramref name="scriptDefinition"/>.</param>
-        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/.></param>
+        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/>.</param>
         /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
         /// <returns></returns>
-        public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false, bool emitSuppressionErrors = true)
+        public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false)
+        {
+            return AnalyzeScriptDefinition(scriptDefinition, out scriptAst, out scriptTokens, skipVariableAnalysis, emitSuppressionErrors: true);
+        }
+
+        /// <summary>
+        /// Analyzes a script definition in the form of a string input.
+        /// </summary>
+        /// <param name="scriptDefinition">The script to be analysed.</param>
+        /// <param name="scriptAst">Parsed AST of <paramref name="scriptDefinition"/>.</param>
+        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/>.</param>
+        /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
+        /// <param name="emitSuppressionErrors">Whether to emit errors for unapplied rule suppression IDs.</param>
+        /// <returns>A list of diagnostics found by rules.</returns>
+        public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis, bool emitSuppressionErrors)
         {
             scriptAst = null;
             scriptTokens = null;
@@ -2043,8 +2057,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ScriptBlockAst scriptAst,
             Token[] scriptTokens,
             string filePath,
-            bool skipVariableAnalysis = false,
-            bool emitSuppressionErrors = true)
+            bool skipVariableAnalysis = false)
+        {
+            return AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath, skipVariableAnalysis, emitSuppressionErrors: true);
+        }
+
+        /// <summary>
+        /// Analyzes the syntax tree of a script file that has already been parsed.
+        /// </summary>
+        /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
+        /// <param name="scriptTokens">The tokens found in the script.</param>
+        /// <param name="filePath">The path to the file that was parsed.
+        /// If AnalyzeSyntaxTree is called from an AST obtained via ParseInput, this field will be String.Empty.
+        /// </param>
+        /// <param name="skipVariableAnalysis">Whether to skip variable analysis.</param>
+        /// <param name="emitSuppressionErrors">Whether to emit errors for unapplied rule suppression IDs.</param>
+        /// <returns>An enumeration of DiagnosticRecords found by rules.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
+            ScriptBlockAst scriptAst,
+            Token[] scriptTokens,
+            string filePath,
+            bool skipVariableAnalysis,
+            bool emitSuppressionErrors)
         {
             Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string,List<RuleSuppression>>();
             ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
