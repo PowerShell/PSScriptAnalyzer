@@ -15,6 +15,13 @@ BeforeAll {
 
 Describe "AvoidArrayList" {
 
+    BeforeAll {
+        $settings = @{
+            IncludeRules = @($ruleName)
+            Rules        = @{ $ruleName = @{ Enable = $true } }
+        }
+    }
+
     Context "When there are violations" {
 
         It "Unquoted New-Object type" {
@@ -22,7 +29,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object ArrayList
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object ArrayList}.ToString()
@@ -34,7 +41,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object 'ArrayList'
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object 'ArrayList'}.ToString()
@@ -46,7 +53,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object "ArrayList"
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object "ArrayList"}.ToString()
@@ -58,7 +65,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object -TypeName ArrayList
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object -TypeName ArrayList}.ToString()
@@ -70,7 +77,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object -Type ArrayLIST
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object -Type ArrayLIST}.ToString()
@@ -82,7 +89,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object -TypeName System.Collections.ArrayList
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object -TypeName System.Collections.ArrayList}.ToString()
@@ -94,7 +101,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object COLLECTIONS.ArrayList
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {New-Object COLLECTIONS.ArrayList}.ToString()
@@ -106,7 +113,7 @@ Describe "AvoidArrayList" {
                 $List = [ArrayList](1,2,3)
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {[ArrayList](1,2,3)}.ToString()
@@ -118,7 +125,7 @@ Describe "AvoidArrayList" {
                 $List = [ArrayList]@(1,2,3)
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {[ArrayList]@(1,2,3)}.ToString()
@@ -130,7 +137,7 @@ Describe "AvoidArrayList" {
                 $List = [ArrayList]::new()
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {[ArrayList]::new()}.ToString()
@@ -142,7 +149,7 @@ Describe "AvoidArrayList" {
                 $List = [System.Collections.ArrayList]::new()
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {[System.Collections.ArrayList]::new()}.ToString()
@@ -154,7 +161,7 @@ Describe "AvoidArrayList" {
                 $List = [COLLECTIONS.ArrayList]::new()
                 1..3 | ForEach-Object { $null = $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Warning
             $violations.Extent.Text | Should -Be {[COLLECTIONS.ArrayList]::new()}.ToString()
@@ -169,7 +176,7 @@ Describe "AvoidArrayList" {
                 $List = New-Object List[Object]
                 1..3 | ForEach-Object { $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -178,7 +185,7 @@ Describe "AvoidArrayList" {
                 $List = [List[Object]]::new()
                 1..3 | ForEach-Object { $List.Add($_) }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -186,7 +193,7 @@ Describe "AvoidArrayList" {
             $scriptDefinition = {
                 $List = 1..3 | ForEach-Object { $_ }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -197,12 +204,42 @@ Describe "AvoidArrayList" {
                 $List = [ArrayList]@(1,2,3)
                 $List = [ArrayList]::new()
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
 
     Context "Disabled" {
+
+        It "New-Object type" {
+            $scriptDefinition = $usingCollections + {
+                $List = New-Object ArrayList
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "Type initializer" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList](1,2,3)
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "New constructor" {
+            $scriptDefinition = $usingCollections + {
+                $List = [ArrayList]::new()
+                1..3 | ForEach-Object { $null = $List.Add($_) }
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Explicitly disabled" {
 
         BeforeAll {
             $settings = @{
@@ -219,46 +256,6 @@ Describe "AvoidArrayList" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
-
-        It "Type initializer" {
-            $scriptDefinition = $usingCollections + {
-                $List = [ArrayList](1,2,3)
-                1..3 | ForEach-Object { $null = $List.Add($_) }
-            }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
-            $violations | Should -BeNullOrEmpty
-        }
-
-        It "New constructor" {
-            $scriptDefinition = $usingCollections + {
-                $List = [ArrayList]::new()
-                1..3 | ForEach-Object { $null = $List.Add($_) }
-            }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
-            $violations | Should -BeNullOrEmpty
-        }
-    }
-
-    Context "Explicitly enabled" {
-
-        BeforeAll {
-            $settings = @{
-                IncludeRules = @($ruleName)
-                Rules        = @{ $ruleName = @{ Enable = $true } }
-            }
-        }
-
-        It "New-Object type" {
-            $scriptDefinition = $usingCollections + {
-                $List = New-Object ArrayList
-                1..3 | ForEach-Object { $null = $List.Add($_) }
-            }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
-            $violations.Count       | Should -Be 1
-            $violations.Severity    | Should -Be Warning
-            $violations.Extent.Text | Should -Be {New-Object ArrayList}.ToString()
-            $violations.Message     | Should -Be ($ruleMessage -f {New-Object ArrayList})
-        }
     }
 
     Context "Test for potential errors" {
@@ -269,7 +266,7 @@ Describe "AvoidArrayList" {
                 New-Object -TypeName $type
             }.ToString()
 
-            $analyzer = { Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName) }
+            $analyzer = { Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings }
             $analyzer | Should -Not -Throw # but won't violate either (too complex to cover)
         }
     }

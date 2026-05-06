@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Construct an object of AvoidUsingArrayList type.
         /// </summary>
         public AvoidUsingArrayList() {
-            Enable = true;
+            Enable = false;
         }
 
         /// <summary>
@@ -37,24 +38,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A an enumerable type containing the violations</returns>
         public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) { throw new ArgumentNullException(Strings.NullAstErrorMessage); }
+            if (ast == null) { throw new ArgumentNullException(nameof(ast), Strings.NullAstErrorMessage); }
 
             // If there is an using statement for the Collections namespace, check for the full typename.
             // Otherwise also check for the bare ArrayList name.
             Regex arrayListName = null;
-            var sbAst = ast as ScriptBlockAst;
-            foreach (UsingStatementAst usingAst in sbAst.UsingStatements)
-            {
-                if (
-                    usingAst.UsingStatementKind == UsingStatementKind.Namespace &&
-                    (
-                        usingAst.Name.Value.Equals("Collections", StringComparison.OrdinalIgnoreCase) ||
-                        usingAst.Name.Value.Equals("System.Collections", StringComparison.OrdinalIgnoreCase)
-                    )
-                )
+            if (ast is ScriptBlockAst sbAst) {
+                foreach (UsingStatementAst usingAst in sbAst.UsingStatements.Cast<UsingStatementAst>())
                 {
-                    arrayListName = new Regex(@"^((System\.)?Collections\.)?ArrayList$", RegexOptions.IgnoreCase);
-                    break;
+                    if (
+                        usingAst.UsingStatementKind == UsingStatementKind.Namespace &&
+                        (
+                            usingAst.Name.Value.Equals("Collections", StringComparison.OrdinalIgnoreCase) ||
+                            usingAst.Name.Value.Equals("System.Collections", StringComparison.OrdinalIgnoreCase)
+                        )
+                    )
+                    {
+                        arrayListName = new Regex(@"^((System\.)?Collections\.)?ArrayList$", RegexOptions.IgnoreCase);
+                        break;
+                    }
                 }
             }
             if (arrayListName == null) { arrayListName = new Regex(@"^(System\.)?Collections\.ArrayList$", RegexOptions.IgnoreCase); }
