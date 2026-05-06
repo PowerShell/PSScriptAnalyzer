@@ -55,9 +55,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var bindingResult = StaticParameterBinder.BindCommand(cmdAst, true);
 
                 // Check for -AsPlainText parameter
+                // The constantValue appears true even the value is a variable
+                // This is ok because the rule should still trigger in that case since the value of the
+                // variable could be true at runtime, and we want to catch all potential violations
                 if (
                     bindingResult.BoundParameters.ContainsKey("AsPlainText") &&
-                    (bool)bindingResult.BoundParameters["AsPlainText"].ConstantValue == true
+                    bindingResult.BoundParameters["AsPlainText"].ConstantValue is bool constantValue &&
+                    constantValue == true
                 ) {
                     yield return GetDiagnosticRecord(cmdAst.Extent, fileName, "AsPlainText");
                 }
@@ -102,10 +106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private DiagnosticRecord GetDiagnosticRecord(IScriptExtent Extent, string fileName, string suppressionId)
         {
             return new DiagnosticRecord(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.AvoidSecretDisclosureError,
-                    Extent.Text),
+                Strings.AvoidSecretDisclosureError,
                 Extent,
                 GetName(),
                 DiagnosticSeverity.Warning,

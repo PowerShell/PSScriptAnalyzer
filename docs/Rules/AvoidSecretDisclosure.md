@@ -34,6 +34,12 @@ In general, avoid any code pattern that involves converting secrets to plaintext
 > contain secrets, or to ensure that they do not actually contain secrets. If renaming is not possible, consider
 > suppressing the warning for those specific cases.
 
+ ## Configuration
+
+ ### Parameters
+
+ * `Enable` - Enables or disables the rule. Default value is `True`.
+
 ## Example
 
 ### Wrong

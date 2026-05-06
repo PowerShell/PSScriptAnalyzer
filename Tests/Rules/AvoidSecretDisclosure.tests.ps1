@@ -29,6 +29,19 @@ Describe "AvoidSecretDisclosure" {
             $violations.RuleSuppressionID | Should -Be 'AsPlainText'
         }
 
+        It "ConvertFrom-SecureString -AsPlainText:$true" {
+            $scriptDefinition = {
+                $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
+                $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$true
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count             | Should -Be 1
+            $violations.Severity          | Should -Be Warning
+            $violations.Extent.Text       | Should -Be {ConvertFrom-SecureString -AsPlainText:$true}.ToString()
+            $violations.Message           | Should -Be $ruleMessage
+            $violations.RuleSuppressionID | Should -Be 'AsPlainText'
+        }
+
         It "SecureStringToBSTR()" {
             $scriptDefinition = {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
@@ -196,6 +209,32 @@ Describe "AvoidSecretDisclosure" {
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
             $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "should not crash" {
+
+        It "-AsPlainText:$false" {
+            $scriptDefinition = {
+                $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
+                $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$false
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations | Should -BeNullOrEmpty
+        }
+
+        It "-AsPlainText:$someVar" {
+            $scriptDefinition = {
+                param ([bool] $someVar)
+                $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
+                $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$someVar
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations.Count             | Should -Be 1
+            $violations.Severity          | Should -Be Warning
+            $violations.Extent.Text       | Should -Be {ConvertFrom-SecureString -AsPlainText:$someVar}.ToString()
+            $violations.Message           | Should -Be $ruleMessage
+            $violations.RuleSuppressionID | Should -Be 'AsPlainText'
         }
     }
 }
