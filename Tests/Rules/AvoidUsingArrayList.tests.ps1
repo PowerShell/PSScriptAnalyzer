@@ -197,6 +197,14 @@ Describe "AvoidArrayList" {
             $violations | Should -BeNullOrEmpty
         }
 
+        It "new()" {
+            $scriptDefinition = {
+                $List = [ArrayList]::new()
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+
         It "Out of the namespace scope" {
             $scriptDefinition = $usingGeneric + {
                 $List = New-Object ArrayList
