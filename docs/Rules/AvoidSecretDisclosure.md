@@ -29,10 +29,9 @@ plaintext secrets.
   `SecurePassword` instead of accessing plaintext passwords.
 
 > [!NOTE]
->
-> For custom properties named "Password", it is recommended to rename them to something that does not imply they
-> contain secrets, or to ensure that they do not actually contain secrets. If renaming is not possible, consider
-> suppressing the warning for those specific cases.
+> For custom properties named "Password", it is recommended to rename them to something that does
+> not imply they contain secrets, or to ensure that they do not actually contain secrets. If
+> renaming is not possible, consider suppressing the warning for those specific cases.
 
  ## Configuration
 
