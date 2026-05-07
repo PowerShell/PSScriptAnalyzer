@@ -20,11 +20,12 @@ converted to plain text, which can lead to unintended exposure of sensitive info
 
 ## How to Fix
 
-In general, avoid any code pattern that involves converting secrets to plaintext or accessing plaintext secrets.
+In general, avoid any code pattern that involves converting secrets to plaintext or accessing
+plaintext secrets.
 
-* For `ConvertFrom-SecureString -AsPlainText`: Use `-Credential` parameter instead
-* For `SecureStringTo*` methods: Avoid converting to plaintext
-* For `Password` properties: Use secure credential objects directly or the SecureString equivalent
+- For `ConvertFrom-SecureString -AsPlainText`: Use `-Credential` parameter instead
+- For `SecureStringTo*` methods: Avoid converting to plaintext
+- For `Password` properties: Use secure credential objects directly or the SecureString equivalent
   `SecurePassword` instead of accessing plaintext passwords.
 
 > [!NOTE]
