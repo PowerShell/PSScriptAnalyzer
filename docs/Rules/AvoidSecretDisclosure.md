@@ -33,11 +33,11 @@ plaintext secrets.
 > not imply they contain secrets, or to ensure that they do not actually contain secrets. If
 > renaming is not possible, consider suppressing the warning for those specific cases.
 
- ## Configuration
+## Configuration
 
- ### Parameters
+### Parameters
 
- * `Enable` - Enables or disables the rule. Default value is `True`.
+- `Enable` - Enables or disables the rule. Default value is `$true`.
 
 ## Example
 
