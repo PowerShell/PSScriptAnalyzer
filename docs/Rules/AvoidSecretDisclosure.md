@@ -15,7 +15,6 @@ that could be exploited by attackers. This rule identifies instances where a sec
 converted to plain text, which can lead to unintended exposure of sensitive information.
 
 > [!IMPORTANT]
->
 > The general approach of dealing with credentials is to avoid them and instead rely on other means
 > to authenticate, such as certificates or Windows authentication.
 
