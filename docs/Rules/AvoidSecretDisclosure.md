@@ -10,9 +10,9 @@ title: AvoidSecretDisclosure
 
 ## Description
 
-Disclosing a secret might result in security vulnerabilities such as memory trails or logging trails that could
-be exploited by attackers. This rule identifies instances where a secret is being converted to plain text,
-which can lead to unintended exposure of sensitive information.
+Disclosing a secret might result in security vulnerabilities such as memory trails or logging trails
+that could be exploited by attackers. This rule identifies instances where a secret is being
+converted to plain text, which can lead to unintended exposure of sensitive information.
 
 > [!IMPORTANT]
 >
