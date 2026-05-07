@@ -15,13 +15,20 @@ Describe "AvoidSecretDisclosure" {
     # https://stackoverflow.com/questions/28352141/convert-a-secure-string-to-plain-text
     # https://stackoverflow.com/questions/7468389/powershell-decode-system-security-securestring-to-readable-password
 
+    BeforeAll {
+        $Settings = @{
+            IncludeRules = @($ruleName)
+            Rules        = @{ $ruleName = @{ Enable = $true } }
+        }
+    }
+
     Context "Violates" {
         It "ConvertFrom-SecureString -AsPlainText" {
             $scriptDefinition = {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {ConvertFrom-SecureString -AsPlainText}.ToString()
@@ -34,7 +41,7 @@ Describe "AvoidSecretDisclosure" {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$true
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {ConvertFrom-SecureString -AsPlainText:$true}.ToString()
@@ -49,7 +56,7 @@ Describe "AvoidSecretDisclosure" {
                 $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
                 [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {[System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)}.ToString()
@@ -65,7 +72,7 @@ Describe "AvoidSecretDisclosure" {
                 [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemUnicode($Ptr)
                 $result
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {[System.Runtime.InteropServices.Marshal]::SecureStringToCoTaskMemUnicode($password)}.ToString()
@@ -80,7 +87,7 @@ Describe "AvoidSecretDisclosure" {
                 $Credential = $PSCredential.GetNetworkCredential()
                 $Password = $Credential.Password
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {$Credential.Password}.ToString()
@@ -99,7 +106,7 @@ Describe "AvoidSecretDisclosure" {
                 }'
                 schtasks /change /s $env:COMPUTERNAME /tn $myTask  /ru $Cred.username /rp $Cred.password
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {$Cred.password}.ToString()
@@ -121,7 +128,7 @@ Describe "AvoidSecretDisclosure" {
                 }
                 Invoke-RestMethod -Method 'Post' -Uri $url -Credential $credential -Body $body -OutFile output.csv
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -129,7 +136,7 @@ Describe "AvoidSecretDisclosure" {
             $scriptDefinition = {
                 Write-Host AsPlainText SecureStringToBSTR Password
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -142,7 +149,7 @@ Describe "AvoidSecretDisclosure" {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -155,7 +162,7 @@ Describe "AvoidSecretDisclosure" {
                 $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
                 [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -169,7 +176,7 @@ Describe "AvoidSecretDisclosure" {
                 [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemUnicode($Ptr)
                 $result
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -181,7 +188,7 @@ Describe "AvoidSecretDisclosure" {
                 $PSCredential = [PSCredential]::new(0, $SecureString)
                 $Password = $PSCredential.GetNetworkCredential().Password
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -207,7 +214,26 @@ Describe "AvoidSecretDisclosure" {
                 $PSCredential = [PSCredential]::new(0, $SecureString)
                 $Password = $PSCredential.GetNetworkCredential().Password
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Disabled" {
+
+        BeforeAll {
+            $Settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $false } }
+            }
+        }
+
+        It "ConvertFrom-SecureString -AsPlainText" {
+            $scriptDefinition = {
+                $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
+                $Null = $SecureString | ConvertFrom-SecureString -AsPlainText
+            }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -219,7 +245,7 @@ Describe "AvoidSecretDisclosure" {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$false
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -229,7 +255,7 @@ Describe "AvoidSecretDisclosure" {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$someVar
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be {ConvertFrom-SecureString -AsPlainText:$someVar}.ToString()

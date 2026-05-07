@@ -37,7 +37,7 @@ plaintext secrets.
 
 ### Parameters
 
-- `Enable` - Enables or disables the rule. Default value is `$true`.
+- `Enable` - Enables or disables the rule. Default value is `$false`.
 
 ## Example
 

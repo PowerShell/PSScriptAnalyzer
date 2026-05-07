@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Construct an object of AvoidSecretDisclosure type.
         /// </summary>
         public AvoidSecretDisclosure() {
-            Enable = true;
+            Enable = false;
         }
 
         /// <summary>
