@@ -7,16 +7,17 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidSecretDisclosure: Checks whether a plaintext secret is being retrieved which can lead to
-    /// security vulnerabilities such as memory trails or logging trails.
-    /// The general approach of dealing with credentials is to avoid them and instead rely on other means
-    /// to authenticate, such as certificates or Windows authentication.
+    /// AvoidSecretDisclosure: Checks whether a plaintext secret is being retrieved which can lead
+    /// to security vulnerabilities such as memory trails or logging trails.
+    /// The general approach of dealing with credentials is to avoid them and instead rely on other
+    ///  means to authenticate, such as certificates or Windows authentication.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
@@ -42,12 +43,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Check for ConvertFrom-SecureString with -AsPlainText parameter
-            IEnumerable<Ast> convertFromSecureStringAsts = ast.FindAll(testAst =>
+            IEnumerable<CommandAst> convertFromSecureStringAsts = ast.FindAll(testAst =>
                 testAst is CommandAst cmdAst &&
                 cmdAst.GetCommandName() != null &&
                 cmdAst.GetCommandName().Equals("ConvertFrom-SecureString", StringComparison.OrdinalIgnoreCase),
                 true
-            );
+            ).Cast<CommandAst>();
 
             foreach (CommandAst cmdAst in convertFromSecureStringAsts)
             {
@@ -59,8 +60,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // This is ok because the rule should still trigger in that case since the value of the
                 // variable could be true at runtime, and we want to catch all potential violations
                 if (
-                    bindingResult.BoundParameters.ContainsKey("AsPlainText") &&
-                    bindingResult.BoundParameters["AsPlainText"].ConstantValue is bool constantValue &&
+                    bindingResult.BoundParameters.TryGetValue("AsPlainText", out ParameterBindingResult asPlainTextBinding) &&
+                    asPlainTextBinding.ConstantValue is bool constantValue &&
                     constantValue == true
                 ) {
                     yield return GetDiagnosticRecord(cmdAst.Extent, fileName, "AsPlainText");
@@ -69,12 +70,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Check for any invocation of a method that starts with "SecureStringTo"
             // (e.g. SecureStringToBSTR, SecureStringToCoTaskMemAnsi, etc.)
-            IEnumerable<Ast> secureStringToAsts = ast.FindAll(testAst =>
+            IEnumerable<InvokeMemberExpressionAst> secureStringToAsts = ast.FindAll(testAst =>
                 testAst is InvokeMemberExpressionAst invokeAst &&
                 invokeAst.Member != null &&
                 invokeAst.Member.ToString().StartsWith("SecureStringTo", StringComparison.OrdinalIgnoreCase),
                 true
-            );
+            ).Cast<InvokeMemberExpressionAst>();
 
             foreach (InvokeMemberExpressionAst secureStringToAst in secureStringToAsts) {
                 yield return GetDiagnosticRecord(secureStringToAst.Extent, fileName, secureStringToAst.Member.ToString());
@@ -87,12 +88,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // However, it is too complex to reliably determine whether a Password
             // property is a result of e.g. a PSCredential.GetNetworkCredential() call.
             // Anyways, this is still a useful common check to have.
-            IEnumerable<Ast> passwordAsts = ast.FindAll(testAst =>
+            IEnumerable<MemberExpressionAst> passwordAsts = ast.FindAll(testAst =>
                 testAst is MemberExpressionAst memberAst &&
                 memberAst.Member != null &&
                 string.Equals(memberAst.Member.ToString(), "Password", StringComparison.OrdinalIgnoreCase),
                 true
-            );
+            ).Cast<MemberExpressionAst>();
 
             foreach (MemberExpressionAst passwordAst in passwordAsts) {
                 yield return GetDiagnosticRecord(passwordAst.Extent, fileName, passwordAst.Member.ToString());

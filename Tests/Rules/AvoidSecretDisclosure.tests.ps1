@@ -23,7 +23,7 @@ Describe "AvoidSecretDisclosure" {
     }
 
     Context "Violates" {
-        It "ConvertFrom-SecureString -AsPlainText" {
+        It "ConvertFrom-SecureString -AsPlainText" -Skip:($PSVersionTable.PSVersion -le '7.0') {
             $scriptDefinition = {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText
@@ -36,7 +36,7 @@ Describe "AvoidSecretDisclosure" {
             $violations.RuleSuppressionID | Should -Be 'AsPlainText'
         }
 
-        It "ConvertFrom-SecureString -AsPlainText:$true" {
+        It "ConvertFrom-SecureString -AsPlainText:$true" -Skip:($PSVersionTable.PSVersion -le '7.0') {
             $scriptDefinition = {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$true
@@ -97,13 +97,10 @@ Describe "AvoidSecretDisclosure" {
 
         It "Custom password property" {
             $scriptDefinition = {
-                $Cred = ConvertFrom-Json '
-                {
-                    "Account": {
-                        "password": "Welcome123!",
-                        "username": "JohnDoe"
-                    }
-                }'
+                $Cred = @{
+                    password = 'Welcome123!'
+                    username = 'JohnDoe'
+                }
                 schtasks /change /s $env:COMPUTERNAME /tn $myTask  /ru $Cred.username /rp $Cred.password
             }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
@@ -240,7 +237,7 @@ Describe "AvoidSecretDisclosure" {
 
     Context "should not crash" {
 
-        It "-AsPlainText:$false" {
+        It "-AsPlainText:$false" -Skip:($PSVersionTable.PSVersion -le '7.0') {
             $scriptDefinition = {
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
                 $Null = $SecureString | ConvertFrom-SecureString -AsPlainText:$false
@@ -249,7 +246,7 @@ Describe "AvoidSecretDisclosure" {
             $violations | Should -BeNullOrEmpty
         }
 
-        It "-AsPlainText:$someVar" {
+        It "-AsPlainText:$someVar" -Skip:($PSVersionTable.PSVersion -le '7.0') {
             $scriptDefinition = {
                 param ([bool] $someVar)
                 $SecureString = ConvertTo-SecureString 'P@ssW0rd' -AsPlainText
