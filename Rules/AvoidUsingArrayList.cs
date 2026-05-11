@@ -44,7 +44,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Otherwise also check for the bare ArrayList name.
             Regex arrayListName = null;
             if (ast is ScriptBlockAst sbAst) {
-                foreach (UsingStatementAst usingAst in sbAst.UsingStatements.Cast<UsingStatementAst>())
+                // sbAst.UsingStatements causes an error: Method not found: ScriptBlockAst.get_UsingStatements()
+                IEnumerable<Ast> usingStatements = usingStatements = sbAst.FindAll(testAst => testAst is UsingStatementAst, false);
+                foreach (UsingStatementAst usingAst in usingStatements.Cast<UsingStatementAst>())
                 {
                     if (
                         usingAst.UsingStatementKind == UsingStatementKind.Namespace &&
@@ -82,12 +84,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (Ast typeAst in typeAsts)
             {
+                IScriptExtent Extent = typeAst is ConvertExpressionAst? typeAst.Extent : typeAst.Parent.Extent;
                 yield return new DiagnosticRecord(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.AvoidUsingArrayListError,
-                        typeAst.Parent.Extent.Text),
-                    typeAst.Parent.Extent,
+                        Extent.Text),
+                    Extent,
                     GetName(),
                     DiagnosticSeverity.Warning,
                     fileName
@@ -108,9 +111,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Check for -TypeName parameter
                 if (
-                    bindingResult.BoundParameters.ContainsKey("TypeName") &&
-                    bindingResult.BoundParameters["TypeName"].ConstantValue != null &&
-                    arrayListName.IsMatch(bindingResult.BoundParameters["TypeName"].ConstantValue as string)
+                    bindingResult.BoundParameters.TryGetValue("TypeName",  out ParameterBindingResult typeNameBinding) &&
+                    typeNameBinding.ConstantValue is string typeName &&
+                    arrayListName.IsMatch(typeName)
                 )
                 {
                     yield return new DiagnosticRecord(

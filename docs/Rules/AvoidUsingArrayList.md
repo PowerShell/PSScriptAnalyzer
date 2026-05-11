@@ -10,23 +10,23 @@ title: AvoidUsingArrayList
 
 ## Description
 
-Per dotnet best practices, the
-[`ArrayList` class](https://learn.microsoft.com/dotnet/api/system.collections.arraylist)
-is not recommended for new development, the same recommendation applies to PowerShell:
+Per .NET best practices, the [`ArrayList` class][1] is not recommended for new development,
+the same recommendation applies to PowerShell:
 
 Avoid the ArrayList class for new development.
-The `ArrayList` class is a non-generic collection that can hold objects of any type. This is inline with the fact
-that PowerShell is a weakly typed language. However, the `ArrayList` class does not provide any explicit type
-safety and performance benefits of generic collections. Instead of using an `ArrayList`, consider using either a
-[`System.Collections.Generic.List[Object]`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)
-class or a fixed PowerShell array.
-Besides, the `ArrayList.Add` method returns the index of the added element which often unintentionally pollutes the
-PowerShell pipeline and therefore might cause unexpected issues.
+The `ArrayList` class is a non-generic collection that can hold objects of any type.
+This is in line with the fact that PowerShell is a weakly typed language. However, the
+`ArrayList` class does not provide any explicit type safety and performance benefits
+of generic collections. Instead of using an `ArrayList`, consider using either a
+[`System.Collections.Generic.List[Object]`][2] class or a fixed PowerShell array.
+Besides, the `ArrayList.Add` method returns the index of the added element which often
+unintentionally pollutes the PowerShell pipeline and therefore might cause unexpected issues.
 
 ## How to Fix
 
-In cases where only the `Add` method is used, you might just replace the `ArrayList` class with a generic
-`List[Object]` class but you could also consider using the idiomatic PowerShell pipeline syntax instead.
+In cases where only the `Add` method is used, you might just replace the `ArrayList` class
+with a generic `List[Object]` class but you could also consider using the idiomatic PowerShell
+pipeline syntax instead.
 
 ## Example
 
@@ -50,3 +50,12 @@ $List = [System.Collections.Generic.List[Object]]::new()
 # Creating a fixed array by using the PowerShell pipeline
 $List = 1..3 | ForEach-Object { $_ }
 ```
+
+### Parameters
+
+- `Enable`: **bool** (Default value is `$false`)
+
+  Enable or disable the rule during ScriptAnalyzer invocation.
+
+[1]: https://learn.microsoft.com/dotnet/api/system.collections.arraylist "ArrayList Class"
+[2]: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1 "List<T> Class"
