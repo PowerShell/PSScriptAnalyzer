@@ -46,7 +46,7 @@ $List = [System.Collections.Generic.List[Object]]::new()
 1..3 | ForEach-Object { $List.Add($_) } # This will not return anything
 ```
 
-```PowerShell
+```powershell
 # Creating a fixed array by using the PowerShell pipeline
 $List = 1..3 | ForEach-Object { $_ }
 ```
