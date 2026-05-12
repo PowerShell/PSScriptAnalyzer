@@ -18,9 +18,18 @@ The `catch` and `finally` blocks must be preceded by a `try` block. Without a `t
 This rule identifies instances where `catch` or `finally` blocks are present with out an associated
 `try` block.
 
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
+
 ## How
 
 Add a `try` block before the `catch` and `finally` blocks.
+
+> [!NOTE]
+> This rule could result in a false positive as it will fire on user code that violates the rule
+> [AvoidReservedWordsAsFunctionNames][1] for functions named `catch` or `finally`:
+> If you have functions named `catch` or `finally`, you can either rename the function or disable
+> this rule.
 
 ## Example
 
@@ -36,3 +45,21 @@ catch { "An error occurred." }
 try { $a = 1 / $b }
 catch { "Attempted to divide by zero." }
 ```
+
+## Configuration
+
+```powershell
+Rules = @{
+    PSAvoidExclaimOperator  = @{
+        Enable = $true
+    }
+}
+```
+
+### Parameters
+
+- `Enable`: **bool** (Default value is `$false`)
+
+  Enable or disable the rule during ScriptAnalyzer invocation.
+
+[1]: AvoidReservedWordsAsFunctionNames.md "Avoid using reserved words as function names."

@@ -9,10 +9,18 @@ BeforeAll {
 }
 
 Describe "MissingTryBlock" {
+
+    BeforeAll {
+        $Settings = @{
+            IncludeRules = @($ruleName)
+            Rules        = @{ $ruleName = @{ Enable = $true } }
+        }
+    }
+
     Context "Violates" {
         It "Catch is missing a try block" {
             $scriptDefinition = { catch { "An error occurred." } }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be catch
@@ -22,7 +30,7 @@ Describe "MissingTryBlock" {
 
         It "Finally is missing a try block" {
             $scriptDefinition = { finally { "Finalizing..." } }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be finally
@@ -34,7 +42,7 @@ Describe "MissingTryBlock" {
             $scriptDefinition = {
                 catch { "An error occurred." } finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count             | Should -Be 1
             $violations.Severity          | Should -Be Warning
             $violations.Extent.Text       | Should -Be catch
@@ -47,7 +55,7 @@ Describe "MissingTryBlock" {
                 catch { "An error occurred." }
                 finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                | Should -Be 2
             $violations[0].Severity          | Should -Be Warning
             $violations[0].Extent.Text       | Should -Be catch
@@ -66,7 +74,7 @@ Describe "MissingTryBlock" {
                 try { NonsenseString }
                 catch { "An error occurred." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -76,7 +84,7 @@ Describe "MissingTryBlock" {
                 catch { "An error occurred." }
                 finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -84,25 +92,25 @@ Describe "MissingTryBlock" {
             $scriptDefinition = {
                 try { NonsenseString } catch { "An error occurred." } finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
         It "Catch as parameter" {
             $scriptDefinition = { Write-Host Catch }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
         It "Catch as double quoted string" {
             $scriptDefinition = { "Catch" }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
         It "Catch as single quoted string" {
             $scriptDefinition = { 'Catch' }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -115,7 +123,7 @@ Describe "MissingTryBlock" {
                 catch { "An error occurred." }
                 finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -126,8 +134,25 @@ Describe "MissingTryBlock" {
                 catch { "An error occurred." }
                 finally { "Finalizing..." }
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count | Should -Be 1
         }
     }
+
+    Context "Disabled" {
+
+        BeforeAll {
+            $Settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $false } }
+            }
+        }
+
+        It "ConvertFrom-SecureString -AsPlainText" {
+            $scriptDefinition = { catch { "An error occurred." } }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
 }
