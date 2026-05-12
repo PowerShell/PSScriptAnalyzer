@@ -10,9 +10,13 @@ title: MissingTryBlock
 
 ## Description
 
-The `catch` and `finally` blocks should be preceded by a `try` block.
-Otherwise, the `catch` and `finally` blocks will be interpreted as commands, which is likely a mistake and
-will result in a "*The term 'catch' is not recognized as a name of a cmdlet*" error at runtime.
+The `catch` and `finally` blocks must be preceded by a `try` block. Without a `try` block, the
+`catch` and `finally` are interpreted as commands and result in a runtime error, such as:
+
+> "The term 'catch' is not recognized as a name of a cmdlet"
+
+This rule identifies instances where `catch` or `finally` blocks are present with out an associated
+`try` block.
 
 ## How
 
