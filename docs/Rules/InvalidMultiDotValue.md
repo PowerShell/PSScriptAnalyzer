@@ -10,10 +10,12 @@ title: InvalidMultiDotValue
 
 ## Description
 
-PowerShell does not support an implicit value with multiple dots.
-Any *unquoted* value with 2 or more dots will not be treated as any special type (like a `version` or `IPAddress`)
-but result in `$null`. These objects need to be constructed from either a quoted string (e.g. `[Version]'1.2.3'`)
-or their individual components (e.g. `[Version]::new(1, 2, 3)`).
+PowerShell doesn't support unquoted literal values with multiple dots (`.`). Any value with two or
+more dots results in `$null`. This rule identifies instances where such values are used, which can
+lead to unexpected behavior or errors in the code.
+
+To create values of the intended type, enclose the value in quotes and use type-casting or use type
+constructor methods to create the appropriate object.
 
 
 ## Example
