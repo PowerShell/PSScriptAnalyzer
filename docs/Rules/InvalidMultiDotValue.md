@@ -44,3 +44,19 @@ $version = [Version]'1.2.3'
 # Use type constructor method
 $version = [Version]::new(1, 2, 3)
 ```
+
+## Configuration
+
+```powershell
+Rules = @{
+    PSAvoidExclaimOperator  = @{
+        Enable = $true
+    }
+}
+```
+
+### Parameters
+
+- `Enable`: **bool** (Default value is `$false`)
+
+  Enable or disable the rule during ScriptAnalyzer invocation.

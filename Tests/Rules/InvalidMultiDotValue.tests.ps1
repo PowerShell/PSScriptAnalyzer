@@ -11,10 +11,18 @@ BeforeAll {
 }
 
 Describe "InvalidMultiDotValue" {
+
+    BeforeAll {
+        $Settings = @{
+            IncludeRules = @($ruleName)
+            Rules        = @{ $ruleName = @{ Enable = $true } }
+        }
+    }
+
     Context "Violates" {
         It "3 version components" {
             $scriptDefinition = { $version = 1.2.3 }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                            | Should -Be 1
             $violations.Severity                         | Should -Be Error
             $violations.Extent.Text                      | Should -Be '1.2.3'
@@ -26,7 +34,7 @@ Describe "InvalidMultiDotValue" {
 
         It "4 version components" {
             $scriptDefinition = { $version = 1.2.3.4 }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                            | Should -Be 1
             $violations.Severity                         | Should -Be Error
             $violations.Extent.Text                      | Should -Be '1.2.3.4'
@@ -39,7 +47,7 @@ Describe "InvalidMultiDotValue" {
 
         It "With class initializer" {
             $scriptDefinition = { $version = [Version]1.2.3 }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                            | Should -Be 1
             $violations.Severity                         | Should -Be Error
             $violations.Extent.Text                      | Should -Be '1.2.3'
@@ -56,7 +64,7 @@ Describe "InvalidMultiDotValue" {
                 )
                 Write-Verbose $version
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                            | Should -Be 1
             $violations.Severity                         | Should -Be Error
             $violations.Extent.Text                      | Should -Be '1.2.3'
@@ -71,7 +79,7 @@ Describe "InvalidMultiDotValue" {
         # is expected because this is the more commonly used type.
         It "IP Address" {
             $scriptDefinition = { $IP = [System.Net.IPAddress]127.0.0.1 }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count                            | Should -Be 1
             $violations.Severity                         | Should -Be Error
             $violations.Extent.Text                      | Should -Be '127.0.0.1'
@@ -85,19 +93,19 @@ Describe "InvalidMultiDotValue" {
     Context "Compliant" {
         It "From string" {
             $scriptDefinition = { $Version = [Version]'1.2.3' }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
         It "From version components" {
             $scriptDefinition = { $Version = [Version]::new(1, 2, 3, 4) }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
         It "From (bare) double" {
             $scriptDefinition = { $Version = [Version]1.2 }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -108,7 +116,23 @@ Describe "InvalidMultiDotValue" {
                 $intKeys = @{ 1 = @{ 2 = @{ 3 = @{ 4 = 'test' } } } }
                 $intKeys.1.2.3.4
              }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Disabled" {
+
+        BeforeAll {
+            $Settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $false } }
+            }
+        }
+
+        It "ConvertFrom-SecureString -AsPlainText" {
+            $scriptDefinition = { $version = 1.2.3 }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -121,7 +145,7 @@ Describe "InvalidMultiDotValue" {
                 $version = 1.2.3
                 $IP = [System.Net.IPAddress]127.0.0.1
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -131,7 +155,7 @@ Describe "InvalidMultiDotValue" {
                 param()
                 $version = 1.2.3
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -141,7 +165,7 @@ Describe "InvalidMultiDotValue" {
                 param()
                 $IP = [System.Net.IPAddress]127.0.0.1
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -154,13 +178,13 @@ Describe "InvalidMultiDotValue" {
 
         It "Version" {
             Set-Content -LiteralPath $tempFile -Value {$version = 1.2.3}.ToString() -NoNewLine
-            $violations = Invoke-ScriptAnalyzer -Path $tempFile -fix
+            $violations = Invoke-ScriptAnalyzer -Path $tempFile -Settings $Settings -fix
             Get-Content -LiteralPath $tempFile -Raw | Should -Be {$version = '1.2.3'}.ToString()
         }
 
         It "IP Address" {
             Set-Content -LiteralPath $tempFile -Value {$IP = [System.Net.IPAddress]127.0.0.1}.ToString() -NoNewLine
-            $violations = Invoke-ScriptAnalyzer -Path $tempFile -fix
+            $violations = Invoke-ScriptAnalyzer -Path $tempFile -Settings $Settings -fix
             Get-Content -LiteralPath $tempFile -Raw | Should -Be {$IP = [System.Net.IPAddress]'127.0.0.1'}.ToString()
         }
     }
