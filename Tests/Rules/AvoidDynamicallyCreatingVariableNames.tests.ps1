@@ -11,10 +11,18 @@ BeforeAll {
 }
 
 Describe "AvoidDynamicallyCreatingVariableNames" {
+
+    BeforeAll {
+        $Settings = @{
+            IncludeRules = @($ruleName)
+            Rules        = @{ $ruleName = @{ Enable = $true } }
+        }
+    }
+
     Context "Violates" {
         It "Basic dynamic variable name" {
             $scriptDefinition = { New-Variable -Name $Test }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {New-Variable -Name $Test}.ToString()
@@ -23,7 +31,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
 
         It "Using alias" {
             $scriptDefinition = { nv -Name $Test }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {nv -Name $Test}.ToString()
@@ -32,7 +40,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
 
         It "Using uppercase" {
             $scriptDefinition = { NEW-VARIABLE -Name $Test }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {NEW-VARIABLE -Name $Test}.ToString()
@@ -46,7 +54,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 }
                 $MyTwo # returns 2
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {New-Variable -Name "My$_" -Value ($i++)}.ToString()
@@ -58,7 +66,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 $myVarName = 'foo'
                 New-Variable $myVarName
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {New-Variable $myVarName}.ToString()
@@ -72,7 +80,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 }
                 $MyTwo # returns 2
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations.Count       | Should -Be 1
             $violations.Severity    | Should -Be Information
             $violations.Extent.Text | Should -Be {New-Variable "My$_" ($i++)}.ToString()
@@ -89,7 +97,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 }
                 $My.Two # returns 2
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -101,7 +109,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 }
                 $Script:My.Two # returns 2
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
 
@@ -110,7 +118,22 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 New-Variable -Name '$Sign1'
                 New-Variable -Name '$Sign2' -Value 'Dollar'
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
+            $violations | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Disabled" {
+        BeforeAll {
+            $Settings = @{
+                IncludeRules = @($ruleName)
+                Rules        = @{ $ruleName = @{ Enable = $false } }
+            }
+        }
+
+        It "ConvertFrom-SecureString -AsPlainText" {
+            $scriptDefinition = { New-Variable -Name $Test }.ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }
@@ -122,7 +145,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 Param()
                 New-Variable -Name $Test
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
         It "Common dynamic variable iteration" {
@@ -134,7 +157,7 @@ Describe "AvoidDynamicallyCreatingVariableNames" {
                 }
                 $MyTwo # returns 2
             }.ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule @($ruleName)
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
         }
     }

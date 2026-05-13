@@ -10,12 +10,19 @@ title: AvoidDynamicallyCreatingVariableNames
 
 ## Description
 
-Do not create variables with a dynamic name, this might introduce conflicts with
-other variables and is difficult to maintain.
+Don't create variables with dynamic names. It also makes the code difficult to understand and can
+lead to unexpected behavior if the variable names are not unique or if they collide with existing
+variables. A dynamic name is a name constructed using string concatenation or interpolation.
+This rule checks for the use of `New-Variable` with a dynamic name.
 
-## How
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
 
-Use a hash table or similar dictionary type to store values with dynamic keys.
+## How to Fix
+
+Use a hash table or similar dictionary type to store values with dynamic keys. When you require a
+specific scope, option, or visibility, put the dictionary (hashtable) in that scope and apply the
+appropriate option or visibility.
 
 ## Example
 
@@ -38,9 +45,8 @@ $My = @{}
 $My.Two # returns 2
 ```
 
-When a specific scope, option, or visibility is required, put the dictionary (hash table) in that
-scope and apply the appropriate option or visibility. For example, if the values should be read-only and
-available in the script scope, put the _hash table_ in the script scope and make it read-only.
+In this example, you want the values to be read-only and available in the script scope.
+Put the hashtable in the script scope and make it read-only.
 
 ```powershell
 New-Variable -Name My -Value @{} -Option ReadOnly -Scope Script
@@ -49,3 +55,23 @@ New-Variable -Name My -Value @{} -Option ReadOnly -Scope Script
 }
 $Script:My.Two # returns 2
 ```
+
+## Configuration
+
+```powershell
+Rules = @{
+    PSAvoidExclaimOperator  = @{
+        Enable = $true
+    }
+}
+```
+
+### Parameters
+
+- `Enable`: **bool** (Default value is `$false`)
+
+  Enable or disable the rule during ScriptAnalyzer invocation.
+
+## References
+- [New-Variable](xref:Microsoft.PowerShell.Utility.New-Variable)
+

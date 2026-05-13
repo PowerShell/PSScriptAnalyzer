@@ -14,7 +14,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidAssignmentToAutomaticVariable](./AvoidAssignmentToAutomaticVariable.md)                     | Warning     |        Yes         |                 |
 | [AvoidDefaultValueForMandatoryParameter](./AvoidDefaultValueForMandatoryParameter.md)             | Warning     |        Yes         |                 |
 | [AvoidDefaultValueSwitchParameter](./AvoidDefaultValueSwitchParameter.md)                         | Warning     |        Yes         |                 |
-| [AvoidDynamicallyCreatingVariableNames](./AvoidDynamicallyCreatingVariableNames.md)               | Information |        Yes         |                 |
+| [AvoidDynamicallyCreatingVariableNames](./AvoidDynamicallyCreatingVariableNames.md)               | Information |         No         |       Yes       |
 | [AvoidExclaimOperator](./AvoidExclaimOperator.md)                                                 | Warning     |         No         |                 |
 | [AvoidGlobalAliases<sup>1</sup>](./AvoidGlobalAliases.md)                                         | Warning     |        Yes         |                 |
 | [AvoidGlobalFunctions](./AvoidGlobalFunctions.md)                                                 | Warning     |        Yes         |                 |

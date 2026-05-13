@@ -14,25 +14,32 @@ using System.ComponentModel.Composition;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
-#if !CORECLR
-    [Export(typeof(IScriptRule))]
-#endif
-
     /// <summary>
     /// Rule that informs the user when they create variables with dynamic names in the general variable scope.
     /// This might lead to conflicts with other variables.
     /// </summary>
-    public class AvoidDynamicallyCreatingVariableNames : IScriptRule
+#if !CORECLR
+    [Export(typeof(IScriptRule))]
+#endif
+    public class AvoidDynamicallyCreatingVariableNames : ConfigurableRule
     {
+
         /// <summary>
-        /// Analyzes the PowerShell AST for uses of "New-Variable" command with a dynamic name argument.
+        /// Construct an object of AvoidDynamicallyCreatingVariableNames type.
         /// </summary>
-        /// <param name="ast">The PowerShell Abstract Syntax Tree to analyze.</param>
-        /// <param name="fileName">The name of the file being analyzed (for diagnostic reporting).</param>
-        /// <returns>A collection of diagnostic records for each violation.</returns>
+        public AvoidDynamicallyCreatingVariableNames() {
+            Enable = false;
+        }
 
         readonly HashSet<string> cmdList = new HashSet<string>(Helper.Instance.CmdletNameAndAliases("New-Variable"), StringComparer.OrdinalIgnoreCase);
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+
+        /// <summary>
+        /// Analyzes the given ast to find the [violation]
+        /// </summary>
+        /// <param name="ast">AST to be analyzed. This should be non-null</param>
+        /// <param name="fileName">Name of file that corresponds to the input AST.</param>
+        /// <returns>A an enumerable type containing the violations</returns>
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
@@ -70,20 +77,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        public string GetCommonName() => Strings.AvoidDynamicallyCreatingVariableNamesCommonName;
+        /// <summary>
+        /// Retrieves the common name of this rule.
+        /// </summary>
+        public override string GetCommonName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidDynamicallyCreatingVariableNamesCommonName);
+        }
 
-        public string GetDescription() => Strings.AvoidDynamicallyCreatingVariableNamesDescription;
+        /// <summary>
+        /// Retrieves the description of this rule.
+        /// </summary>
+        public override string GetDescription()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidDynamicallyCreatingVariableNamesDescription);
+        }
 
-        public string GetName() => string.Format(
+        /// <summary>
+        /// Retrieves the name of this rule.
+        /// </summary>
+        public override string GetName()
+        {
+            return string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AvoidDynamicallyCreatingVariableNamesName);
+        }
 
-        public RuleSeverity GetSeverity() => RuleSeverity.Information;
+        /// <summary>
+        /// Retrieves the severity of the rule: error, warning or information.
+        /// </summary>
+        public override RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Information;
+        }
 
-        public string GetSourceName() => Strings.SourceName;
+        /// <summary>
+        /// Gets the severity of the returned diagnostic record: error, warning, or information.
+        /// </summary>
+        /// <returns></returns>
+        public DiagnosticSeverity GetDiagnosticSeverity()
+        {
+            return DiagnosticSeverity.Information;
+        }
 
-        public SourceType GetSourceType() => SourceType.Builtin;
+        /// <summary>
+        /// Retrieves the name of the module/assembly the rule is from.
+        /// </summary>
+        public override string GetSourceName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        /// <summary>
+        /// Retrieves the type of the rule, Builtin, Managed or Module.
+        /// </summary>
+        public override SourceType GetSourceType()
+        {
+            return SourceType.Builtin;
+        }
     }
 }
