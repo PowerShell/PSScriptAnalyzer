@@ -35,11 +35,10 @@ Where both examples will result in `$null` instead of any specific object.
 ### Correct
 
 ```powershell
-$version = [Version]'1.2.3'
-# or:
-$version = [Version]::new(1, 2, 3)
-```
-
-```powershell
+# Use type-casting with quoted value
 $IP = [System.Net.IPAddress]'127.0.0.1'
+$version = [Version]'1.2.3'
+
+# Use type constructor method
+$version = [Version]::new(1, 2, 3)
 ```
