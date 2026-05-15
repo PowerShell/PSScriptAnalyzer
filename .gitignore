@@ -3,3 +3,4 @@ obj/
 /module/
 /out/
 testResults.xml
+*.csproj.lscache
