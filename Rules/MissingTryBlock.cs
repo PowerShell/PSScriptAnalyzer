@@ -109,15 +109,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Gets the severity of the returned diagnostic record: error, warning, or information.
-        /// </summary>
-        /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
-
-        /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
         public override string GetSourceName()
