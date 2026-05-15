@@ -148,7 +148,7 @@ Describe "MissingTryBlock" {
             }
         }
 
-        It "ConvertFrom-SecureString -AsPlainText" {
+        It "Doesn't emit a violation" {
             $scriptDefinition = { catch { "An error occurred." } }.ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $Settings
             $violations | Should -BeNullOrEmpty
