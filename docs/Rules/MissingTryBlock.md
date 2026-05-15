@@ -50,7 +50,7 @@ catch { "Attempted to divide by zero." }
 
 ```powershell
 Rules = @{
-    PSAvoidExclaimOperator  = @{
+    PSMissingTryBlock = @{
         Enable = $true
     }
 }
