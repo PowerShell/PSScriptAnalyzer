@@ -12,9 +12,6 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
-    /// <summary>
-    /// Find bare word "catch" or "finally" tokens that are not part of a TryStatementAst
-    /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
