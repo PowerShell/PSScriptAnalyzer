@@ -1468,7 +1468,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 outPaths.Add(path);
             }
 
-            return outPaths.ToArray();
+            return outPaths.Count == 0 ? null : outPaths.ToArray();
 
         }
 
