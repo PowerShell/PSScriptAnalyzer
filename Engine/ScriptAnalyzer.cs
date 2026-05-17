@@ -1447,10 +1447,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptDefinition">The script to be analyzed.</param>
         /// <param name="scriptAst">Parsed AST of <paramref name="scriptDefinition"/>.</param>
-        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/.></param>
+        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/>.</param>
         /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
         /// <returns></returns>
         public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false)
+        {
+            return AnalyzeScriptDefinition(scriptDefinition, out scriptAst, out scriptTokens, skipVariableAnalysis, emitSuppressionErrors: true);
+        }
+
+        /// <summary>
+        /// Analyzes a script definition in the form of a string input.
+        /// </summary>
+        /// <param name="scriptDefinition">The script to be analysed.</param>
+        /// <param name="scriptAst">Parsed AST of <paramref name="scriptDefinition"/>.</param>
+        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/>.</param>
+        /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
+        /// <param name="emitSuppressionErrors">Whether to emit errors for unapplied rule suppression IDs.</param>
+        /// <returns>A list of diagnostics found by rules.</returns>
+        public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis, bool emitSuppressionErrors)
         {
             scriptAst = null;
             scriptTokens = null;
@@ -1490,7 +1504,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // now, analyze the script definition
-            diagnosticRecords.AddRange(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, null, skipVariableAnalysis));
+            diagnosticRecords.AddRange(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, null, skipVariableAnalysis, emitSuppressionErrors));
             return diagnosticRecords;
         }
 
@@ -1549,11 +1563,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 IEnumerable<DiagnosticRecord> records;
                 if (skipParsing && previousUnusedCorrections == 0)
                 {
-                    records = AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis);
+                    records = AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis, emitSuppressionErrors: false);
                 }
                 else
                 {
-                    records = AnalyzeScriptDefinition(text.ToString(), out scriptAst, out scriptTokens, skipVariableAnalysis);
+                    records = AnalyzeScriptDefinition(text.ToString(), out scriptAst, out scriptTokens, skipVariableAnalysis, emitSuppressionErrors: false);
                 }
                 var corrections = records
                     .Select(r => r.SuggestedCorrections)
@@ -1986,7 +2000,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
             string ruleName,
             Dictionary<string, List<RuleSuppression>> ruleSuppressions,
-            List<DiagnosticRecord> ruleDiagnosticRecords)
+            List<DiagnosticRecord> ruleDiagnosticRecords,
+            bool emitSuppressionErrors = true)
         {
             List<ErrorRecord> suppressRuleErrors;
             var records = Helper.Instance.SuppressRule(
@@ -1994,9 +2009,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressions,
                 ruleDiagnosticRecords,
                 out suppressRuleErrors);
-            foreach (var error in suppressRuleErrors)
+            if (emitSuppressionErrors)
             {
-                this.outputWriter.WriteError(error);
+                foreach (var error in suppressRuleErrors)
+                {
+                    this.outputWriter.WriteError(error);
+                }
             }
             return records;
         }
@@ -2014,13 +2032,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>Returns a tuple of suppressed and diagnostic records</returns>
         private Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
             Dictionary<string, List<RuleSuppression>> ruleSuppressions,
-            DiagnosticRecord ruleDiagnosticRecord
+            DiagnosticRecord ruleDiagnosticRecord,
+            bool emitSuppressionErrors = true
             )
         {
             return SuppressRule(
                 ruleDiagnosticRecord.RuleName,
                 ruleSuppressions,
-                new List<DiagnosticRecord> { ruleDiagnosticRecord });
+                new List<DiagnosticRecord> { ruleDiagnosticRecord },
+                emitSuppressionErrors);
         }
 
         /// <summary>
@@ -2038,6 +2058,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Token[] scriptTokens,
             string filePath,
             bool skipVariableAnalysis = false)
+        {
+            return AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath, skipVariableAnalysis, emitSuppressionErrors: true);
+        }
+
+        /// <summary>
+        /// Analyzes the syntax tree of a script file that has already been parsed.
+        /// </summary>
+        /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
+        /// <param name="scriptTokens">The tokens found in the script.</param>
+        /// <param name="filePath">The path to the file that was parsed.
+        /// If AnalyzeSyntaxTree is called from an AST obtained via ParseInput, this field will be String.Empty.
+        /// </param>
+        /// <param name="skipVariableAnalysis">Whether to skip variable analysis.</param>
+        /// <param name="emitSuppressionErrors">Whether to emit errors for unapplied rule suppression IDs.</param>
+        /// <returns>An enumeration of DiagnosticRecords found by rules.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
+            ScriptBlockAst scriptAst,
+            Token[] scriptTokens,
+            string filePath,
+            bool skipVariableAnalysis,
+            bool emitSuppressionErrors)
         {
             Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string,List<RuleSuppression>>();
             ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
@@ -2117,7 +2158,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     ruleSuppressions,
                                     ruleRecords,
                                     out suppressRuleErrors);
-                                result.AddRange(suppressRuleErrors);
+                                if (emitSuppressionErrors)
+                                {
+                                    result.AddRange(suppressRuleErrors);
+                                }
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
@@ -2177,7 +2221,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         try
                         {
                             var ruleRecords = tokenRule.AnalyzeTokens(scriptTokens, filePath).ToList();
-                            var records = SuppressRule(tokenRule.GetName(), ruleSuppressions, ruleRecords);
+                            var records = SuppressRule(tokenRule.GetName(), ruleSuppressions, ruleRecords, emitSuppressionErrors);
                             foreach (var record in records.Item2)
                             {
                                 diagnostics.Add(record);
@@ -2215,7 +2259,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             try
                             {
                                 var ruleRecords = dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList();
-                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
+                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords, emitSuppressionErrors);
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
@@ -2234,7 +2278,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 // Check if the supplied artifact is indeed part of the DSC resource
-                if (!filePathIsNullOrWhiteSpace && Helper.Instance.IsDscResourceModule(filePath))
+                else if (!filePathIsNullOrWhiteSpace && Helper.Instance.IsDscResourceModule(filePath))
                 {
                     // Run all DSC Rules
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
@@ -2248,7 +2292,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             try
                             {
                                 var ruleRecords = dscResourceRule.AnalyzeDSCResource(scriptAst, filePath).ToList();
-                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
+                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords, emitSuppressionErrors);
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
@@ -2297,7 +2341,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), filePath))
                 {
-                    var records = SuppressRule(ruleSuppressions, ruleRecord);
+                    var records = SuppressRule(ruleSuppressions, ruleRecord, emitSuppressionErrors);
                     foreach (var record in records.Item2)
                     {
                         diagnostics.Add(record);

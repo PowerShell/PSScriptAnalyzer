@@ -324,4 +324,40 @@
   <data name="TypeNotFoundParseErrorFound" xml:space="preserve">
     <value>Ignoring 'TypeNotFound' parse error on type '{0}'. Check if the specified type is correct. This can also be due the type not being known at parse time due to types imported by 'using' statements.</value>
   </data>
+  <data name="InvalidPresetName" xml:space="preserve">
+    <value>'{0}' is not a recognised preset. Valid presets are: {1}</value>
+  </data>
+  <data name="PresetNotFound" xml:space="preserve">
+    <value>Could not locate the preset '{0}'.</value>
+  </data>
+  <data name="SettingsFileAlreadyExists" xml:space="preserve">
+    <value>A settings file already exists at '{0}'. Use -Force to overwrite.</value>
+  </data>
+  <data name="SettingsFileNotFound" xml:space="preserve">
+    <value>The settings file '{0}' does not exist.</value>
+  </data>
+  <data name="SettingsFileParseError" xml:space="preserve">
+    <value>Failed to parse settings file: {0}</value>
+  </data>
+  <data name="SettingsFileRuleNotFound" xml:space="preserve">
+    <value>{0}: rule '{1}' not found.</value>
+  </data>
+  <data name="SettingsFileRuleArgRuleNotFound" xml:space="preserve">
+    <value>Rules.{0}: rule not found.</value>
+  </data>
+  <data name="SettingsFileRuleNotConfigurable" xml:space="preserve">
+    <value>Rules.{0}: this rule is not configurable.</value>
+  </data>
+  <data name="SettingsFileUnrecognisedOption" xml:space="preserve">
+    <value>Rules.{0}.{1}: unrecognised option.</value>
+  </data>
+  <data name="SettingsFileInvalidOptionValue" xml:space="preserve">
+    <value>Rules.{0}.{1}: '{2}' is not a valid value. Expected one of: {3}</value>
+  </data>
+  <data name="SettingsFileInvalidSeverity" xml:space="preserve">
+    <value>Severity: '{0}' is not a valid severity. Expected one of: {1}</value>
+  </data>
+  <data name="SettingsFileInvalidOptionType" xml:space="preserve">
+    <value>Rules.{0}.{1}: expected a value of type {2}.</value>
+  </data>
 </root>
