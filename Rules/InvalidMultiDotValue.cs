@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
+using System.Linq;
+
+
 
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -43,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Find all MemberExpressionAst nodes representing invalid unquoted multi-dot values
-            IEnumerable<Ast> invalidAsts = ast.FindAll(testAst =>
+            IEnumerable<MemberExpressionAst> invalidAsts = ast.FindAll(testAst =>
                 // An expression with 3 or more dots is seen as a double with an additional property
                 testAst is MemberExpressionAst memberAst &&
                 // The first two values are seen as a double
@@ -55,37 +58,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     constantAst.StaticType == typeof(double) // e.g.: [Version]1.2.3.4
                 ),
                 true
-            );
+            ).Cast<MemberExpressionAst>();
 
-            if (invalidAsts != null) {
-                var correctionDescription = Strings.InvalidMultiDotValueCorrectionDescription;
-                foreach (MemberExpressionAst invalidAst in invalidAsts)
-                {
-                    var corrections = new List<CorrectionExtent> {
-                        new CorrectionExtent(
-                            invalidAst.Extent.StartLineNumber,
-                            invalidAst.Extent.EndLineNumber,
-                            invalidAst.Extent.StartColumnNumber,
-                            invalidAst.Extent.EndColumnNumber,
-                            "'" + invalidAst.Extent.Text + "'",
-                            fileName,
-                            correctionDescription
-                        )
-                    };
-                    yield return new DiagnosticRecord(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.InvalidMultiDotValueError,
-                            invalidAst.Extent.Text
-                        ),
-                        invalidAst.Extent,
-                        GetName(),
-                        DiagnosticSeverity.Error,
+            var correctionDescription = Strings.InvalidMultiDotValueCorrectionDescription;
+            foreach (MemberExpressionAst invalidAst in invalidAsts)
+            {
+                var corrections = new List<CorrectionExtent> {
+                    new CorrectionExtent(
+                        invalidAst.Extent.StartLineNumber,
+                        invalidAst.Extent.EndLineNumber,
+                        invalidAst.Extent.StartColumnNumber,
+                        invalidAst.Extent.EndColumnNumber,
+                        "'" + invalidAst.Extent.Text + "'",
                         fileName,
-                        invalidAst.Extent.Text,
-                        suggestedCorrections: corrections
-                    );
-                }
+                        correctionDescription
+                    )
+                };
+                yield return new DiagnosticRecord(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidMultiDotValueError,
+                        invalidAst.Extent.Text
+                    ),
+                    invalidAst.Extent,
+                    GetName(),
+                    DiagnosticSeverity.Error,
+                    fileName,
+                    invalidAst.Extent.Text,
+                    suggestedCorrections: corrections
+                );
             }
         }
 

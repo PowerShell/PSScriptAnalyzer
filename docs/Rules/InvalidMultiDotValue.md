@@ -49,7 +49,7 @@ $version = [Version]::new(1, 2, 3)
 
 ```powershell
 Rules = @{
-    PSAvoidExclaimOperator  = @{
+    PSInvalidMultiDotValue  = @{
         Enable = $true
     }
 }
