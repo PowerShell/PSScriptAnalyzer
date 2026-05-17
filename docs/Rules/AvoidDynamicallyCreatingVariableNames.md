@@ -60,7 +60,7 @@ $Script:My.Two # returns 2
 
 ```powershell
 Rules = @{
-    PSAvoidExclaimOperator  = @{
+    PSAvoidDynamicallyCreatingVariableNames = @{
         Enable = $true
     }
 }
