@@ -180,3 +180,33 @@ Describe "TestImplementingType" {
         $type.BaseType.Name | Should -Be "ConfigurableRule"
     }
 }
+
+Describe "TestOptions" {
+    BeforeAll {
+        $configurableRule = Get-ScriptAnalyzerRule PSUseConsistentIndentation
+        $nonConfigurableRule = Get-ScriptAnalyzerRule PSAvoidUsingInvokeExpression
+    }
+
+    It "returns Options for a configurable rule" {
+        $configurableRule.Options | Should -Not -BeNullOrEmpty
+    }
+
+    It "includes the Enable option" {
+        $configurableRule.Options.Name | Should -Contain 'Enable'
+    }
+
+    It "places Enable as the first option" {
+        $configurableRule.Options[0].Name | Should -Be 'Enable'
+    }
+
+    It "populates PossibleValues for enum-backed string properties" {
+        $kindOption = $configurableRule.Options | Where-Object Name -eq 'Kind'
+        $kindOption.PossibleValues | Should -Not -BeNullOrEmpty
+        $kindOption.PossibleValues | Should -Contain 'Space'
+        $kindOption.PossibleValues | Should -Contain 'Tab'
+    }
+
+    It "returns null Options for a non-configurable rule" {
+        $nonConfigurableRule.Options | Should -BeNullOrEmpty
+    }
+}
