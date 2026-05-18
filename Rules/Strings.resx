@@ -933,6 +933,18 @@
   <data name="AvoidLongLinesError" xml:space="preserve">
     <value>Line exceeds the configured maximum length of {0} characters</value>
   </data>
+  <data name="AvoidSecretDisclosureName" xml:space="preserve">
+    <value>AvoidSecretDisclosure</value>
+  </data>
+  <data name="AvoidSecretDisclosureCommonName" xml:space="preserve">
+    <value>Avoid secret disclosure</value>
+  </data>
+  <data name="AvoidSecretDisclosureDescription" xml:space="preserve">
+    <value>Disclosing a secret might result in security vulnerabilities such as memory trails or logging trails</value>
+  </data>
+  <data name="AvoidSecretDisclosureError" xml:space="preserve">
+    <value>Avoid disclosing a secret</value>
+  </data>
   <data name="AvoidSemicolonsAsLineTerminatorsName" xml:space="preserve">
     <value>AvoidSemicolonsAsLineTerminators</value>
   </data>
