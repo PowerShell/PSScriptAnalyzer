@@ -49,6 +49,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [DSCUseIdenticalMandatoryParametersForDSC](./DSCUseIdenticalMandatoryParametersForDSC.md)         | Error       |        Yes         |                 |
 | [DSCUseIdenticalParametersForDSC](./DSCUseIdenticalParametersForDSC.md)                           | Error       |        Yes         |                 |
 | [DSCUseVerboseMessageInDSCResource](./DSCUseVerboseMessageInDSCResource.md)                       | Error       |        Yes         |                 |
+| [InvalidMultiDotValue](./InvalidMultiDotValue.md)                                                 | Error       |         No         |       Yes       |
 | [MisleadingBacktick](./MisleadingBacktick.md)                                                     | Warning     |        Yes         |                 |
 | [MissingModuleManifestField](./MissingModuleManifestField.md)                                     | Warning     |        Yes         |                 |
 | [MissingTryBlock](./MissingTryBlock.md)                                                           | Warning     |         No         |       Yes       |
