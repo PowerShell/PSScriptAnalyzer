@@ -7,5 +7,6 @@
                    'PSAvoidUsingPositionalParameters',
                    'PSAvoidGlobalVars',
                    'PSUseDeclaredVarsMoreThanAssignments',
-                   'PSAvoidUsingInvokeExpression')
+                   'PSAvoidUsingInvokeExpression',
+                   'PSAvoidUsingNewObject')
 }

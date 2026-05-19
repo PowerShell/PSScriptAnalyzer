@@ -16,6 +16,7 @@
                    'PSAvoidGlobalVars',
                    'PSUseDeclaredVarsMoreThanAssignments',
                    'PSAvoidUsingInvokeExpression',
+                   'PSAvoidUsingNewObject',
                    'PSAvoidUsingPlainTextForPassword',
                    'PSAvoidUsingComputerNameHardcoded',
                    'PSUsePSCredentialType',
