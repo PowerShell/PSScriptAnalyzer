@@ -130,9 +130,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
     }
 }

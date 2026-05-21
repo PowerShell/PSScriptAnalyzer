@@ -483,13 +483,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
