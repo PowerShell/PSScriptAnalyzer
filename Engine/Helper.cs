@@ -429,8 +429,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     if (ceAst is CommandParameterAst)
                     {
                         var paramAst = ceAst as CommandParameterAst;
-                        var param = exportMM.ResolveParameter(paramAst.ParameterName);
+                        var paramName = paramAst.ParameterName;
+                        if (paramName == null)
+                        {
+                            i += 1;
+                            continue;
+                        }
 
+                        var param = exportMM.ResolveParameter(paramName);
                         if (param == null)
                         {
                             i += 1;
