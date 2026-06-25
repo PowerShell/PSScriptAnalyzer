@@ -10,11 +10,11 @@ title: MissingModuleManifestField
 
 ## Description
 
-This rule detects when a module manifest is missing required fields. A module manifest is a `.psd1`
+This rule detects when a module manifest is missing a required field. A module manifest is a `.psd1`
 file that contains a hash table. The keys and values in the hash table describe the contents and
 attributes of the module, define the prerequisites, and determine how the components are processed.
 
-A module manifest must contain the following key (and a corresponding value) to be considered valid:
+A module manifest must contain the following key-value pair to be considered valid:
 
 - `ModuleVersion`
 

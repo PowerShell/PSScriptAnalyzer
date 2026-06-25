@@ -60,13 +60,6 @@ function Test-Script
         $Switch
     )
 
-    begin {
-        # Ensure that the $Switch is set to false if not provided
-        if (-not $PSBoundParameters.ContainsKey('Switch')) {
-            $Switch = $false
-        }
-    }
-    ...
 }
 ```
 

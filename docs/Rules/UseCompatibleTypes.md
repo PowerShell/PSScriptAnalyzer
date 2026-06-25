@@ -12,7 +12,7 @@ title: UseCompatibleTypes
 
 This rule detects types that aren't available by default on your targeted PowerShell platforms.
 
-A name in the PowerShell platform is identified in the following format:
+PowerShell platform names use the following format:
 
 ```
 <os-name>_<os-arch>_<os-version>_<ps-version>_<ps-arch>_<dotnet-version>_<dotnet-edition>

@@ -20,7 +20,8 @@ following entries:
 - `VariablesToExport`
 
 When you use wildcards or null, PowerShell performs expensive analysis of your module during
-autodiscovery. Instead, use an explicit list of items to export.
+autodiscovery. Instead, use an explicit list of items to export. If you have no items to export, use
+an empty array (`@()`) instead of null or a wildcard.
 
 ## Example
 

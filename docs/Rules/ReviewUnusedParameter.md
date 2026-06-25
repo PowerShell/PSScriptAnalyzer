@@ -10,7 +10,7 @@ title: ReviewUnusedParameter
 
 ## Description
 
-This rule detects parameters that are declared but not used a script, scriptblock, or function
+This rule detects parameters that are declared but not used in a script, scriptblock, or function
 scope. You should consider removing unused parameters to improve code clarity and reduce confusion
 about your function's dependencies.
 

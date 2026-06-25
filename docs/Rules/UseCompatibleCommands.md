@@ -12,7 +12,7 @@ title: UseCompatibleCommands
 
 This rule detects commands that aren't available on your targeted PowerShell platform.
 
-A name in the PowerShell platform is identified in the following format:
+PowerShell platform names use the following format:
 
 ```
 <os-name>_<os-arch>_<os-version>_<ps-version>_<ps-arch>_<dotnet-version>_<dotnet-edition>

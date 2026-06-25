@@ -70,7 +70,7 @@ against.
 
 > [!NOTE]
 > The default value for `PowerShellVersion` is `core-7.0.0-windows` if PowerShell 7 or later is
-installed, and `desktop-5.1.17763.316-windows` if it's not.
+> installed, and `desktop-5.1.17763.316-windows` if it's not.
 
 Patched PowerShell releases usually share the same cmdlet metadata, so the built-in allow lists are
 provided by major and minor version. You can also generate a custom allow list with

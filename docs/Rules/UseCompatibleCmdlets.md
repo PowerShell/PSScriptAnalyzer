@@ -34,13 +34,13 @@ configuration:
 @{
     'Rules' = @{
         'PSUseCompatibleCmdlets' = @{
-            'Compatibility' = @('core-6.1.0-windows')
+            'compatibility' = @('core-6.1.0-windows')
         }
     }
 }
 ```
 
-The **Compatibility** parameter accepts a list of one or more target identifiers, such as:
+The **compatibility** parameter accepts a list of one or more target identifiers, such as:
 
 - desktop-2.0-windows
 - desktop-3.0-windows
@@ -56,7 +56,7 @@ minor version profiles.
 
 You can also create a custom profile with [New-CommandDataFile.ps1][01]. Place the generated JSON
 file in the `Settings` folder of the `PSScriptAnalyzer` module. Then you can reference that file by
-name under `Compatibility`.
+name under `compatibility`.
 
 The `core-6.0.2-*` files were removed in PSScriptAnalyzer 1.18 because PowerShell 6.0 reached its
 end of life.

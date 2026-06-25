@@ -1,5 +1,5 @@
 ---
-description: Use equality operator (==) instead of an equal sign (=) as an assignment operator
+description: Use equality operator (-eq) instead of an equal signs
 ms.date: 06/05/2026
 ms.topic: reference
 title: PossibleIncorrectUsageOfAssignmentOperator
