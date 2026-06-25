@@ -1,6 +1,6 @@
 ---
-description: Use whitespaces
-ms.date: 06/28/2023
+description: Use consistent whitespace in PowerShell code
+ms.date: 06/10/2026
 ms.topic: reference
 title: UseConsistentWhitespace
 ---
@@ -10,9 +10,27 @@ title: UseConsistentWhitespace
 
 ## Description
 
-This rule is not enabled by default. The user needs to enable it through settings.
+This rule detects inconsistent or redundant whitespace around braces, parentheses, operators,
+separators, pipes, and parameter values. Use this rule to keep PowerShell code readable and
+consistently formatted. This rule is **disabled** by default.
 
-## Configuration
+## Example
+
+### Noncompliant
+
+```powershell
+if($true) {foo| ForEach-Object{ $_ -eq 1}}
+@{a = 1;b = 2}
+```
+
+### Compliant
+
+```powershell
+if ($true) { foo | ForEach-Object { $_ -eq 1 } }
+@{a = 1; b = 2}
+```
+
+## Configure rule
 
 ```powershell
 Rules = @{
@@ -31,55 +49,63 @@ Rules = @{
 }
 ```
 
-### Enable: bool (Default value is `$false`)
+## Parameters
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+### Enable
 
-### CheckInnerBrace: bool (Default value is `$true`)
+This parameter controls whether ScriptAnalyzer checks code against this rule. It accepts a boolean
+value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-Checks if there is a space after the opening brace and a space before the closing brace. E.g.
-`if ($true) { foo }` instead of `if ($true) {bar}`.
+### CheckInnerBrace
 
-### CheckOpenBrace: bool (Default value is `$true`)
+This parameter checks whether there's a space after an opening brace and a space before a closing
+brace. For example, it prefers `if ($true) { foo }` over `if ($true) {bar}`. The default value is
+`$true`.
 
-Checks if there is a space between a keyword and its corresponding open brace. E.g. `foo { }`
-instead of `foo{ }`. If an open brace is preceded by an open parenthesis, then no space is required.
+### CheckOpenBrace
 
-### CheckOpenParen: bool (Default value is `$true`)
+This parameter checks whether there's a space between a keyword and its corresponding opening brace.
+For example, it prefers `foo { }` over `foo{ }`. No space is required if an open brace precedes an
+open parenthesis. The default value is `$true`.
 
-Checks if there is space between a keyword and its corresponding open parenthesis. E.g. `if (true)`
-instead of `if(true)`.
+### CheckOpenParen
 
-### CheckOperator: bool (Default value is `$true`)
+This parameter checks whether there's a space between a keyword and its corresponding opening
+parenthesis. For example, it prefers `if (true)` over `if(true)`. The default value is `$true`.
 
-Checks if a binary or unary operator is surrounded on both sides by a space. E.g. `$x = 1` instead
-of `$x=1`.
+### CheckOperator
 
-### CheckSeparator: bool (Default value is `$true`)
+This parameter checks whether binary or unary operators are surrounded by spaces. For example, it
+prefers `$x = 1` over `$x=1`. The default value is `$true`.
 
-Checks if a comma or a semicolon is followed by a space. E.g. `@(1, 2, 3)` or `@{a = 1; b = 2}`
-instead of `@(1,2,3)` or `@{a = 1;b = 2}`.
+### CheckSeparator
 
-### CheckPipe: bool (Default value is `$true`)
+This parameter checks whether commas and semicolons are followed by a space. For example, it prefers
+`@(1, 2, 3)` over `@(1,2,3)` and `@{a = 1; b = 2}` over `@{a = 1;b = 2}`. The default value is
+`$true`.
 
-Checks if a pipe is surrounded on both sides by a space but ignores redundant whitespace. E.g.
-`foo | bar` instead of `foo|bar`.
+### CheckPipe
 
-### CheckPipeForRedundantWhitespace : bool (Default value is `$false`)
+This parameter checks whether a pipe is surrounded by a single space on each side, while ignoring
+redundant whitespace. For example, it prefers `foo | bar` over `foo|bar`. The default value is
+`$true`.
 
-Checks if a pipe is surrounded by redundant whitespace (i.e. more than 1 whitespace). E.g.
-`foo | bar` instead of `foo    |    bar`.
+### CheckPipeForRedundantWhitespace
 
-### CheckParameter: bool (Default value is `$false` at the moment due to the setting being new)
+This parameter checks whether a pipe is surrounded by redundant whitespace, meaning more than one
+space. For example, it prefers `foo | bar` over `foo    |    bar`. The default value is `$false`.
 
-Checks if there is more than one space between parameters and values. E.g. `foo -bar $baz -bat`
-instead of `foo   -bar   $baz   -bat`. This eliminates redundant whitespace that was probably added
-unintentionally. The rule does not check for whitespace between parameter and value when the colon
-syntax `-ParameterName:$ParameterValue` is used as some users prefer either 0 or 1 whitespace in
-this case.
+### CheckParameter
 
-### IgnoreAssignmentOperatorInsideHashTable: bool (Default value is `$false`)
+This parameter checks whether there's more than one space between parameters and values. For
+example, it prefers `foo -bar $baz -bat` over `foo   -bar   $baz   -bat`, which helps remove
+redundant whitespace that was likely added unintentionally. The rule doesn't check whitespace
+between a parameter and value when the colon syntax `-ParameterName:$ParameterValue` is used,
+because some users prefer either zero or one space in that case. The default value is `$false`.
 
-When `CheckOperator` is set, ignore whitespace around assignment operators within multi-line hash
-tables. Set this option to use the `AlignAssignmentStatement` rule and still check whitespace around
-operators everywhere else.
+### IgnoreAssignmentOperatorInsideHashTable
+
+When `CheckOperator` is enabled, this parameter ignores whitespace around assignment operators
+within multi-line hash tables. Use it with the `AlignAssignmentStatement` rule when you want to
+align assignments in hash tables but still check operator whitespace everywhere else. The default
+value is `$false`.

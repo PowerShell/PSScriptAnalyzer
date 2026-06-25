@@ -1,6 +1,6 @@
 ---
-description: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
-ms.date: 06/28/2023
+description: Avoid using WMI cmdlets
+ms.date: 06/02/2026
 ms.topic: reference
 title: AvoidUsingWMICmdlet
 ---
@@ -10,9 +10,12 @@ title: AvoidUsingWMICmdlet
 
 ## Description
 
-As of PowerShell 3.0, the CIM cmdlets should be used over the WMI cmdlets.
+This rule detects the use of Windows Management Instrumentation (WMI) cmdlets. Since PowerShell 3.0,
+you should use Common Information Model (CIM) cmdlets instead of WMI cmdlets. CIM cmdlets comply
+with WS-Management (WSMan) standards and the CIM standard, which enables management of Windows and
+non-Windows operating systems.
 
-The following cmdlets should not be used:
+Don't use these WMI cmdlets:
 
 - `Get-WmiObject`
 - `Remove-WmiObject`
@@ -20,7 +23,7 @@ The following cmdlets should not be used:
 - `Register-WmiEvent`
 - `Set-WmiInstance`
 
-Use the following cmdlets instead:
+Use these CIM cmdlets instead:
 
 - `Get-CimInstance`
 - `Remove-CimInstance`
@@ -28,31 +31,18 @@ Use the following cmdlets instead:
 - `Register-CimIndicationEvent`
 - `Set-CimInstance`
 
-The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model
-(CIM) standard, allowing for the management of Windows and non-Windows operating systems.
-
-## How
-
-Change to the equivalent CIM based cmdlet.
-
-- `Get-WmiObject` -> `Get-CimInstance`
-- `Remove-WmiObject` -> `Remove-CimInstance`
-- `Invoke-WmiMethod` -> `Invoke-CimMethod`
-- `Register-WmiEvent` -> `Register-CimIndicationEvent`
-- `Set-WmiInstance` -> `Set-CimInstance`
-
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Get-WmiObject -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-WmiObject
 Invoke-WmiMethod -Class Win32_Process -Name 'Create' -ArgumentList @{ CommandLine = 'notepad.exe' }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
-Get-CimInstance -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-CIMInstance
+Get-CimInstance -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-CimInstance
 Invoke-CimMethod -ClassName Win32_Process -MethodName 'Create' -Arguments @{ CommandLine = 'notepad.exe' }
 ```

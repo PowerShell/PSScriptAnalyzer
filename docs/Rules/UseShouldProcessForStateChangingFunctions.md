@@ -1,6 +1,6 @@
 ---
-description: Use ShouldProcess For State Changing Functions
-ms.date: 12/05/2024
+description: Use ShouldProcess for state changing functions
+ms.date: 06/11/2026
 ms.topic: reference
 title: UseShouldProcessForStateChangingFunctions
 ---
@@ -10,12 +10,18 @@ title: UseShouldProcessForStateChangingFunctions
 
 ## Description
 
-Functions whose verbs change system state should support `ShouldProcess`. To enable the
-`ShouldProcess` feature, set the `SupportsShouldProcess` argument in the `CmdletBinding` attribute.
-The `SupportsShouldProcess` argument adds **Confirm** and **WhatIf** parameters to the function. The
-**Confirm** parameter prompts the user before it runs the command on each object in the pipeline.
-The **WhatIf** parameter lists the changes that the command would make, instead of running the
-command.
+This rule detects functions with state-changing verbs that don't support `ShouldProcess`. Functions
+whose verbs change system state should support `ShouldProcess` to provide users with the ability to
+confirm or preview changes before execution. To enable this feature, set the `SupportsShouldProcess`
+argument to `$true` in the `CmdletBinding` attribute.
+
+The `SupportsShouldProcess` argument automatically adds the **Confirm** and **WhatIf** parameters to
+your function:
+
+- The **Confirm** parameter prompts the user to confirm the command before it runs on each object in
+  the pipeline.
+- The **WhatIf** parameter displays the changes the command would make without actually running the
+  command.
 
 Verbs that should support `ShouldProcess`:
 
@@ -28,13 +34,9 @@ Verbs that should support `ShouldProcess`:
 - `Reset`
 - `Update`
 
-## How
-
-Include the `SupportsShouldProcess` argument in the `CmdletBinding` attribute.
-
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Set-ServiceObject
@@ -49,7 +51,7 @@ function Set-ServiceObject
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Set-ServiceObject
@@ -64,12 +66,12 @@ function Set-ServiceObject
 }
 ```
 
-## More information
+## See also
 
 - [about_Functions_CmdletBindingAttribute][01]
 - [Everything you wanted to know about ShouldProcess][04]
-- [Required Development Guidelines][03]
-- [Requesting Confirmation from Cmdlets][02]
+- [Required development guidelines][03]
+- [Requesting confirmation from cmdlets][02]
 
 <!-- link references -->
 [01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute

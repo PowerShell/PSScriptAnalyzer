@@ -1,6 +1,6 @@
 ---
-description: Use Standard Get/Set/Test TargetResource functions in DSC Resource
-ms.date: 06/28/2023
+description: Use standard DSC Get, Set, and Test TargetResource functions in a resource
+ms.date: 06/03/2026
 ms.topic: reference
 title: DSCStandardDSCFunctionsInResource
 ---
@@ -10,27 +10,24 @@ title: DSCStandardDSCFunctionsInResource
 
 ## Description
 
-All DSC resources are required to implement the correct functions.
+This rule detects if all Desired State Configuration (DSC) resources implement the correct
+functions. Add the missing functions to the resource.
 
 For non-class based resources:
 
+- `Get-TargetResource`
 - `Set-TargetResource`
 - `Test-TargetResource`
-- `Get-TargetResource`
 
 For class based resources:
 
+- `Get`
 - `Set`
 - `Test`
-- `Get`
 
-## How
+## Example
 
-Add the missing functions to the resource.
-
-## Example 1
-
-### Wrong
+### Noncompliant MOF-based resource
 
 ```powershell
 function Get-TargetResource
@@ -45,8 +42,9 @@ function Get-TargetResource
     ...
 }
 
-function Set-TargetResource
+function Test-TargetResource
 {
+    [OutputType([System.Boolean])]
     param
     (
         [parameter(Mandatory = $true)]
@@ -57,7 +55,7 @@ function Set-TargetResource
 }
 ```
 
-### Correct
+### Compliant MOF-based resource
 
 ```powershell
 function Get-TargetResource
@@ -96,9 +94,7 @@ function Test-TargetResource
 }
 ```
 
-## Example 2
-
-### Wrong
+### Noncompliant class-based resource
 
 ```powershell
 [DscResource()]
@@ -117,8 +113,9 @@ class MyDSCResource
         ...
     }
 }
+```
 
-### Correct
+### Compliant class-based resource
 
 ```powershell
 [DscResource()]

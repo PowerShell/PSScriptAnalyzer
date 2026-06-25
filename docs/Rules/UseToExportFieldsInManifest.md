@@ -1,6 +1,6 @@
 ---
-description: Use the *ToExport module manifest fields.
-ms.date: 06/28/2023
+description: Use the *ToExport module manifest fields
+ms.date: 06/11/2026
 ms.topic: reference
 title: UseToExportFieldsInManifest
 ---
@@ -10,50 +10,28 @@ title: UseToExportFieldsInManifest
 
 ## Description
 
-To improve the performance of module auto-discovery, module manifests should not use wildcards
-(`'*'`) or null (`$null`) in the following entries:
+This rule detects when module manifests use wildcards (`'*'`) or null (`$null`) in export fields. To
+improve module autodiscovery performance, module manifests shouldn't use wildcards or null in the
+following entries:
 
 - `AliasesToExport`
 - `CmdletsToExport`
 - `FunctionsToExport`
 - `VariablesToExport`
 
-Using wildcards or null has causes PowerShell to perform expensive work to analyze a module during
-module auto-discovery.
+When you use wildcards or null, PowerShell performs expensive analysis of your module during
+autodiscovery. Instead, use an explicit list of items to export.
 
-## How
+## Example
 
-Use an explicit list in the entries.
-
-## Example 1
-
-Suppose there are no functions in your module to export. Then,
-
-### Wrong
+### Noncompliant
 
 ```powershell
 FunctionsToExport = $null
 ```
 
-### Correct
+### Compliant
 
 ```powershell
-FunctionToExport = @()
-```
-
-## Example 2
-
-Suppose there are only two functions in your module, `Get-Foo` and `Set-Foo` that you want to
-export. Then,
-
-### Wrong
-
-```powershell
-FunctionsToExport = '*'
-```
-
-### Correct
-
-```powershell
-FunctionToExport = @(Get-Foo, Set-Foo)
+FunctionsToExport = @()
 ```

@@ -1,6 +1,6 @@
 ---
 description: DSC examples are present
-ms.date: 06/28/2023
+ms.date: 06/03/2026
 ms.topic: reference
 title: DSCDscExamplesPresent
 ---
@@ -10,23 +10,21 @@ title: DSCDscExamplesPresent
 
 ## Description
 
-Checks that DSC examples for given resource are present.
+This rule detects if Desired State Configuration (DSC) examples for a given resource are present.
 
-## How
+To fix a violation of this rule, you must ensure that the `Examples` directory exists for:
 
-To fix a violation of this rule, please make sure `Examples` directory is present:
+- Non-class based resources, it should be at the same folder level as the `DSCResources` folder.
+- Class based resources, it should be at the same folder level as the resource's `.psm1` file.
 
-- For non-class based resources it should exist at the same folder level as `DSCResources` folder.
-- For class based resources it should be present at the same folder level as resource `.psm1` file.
-
-The `Examples` folder should contain a sample configuration for given resource. The filename should
-contain the resource's name.
+The `Examples` folder must contain a sample configuration for the resource. The filename should
+include the resource's name.
 
 ## Example
 
 ### Non-class based resource
 
-Let's assume we have non-class based resource with a following file structure:
+Let's assume we have non-class based resource with the following file structure:
 
 - xAzure
   - DSCResources
@@ -34,7 +32,7 @@ Let's assume we have non-class based resource with a following file structure:
       - MSFT_xAzureSubscription.psm1
       - MSFT_xAzureSubscription.schema.mof
 
-In this case, to fix this warning, we should add examples in a following way:
+In this case, to fix this warning, add examples in the following way:
 
 - xAzure
   - DSCResources
@@ -47,13 +45,13 @@ In this case, to fix this warning, we should add examples in a following way:
 
 ### Class based resource
 
-Let's assume we have class based resource with a following file structure:
+Let's assume we have class based resource with the following file structure:
 
 - MyDscResource
   - MyDscResource.psm1
   - MyDscResource.psd1
 
-In this case, to fix this warning, we should add examples in a following way:
+In this case, to fix this warning, add examples in the following way:
 
 - MyDscResource
   - MyDscResource.psm1

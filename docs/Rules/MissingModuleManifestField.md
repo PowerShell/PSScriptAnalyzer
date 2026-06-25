@@ -1,6 +1,6 @@
 ---
-description: Module Manifest Fields
-ms.date: 06/28/2023
+description: Module manifest fields
+ms.date: 06/04/2026
 ms.topic: reference
 title: MissingModuleManifestField
 ---
@@ -10,23 +10,20 @@ title: MissingModuleManifestField
 
 ## Description
 
-A module manifest is a `.psd1` file that contains a hash table. The keys and values in the hash
-table describe the contents and attributes of the module, define the prerequisites, and determine
-how the components are processed.
+This rule detects when a module manifest is missing required fields. A module manifest is a `.psd1`
+file that contains a hash table. The keys and values in the hash table describe the contents and
+attributes of the module, define the prerequisites, and determine how the components are processed.
 
-Module manifests must contain the following keys (and a corresponding value) to be considered valid:
+A module manifest must contain the following key (and a corresponding value) to be considered valid:
 
 - `ModuleVersion`
 
-All other keys are optional. The order of the entries is not important.
-
-## How
-
-Please consider adding the missing fields to the manifest.
+All other keys are optional and the order you place them doesn't matter. To learn more, see
+[about_Module_Manifests][01].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 @{
@@ -38,7 +35,7 @@ Please consider adding the missing fields to the manifest.
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 @{
@@ -50,3 +47,6 @@ Please consider adding the missing fields to the manifest.
     VariablesToExport   = '*'
 }
 ```
+
+<!-- link references -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_module_manifests

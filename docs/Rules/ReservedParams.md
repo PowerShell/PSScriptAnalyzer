@@ -1,6 +1,6 @@
 ---
-description: Reserved Parameters
-ms.date: 03/06/2024
+description: Reserved parameters
+ms.date: 06/08/2026
 ms.topic: reference
 title: ReservedParams
 ---
@@ -10,17 +10,15 @@ title: ReservedParams
 
 ## Description
 
-You can't redefine [common parameters][01] in an advanced function. Using the `CmdletBinding` or
-`Parameter` attributes creates an advanced function. The common parameters are are automatically
-available in advanced functions, so you can't redefine them.
-
-## How
-
-Change the name of the parameter.
+This rule detects when you attempt to redefine [common parameters][01] in an advanced function. When
+you use the `CmdletBinding` or `Parameter` attributes, you're creating an advanced function. Common
+parameters are automatically available in advanced functions, so you can't redefine them. If you're
+trying to use a parameter name that conflicts with a common parameter, you need to change the name
+of your parameter to something else.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Test
@@ -34,7 +32,7 @@ function Test
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Test

@@ -1,6 +1,6 @@
 ---
 description: Place open braces consistently
-ms.date: 06/28/2023
+ms.date: 06/05/2026
 ms.topic: reference
 title: PlaceOpenBrace
 ---
@@ -10,10 +10,28 @@ title: PlaceOpenBrace
 
 ## Description
 
-Open brace placement should follow a consistent style. It can either follow K&R style (on same line)
-or the Allman style (not on same line).
+This rule detects opening braces (`{`) that don't follow a consistent style. Opening braces can be
+required on the same line as the preceding keyword or on the next line, based on configuration. You
+can also require a new line after the opening brace. This rule is **disabled** by default.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+## Example
+
+### Noncompliant
+
+```powershell
+if ($true)
+{
+    'example'
+}
+```
+
+### Compliant
+
+```powershell
+if ($true) {
+    'example'
+}
+```
 
 ## Configuration
 
@@ -28,22 +46,27 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-#### Enable: bool (Default value is `$false`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-#### OnSameLine: bool (Default value is `$true`)
+### OnSameLine
 
-Enforce open brace to be on the same line as that of its preceding keyword.
+This parameter controls whether ScriptAnalyzer checks that an open brace is on the same line as the
+preceding keyword. It accepts a boolean value. To disable this check, set this parameter to
+`$false`. The default value is `$true`.
 
-#### NewLineAfter: bool (Default value is `$true`)
+### NewLineAfter
 
-Enforce a new line character after an open brace. The default value is true.
+This parameter controls whether ScriptAnalyzer checks that a new line follows an opening brace. It
+accepts a boolean value. To disable this check, set this parameter to `$false`. The default value is
+`$true`.
 
-#### IgnoreOneLineBlock: bool (Default value is `$true`)
+### IgnoreOneLineBlock
 
-Indicates if open braces in a one line block should be ignored or not. For example,
-`$x = if ($true) { 'blah' } else { 'blah blah' }`, if the property is set to true then the rule
-doesn't fire a violation.
+This parameter controls whether ScriptAnalyzer skips one-line blocks when checking the code against
+this rule. It accepts a boolean value. To disable skipping one-line blocks, set this parameter to
+`$false`. The default value is `$true`.

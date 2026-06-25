@@ -1,6 +1,6 @@
 ---
-description: Avoid Using ComputerName Hardcoded
-ms.date: 06/28/2023
+description: Avoid using hardcoded computer names
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidUsingComputerNameHardcoded
 ---
@@ -10,49 +10,30 @@ title: AvoidUsingComputerNameHardcoded
 
 ## Description
 
-The names of computers should never be hard coded as this will expose sensitive information. The
-`ComputerName` parameter should never have a hard coded value.
+This rule detects hard-coded computer names in the `ComputerName` parameter of cmdlets. Hard-coded
+computer names can expose sensitive information and reduce script portability. The `ComputerName`
+parameter should always be parameterized or dynamically assigned to ensure scripts are flexible and
+secure.
 
-## How
+Use parameters, environment variables, or dynamic values instead of hard-coded computer
+names.
 
-Remove hard coded computer names.
+## Example
 
-## Example 1
-
-### Wrong
+### Noncompliant
 
 ```powershell
 Function Invoke-MyRemoteCommand ()
 {
-    Invoke-Command -Port 343 -ComputerName hardcoderemotehostname
+    Invoke-Command -Port 343 -ComputerName HardcodedRemoteHostname
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Function Invoke-MyCommand ($ComputerName)
 {
     Invoke-Command -Port 343 -ComputerName $ComputerName
-}
-```
-
-## Example 2
-
-### Wrong
-
-```powershell
-Function Invoke-MyLocalCommand ()
-{
-    Invoke-Command -Port 343 -ComputerName hardcodelocalhostname
-}
-```
-
-### Correct
-
-```powershell
-Function Invoke-MyLocalCommand ()
-{
-    Invoke-Command -Port 343 -ComputerName $env:COMPUTERNAME
 }
 ```

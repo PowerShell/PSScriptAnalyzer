@@ -1,6 +1,6 @@
 ---
 description: Avoid reserved words as function names
-ms.date: 08/31/2025
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidReservedWordsAsFunctionNames
 ---
@@ -10,19 +10,15 @@ title: AvoidReservedWordsAsFunctionNames
 
 ## Description
 
-Avoid using reserved words as function names. Using reserved words as function names can cause
-errors or unexpected behavior in scripts.
-
-## How to Fix
-
-Avoid using any of the reserved words as function names. Choose a different name that's not a
-reserved word.
+This rule detects function names that use PowerShell reserved words. Using reserved words as
+function names causes errors or unexpected behavior in PowerShell scripts. Choose function names
+that don't conflict with any PowerShell reserved words.
 
 See [about_Reserved_Words][01] for a list of reserved words in PowerShell.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 # Function is a reserved word
@@ -31,7 +27,7 @@ function function {
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 # myFunction is not a reserved word

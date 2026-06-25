@@ -1,6 +1,6 @@
 ---
-description: Use PSCredential type.
-ms.date: 06/28/2023
+description: Use PSCredential type
+ms.date: 06/11/2026
 ms.topic: reference
 title: UsePSCredentialType
 ---
@@ -10,16 +10,14 @@ title: UsePSCredentialType
 
 ## Description
 
-If the cmdlet or function has a **Credential** parameter, the parameter must accept the
-**PSCredential** type.
-
-## How
-
-Change the **Credential** parameter's type to be **PSCredential**.
+This rule detects when a cmdlet or function defines a **Credential** parameter with a type other
+than **PSCredential**. Credential parameters should always use the **PSCredential** type to ensure
+proper handling of secure credential objects. Change any **Credential** parameter's type to
+**PSCredential** for consistency and security.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Credential([String]$Credential)
@@ -28,7 +26,7 @@ function Credential([String]$Credential)
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Credential([PSCredential]$Credential)

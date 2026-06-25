@@ -1,6 +1,6 @@
 ---
-description: Switch Parameters Should Not Default To True
-ms.date: 12/05/2024
+description: Switch parameters should not default to $true
+ms.date: 06/12/2026
 ms.topic: reference
 title: AvoidDefaultValueSwitchParameter
 ---
@@ -10,23 +10,24 @@ title: AvoidDefaultValueSwitchParameter
 
 ## Description
 
-If your parameter takes only `true` and `false`, define the parameter as type `[Switch]`. PowerShell
-treats a switch parameter as `true` when it's used with a command. If the parameter isn't included
-with the command, PowerShell considers the parameter to be false. Don't define `[Boolean]`
-parameters.
+This rule detects switch parameters that are assigned a default value of `$true`. Switch parameters
+shouldn't have default values. By design, a switch parameter is `$false` when not specified and
+`$true` when included in the command. Assigning a default value of `$true` to a switch parameter
+violates this design principle and can cause unexpected behavior.
 
-You shouldn't define a switch parameter with a default value of `$true` because this isn't the
-expected behavior of a switch parameter.
+If your parameter needs to accept only `true` and `false` values, use the `[Switch]` type instead of
+`[Boolean]`. PowerShell automatically handles switch parameters correctly without requiring a
+default value.
 
-## How
+To fix this issue, remove the default value from the switch parameter declaration. The switch
+naturally defaults to `$false` when not specified, allowing your logic to respond appropriately to
+the caller's input.
 
-Change the default value of the switch parameter to be `$false` or don't provide a default value.
-Write the logic of the script to assume that the switch parameter default value is `$false` or not
-provided.
+To learn more, see [Strongly Encouraged Development Guidelines][01].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Test-Script
@@ -44,7 +45,7 @@ function Test-Script
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Test-Script
@@ -68,10 +69,6 @@ function Test-Script
     ...
 }
 ```
-
-## More information
-
-- [Strongly Encouraged Development Guidelines][01]
 
 <!-- link references -->
 [01]: https://learn.microsoft.com/powershell/scripting/developer/cmdlet/strongly-encouraged-development-guidelines#parameters-that-take-true-and-false

@@ -1,6 +1,6 @@
 ---
 description: Avoid sending credentials and secrets over unencrypted connections
-ms.date: 02/28/2024
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidUsingAllowUnencryptedAuthentication
 ---
@@ -10,26 +10,29 @@ title: AvoidUsingAllowUnencryptedAuthentication
 
 ## Description
 
-Avoid using the **AllowUnencryptedAuthentication** parameter of `Invoke-WebRequest` and
-`Invoke-RestMethod`. When using this parameter, the cmdlets send credentials and secrets over
-unencrypted connections. This should be avoided except for compatibility with legacy systems.
+This rule detects the **AllowUnencryptedAuthentication** parameter used with `Invoke-WebRequest` and
+`Invoke-RestMethod` cmdlets. When **AllowUnencryptedAuthentication** is used, it permits credentials
+and secrets to be transmitted over unencrypted connections, creating a security risk.
 
-For more details, see [Invoke-RestMethod](xref:Microsoft.PowerShell.Utility.Invoke-RestMethod).
+Avoid using this parameter unless you must maintain compatibility with legacy systems that require
+unencrypted authentication.
 
-## How
+To learn more, see [Invoke-WebRequest][01] and [Invoke-RestMethod][02].
 
-Avoid using the **AllowUnencryptedAuthentication** parameter.
+## Example
 
-## Example 1
-
-### Wrong
+### Noncompliant
 
 ```powershell
 Invoke-WebRequest foo -AllowUnencryptedAuthentication
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Invoke-WebRequest foo
 ```
+
+<!-- links reference -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-webrequest
+[02]: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod

@@ -1,6 +1,6 @@
 ---
 description: Use consistent indentation
-ms.date: 06/28/2023
+ms.date: 06/09/2026
 ms.topic: reference
 title: UseConsistentIndentation
 ---
@@ -10,11 +10,42 @@ title: UseConsistentIndentation
 
 ## Description
 
-Indentation should be consistent throughout the source file.
+This rule detects inconsistent indentation patterns within a source file. Indentation should be
+consistent throughout your script. This rule is **disabled** by default.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+## Example
 
-## Configuration
+### Noncompliant
+
+```powershell
+function Get-ItemName {
+    param(
+      [string]$Path
+    )
+
+    if ($Path) {
+      Get-Item $Path |
+      Select-Object -ExpandProperty Name
+    }
+}
+```
+
+### Compliant
+
+```powershell
+function Get-ItemName {
+    param(
+        [string]$Path
+    )
+
+    if ($Path) {
+        Get-Item $Path |
+            Select-Object -ExpandProperty Name
+    }
+}
+```
+
+## Configure rule
 
 ```powershell
     Rules = @{
@@ -27,21 +58,27 @@ Indentation should be consistent throughout the source file.
     }
 ```
 
-### Parameters
+## Parameters
 
-#### Enable: bool (Default value is `$false`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-#### IndentationSize: int (Default value is `4`)
+### IndentationSize
 
-Indentation size in the number of space characters.
+This parameter controls the indentation size when `Kind` is set to `space`. It accepts an integer
+value. To use four spaces per indentation level, set this parameter to `4`. The default value is
+`4`.
 
-#### PipelineIndentation: string (Default value is `IncreaseIndentationForFirstPipeline`)
+### PipelineIndentation
 
-Whether to increase indentation after a pipeline for multi-line statements. The settings are:
+This parameter controls pipeline indentation for multi-line statements. It accepts a string value.
+The default value is `IncreaseIndentationForFirstPipeline`.
 
-- IncreaseIndentationForFirstPipeline (default): Indent once after the first pipeline and keep this
+Acceptable values are:
+
+- `IncreaseIndentationForFirstPipeline`: Indent once after the first pipeline and keep this
   indentation. Example:
 
   ```powershell
@@ -50,7 +87,7 @@ Whether to increase indentation after a pipeline for multi-line statements. The 
       baz
   ```
 
-- IncreaseIndentationAfterEveryPipeline: Indent more after the first pipeline and keep this
+- `IncreaseIndentationAfterEveryPipeline`: Indent more after the first pipeline and keep this
   indentation. Example:
 
   ```powershell
@@ -59,7 +96,7 @@ Whether to increase indentation after a pipeline for multi-line statements. The 
           baz
   ```
 
-- NoIndentation: Do not increase indentation. Example:
+- `NoIndentation`: Don't increase indentation. Example:
 
   ```powershell
   foo |
@@ -67,12 +104,13 @@ Whether to increase indentation after a pipeline for multi-line statements. The 
   baz
   ```
 
-- None: Do not change any existing pipeline indentation.
+- `None`: Don't change any existing pipeline indentation.
 
-#### Kind: string (Default value is `space`)
+### Kind
 
-Represents the kind of indentation to be used. Possible values are: `space`, `tab`. If any invalid
-value is given, the property defaults to `space`.
+This parameter controls which indentation character ScriptAnalyzer expects. It accepts a string
+value. To use spaces for indentation, set this parameter to `space`. The default value is `space`.
 
-`space` means `IndentationSize` number of `space` characters are used to provide one level of
-indentation. `tab` means a tab character, `\t`.
+When `Kind` is set to `space`, ScriptAnalyzer uses the value of `IndentationSize` for each
+indentation level. When `Kind` is set to `tab`, ScriptAnalyzer uses a tab character (`\t`) per
+indentation level. If you provide an invalid value, ScriptAnalyzer uses `space`.

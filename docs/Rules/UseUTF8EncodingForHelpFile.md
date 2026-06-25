@@ -1,6 +1,6 @@
 ---
-description: Use UTF8 Encoding For Help File
-ms.date: 01/07/2025
+description: Use UTF8 encoding for help file
+ms.date: 06/11/2026
 ms.topic: reference
 title: UseUTF8EncodingForHelpFile
 ---
@@ -10,20 +10,48 @@ title: UseUTF8EncodingForHelpFile
 
 ## Description
 
-Check that an `about_` help file uses UTF-8 encoding. The filename must start with `about_` and end
-with `.help.txt`. The rule uses the **CurrentEncoding** property of the **StreamReader** class to
-determine the encoding of the file.
+This rule detects when an `about_` help file doesn't use UTF-8 encoding. The rule verifies that help
+files starting with `about_` and ending with `.help.txt` are saved in UTF-8 encoding. It uses the
+**CurrentEncoding** property of the **StreamReader** class to check the file's encoding.
 
-## How
+To ensure your help files use the correct encoding, follow these guidelines:
 
-For PowerShell commands that write to files, ensure that you set the encoding parameter to `utf8`,
-`utf8BOM`, or `utf8NoBOM`.
+- When using PowerShell commands to write to files, set the encoding parameter to `utf8`, `utf8BOM`,
+  or `utf8NoBOM`.
+- When creating or editing help files in a text editor, configure it to save files in UTF-8 format.
+  Consult your editor's documentation for instructions on setting the file encoding.
 
-When you create a help file using a text editor, ensure that the editor is configured to save the
-file in a UTF8 format. Consult the documentation for your text editor for instructions on how to
-save files with a specific encoding.
+## Example
 
-## Further reading
+### Noncompliant
+
+```powershell
+$helpText = @'
+TOPIC
+  about_Contoso
+
+SHORT DESCRIPTION
+  Describes Contoso commands.
+'@
+
+$helpText | Set-Content -Path "about_Contoso.help.txt" -Encoding Unicode
+```
+
+### Compliant
+
+```powershell
+$helpText = @'
+TOPIC
+  about_Contoso
+
+SHORT DESCRIPTION
+  Describes Contoso commands.
+'@
+
+$helpText | Set-Content -Path "about_Contoso.help.txt" -Encoding utf8NoBOM
+```
+
+## See also
 
 For more information, see the following articles:
 

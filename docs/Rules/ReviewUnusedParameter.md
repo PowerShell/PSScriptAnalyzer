@@ -1,6 +1,6 @@
 ---
 description: ReviewUnusedParameter
-ms.date: 03/26/2024
+ms.date: 06/08/2026
 ms.topic: reference
 title: ReviewUnusedParameter
 ---
@@ -10,14 +10,49 @@ title: ReviewUnusedParameter
 
 ## Description
 
-This rule identifies parameters declared in a script, scriptblock, or function scope that have not
-been used in that scope.
+This rule detects parameters that are declared but not used a script, scriptblock, or function
+scope. You should consider removing unused parameters to improve code clarity and reduce confusion
+about your function's dependencies.
 
-## Configuration settings
+## Example
 
-By default, this rule doesn't consider child scopes other than scriptblocks provided to
-`Where-Object` or `ForEach-Object`. The `CommandsToTraverse` setting is an string array allows you
-to add additional commands that accept scriptblocks that this rule should examine.
+### Noncompliant
+
+```powershell
+function Test-Parameter
+{
+    Param (
+        $Parameter1,
+
+        # This parameter is never called in the function
+        $Parameter2
+    )
+
+    Get-Something $Parameter1
+}
+```
+
+### Compliant
+
+```powershell
+function Test-Parameter
+{
+    Param (
+        $Parameter1,
+
+        # Now this parameter is being called in the same scope
+        $Parameter2
+    )
+
+    Get-Something $Parameter1 $Parameter2
+}
+```
+
+## Configure rule
+
+By default, this rule doesn't consider child scopes other than scriptblocks provided to either
+`Where-Object` or `ForEach-Object`. The `CommandsToTraverse` setting is a string array that allows
+you to add extra commands that accept scriptblocks that this rule should examine.
 
 ```powershell
 @{
@@ -28,43 +63,5 @@ to add additional commands that accept scriptblocks that this rule should examin
             )
         }
     }
-}
-```
-
-## How
-
-Consider removing the unused parameter.
-
-## Example
-
-### Wrong
-
-```powershell
-function Test-Parameter
-{
-    Param (
-        $Parameter1,
-
-        # this parameter is never called in the function
-        $Parameter2
-    )
-
-    Get-Something $Parameter1
-}
-```
-
-### Correct
-
-```powershell
-function Test-Parameter
-{
-    Param (
-        $Parameter1,
-
-        # now this parameter is being called in the same scope
-        $Parameter2
-    )
-
-    Get-Something $Parameter1 $Parameter2
 }
 ```

@@ -1,6 +1,6 @@
 ---
-description: Use Cmdlet Correctly
-ms.date: 06/28/2023
+description: Use cmdlets correctly
+ms.date: 06/08/2026
 ms.topic: reference
 title: UseCmdletCorrectly
 ---
@@ -10,16 +10,13 @@ title: UseCmdletCorrectly
 
 ## Description
 
-Whenever we call a command, care should be taken that it is invoked with the correct syntax and
-parameters.
-
-## How
-
-Specify all mandatory parameters when calling commands.
+This rule detects commands that are invoked without their required mandatory parameters. When you
+call a command, it must be invoked with the correct syntax and all mandatory parameters specified.
+Missing required parameters can cause commands to fail or behave unexpectedly.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Function Set-TodaysDate ()
@@ -29,7 +26,7 @@ Function Set-TodaysDate ()
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Function Set-TodaysDate ()

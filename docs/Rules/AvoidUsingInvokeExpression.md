@@ -1,6 +1,6 @@
 ---
-description: Avoid Using Invoke-Expression
-ms.date: 06/28/2023
+description: Avoid using Invoke-Expression
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidUsingInvokeExpression
 ---
@@ -10,25 +10,23 @@ title: AvoidUsingInvokeExpression
 
 ## Description
 
-Care must be taken when using the `Invoke-Expression` command. The `Invoke-Expression` executes the
-specified string and returns the results.
+This rule detects the use of the `Invoke-Expression` command, which poses security risks in your
+scripts and applications. You must be careful when using the `Invoke-Expression` command. It
+executes the specified string and returns the results.
 
-Code injection into your application or script can occur if the expression passed as a string
-includes any data provided from the user.
-
-## How
-
-Remove the use of `Invoke-Expression`.
+Code injection vulnerabilities can occur if the expression passed as a string includes user-provided
+data, making your application susceptible to malicious attacks. Avoid using `Invoke-Expression`
+whenever possible.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Invoke-Expression 'Get-Process'
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Get-Process

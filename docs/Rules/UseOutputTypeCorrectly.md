@@ -1,6 +1,6 @@
 ---
-description: Use OutputType Correctly
-ms.date: 06/28/2023
+description: Use the OutputType attribute correctly
+ms.date: 06/11/2026
 ms.topic: reference
 title: UseOutputTypeCorrectly
 ---
@@ -10,18 +10,17 @@ title: UseOutputTypeCorrectly
 
 ## Description
 
-A command should return the same type as declared in `OutputType`.
+This rule detects when a function or script returns a different type than what is declared in the
+`OutputType` attribute. A function should return values that match the types specified in its
+`OutputType` attribute.
 
-You can get more details by running `Get-Help about_Functions_OutputTypeAttribute` command in
-PowerShell.
-
-## How
-
-Specify that the OutputType attribute lists and the types returned in the cmdlet match.
+The `OutputType` attribute documents what type of output a function produces, and the actual return
+values should comply with this declaration. To learn more, see
+[about_Functions_OutputTypeAttribute][01].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Get-Foo
@@ -34,7 +33,7 @@ function Get-Foo
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Get-Foo
@@ -47,3 +46,6 @@ function Get-Foo
         return 'four'
 }
 ```
+
+<!-- link references -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_outputtypeattribute

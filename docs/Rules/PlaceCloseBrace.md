@@ -1,6 +1,6 @@
 ---
-description: Place close braces
-ms.date: 06/28/2023
+description: Place close braces consistently
+ms.date: 06/05/2026
 ms.topic: reference
 title: PlaceCloseBrace
 ---
@@ -10,10 +10,28 @@ title: PlaceCloseBrace
 
 ## Description
 
-Close brace placement should follow a consistent style. It should be on a new line by itself and
-should not be followed by an empty line.
+This rule detects closing braces (`}`) that aren't placed on a new line by themselves or that are
+followed by empty lines. Close brace placement should follow a consistent style. It should be on a
+new line by itself and shouldn't be followed by an empty line. This rule is **disabled** by default.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+## Example
+
+### Noncompliant
+
+```powershell
+if ($true) {
+    'example' }
+Get-Process
+```
+
+### Compliant
+
+```powershell
+if ($true) {
+    'example'
+}
+Get-Process
+```
 
 ## Configuration
 
@@ -28,23 +46,27 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-#### Enable: bool (Default value is `$false`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-#### NoEmptyLineBefore: bool (Default value is `$false`)
+### NoEmptyLineBefore
 
-Create violation if there is an empty line before a close brace.
+This parameter controls whether ScriptAnalyzer checks the code for an empty line before a close
+brace. It accepts a boolean value. To enable this check, set this parameter to `$true`. The default
+value is `$false`.
 
-#### IgnoreOneLineBlock: bool (Default value is `$true`)
+### IgnoreOneLineBlock
 
-Indicates if closed brace pairs in a one line block should be ignored or not. For example,
-`$x = if ($true) { 'blah' } else { 'blah blah' }`, if the property is set to true then the rule
-doesn't fire a violation.
+This parameter controls whether ScriptAnalyzer skips one-line blocks when checking the code against
+this rule. It accepts a boolean value. To disable skipping one-line blocks, set this parameter to
+`$false`. The default value is `$true`.
 
-#### NewLineAfter: bool (Default value is `$true`)
+### NewLineAfter
 
-Indicates if a new line should follow a close brace. If set to true a close brace should be followed
-by a new line.
+This parameter controls whether ScriptAnalyzer checks that a new line follows a closing brace. It
+accepts a boolean value. To disable this check, set this parameter to `$false`. The default value is
+`$true`.

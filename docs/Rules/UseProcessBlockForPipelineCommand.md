@@ -1,6 +1,6 @@
 ---
-description: Use process block for command that accepts input from pipeline.
-ms.date: 06/28/2023
+description: Use process block for commands that accept input from a pipeline
+ms.date: 06/11/2026
 ms.topic: reference
 title: UseProcessBlockForPipelineCommand
 ---
@@ -10,13 +10,15 @@ title: UseProcessBlockForPipelineCommand
 
 ## Description
 
-Functions that support pipeline input should always handle parameter input in a process block.
-Unexpected behavior can result if input is handled directly in the body of a function where
-parameters declare pipeline support.
+This rule detects functions with pipeline-enabled parameters that handle input directly in the
+function body instead of using a process block. Functions that accept pipeline input through
+parameters should always process that input in a process block. Handling parameter input directly in
+the function body can lead to unexpected behavior because the function body executes once, while the
+process block executes for each object in the pipeline.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Function Get-Number
@@ -32,14 +34,7 @@ Function Get-Number
 }
 ```
 
-#### Result
-
-```
-PS C:\> 1..5 | Get-Number
-5
-```
-
-### Correct
+### Compliant
 
 ```powershell
 Function Get-Number
@@ -56,15 +51,4 @@ Function Get-Number
         $Number
     }
 }
-```
-
-#### Result
-
-```
-PS C:\> 1..5 | Get-Number
-1
-2
-3
-4
-5
 ```

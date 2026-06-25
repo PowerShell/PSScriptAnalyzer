@@ -1,6 +1,6 @@
 ---
-description: \'>\' is not a comparison operator. Use \'-gt\' (greater than) or \'-ge\' (greater or equal).
-ms.date: 06/28/2023
+description: Use -gt or -ge comparison operators instead of redirection operators
+ms.date: 06/05/2026
 ms.topic: reference
 title: PossibleIncorrectUsageOfRedirectionOperator
 ---
@@ -10,17 +10,17 @@ title: PossibleIncorrectUsageOfRedirectionOperator
 
 ## Description
 
-In many programming languages, the comparison operator for 'greater than' is `>` but `PowerShell`
-uses `-gt` for it and `-ge` (greater or equal) for `>=`. Therefore, it can easily happen that the
-wrong operator is used unintentionally. This rule catches a few special cases where the likelihood
-of that is quite high.
+This rule detects the use of the sequences `>` and `>=` in conditional statements where comparison
+operators are intended. This rule catches instances where `>` or `>=` appears inside `if`, `elseif`,
+`while`, and `do-while` statements, which are almost always unintentional.
 
-The rule looks for usages of `>` or `>=` operators inside `if`, `elseif`, `while` and `do-while`
-statements because this is likely going to be unintentional usage.
+In many programming languages, `>` is the comparison operator for _greater than_, but PowerShell
+uses `-gt` (greater than) and `-ge` (greater or equal) instead. It's easy to accidentally use the
+wrong operator, especially if you're familiar with other languages.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 if ($a > $b)
@@ -29,7 +29,7 @@ if ($a > $b)
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 if ($a -gt $b)

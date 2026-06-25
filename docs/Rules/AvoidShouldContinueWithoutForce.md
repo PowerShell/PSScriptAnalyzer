@@ -1,6 +1,6 @@
 ---
-description: Avoid Using ShouldContinue Without Boolean Force Parameter
-ms.date: 06/28/2023
+description: Avoid using ShouldContinue without boolean Force parameter
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidShouldContinueWithoutForce
 ---
@@ -10,18 +10,19 @@ title: AvoidShouldContinueWithoutForce
 
 ## Description
 
-Functions that use ShouldContinue should have a boolean force parameter to allow user to bypass it.
+This rule detects functions that use `ShouldContinue` without a **Force** parameter. Functions that
+use `ShouldContinue` should have a boolean `Force` parameter to allow users to bypass the
+confirmation prompt.
 
-You can get more details by running `Get-Help about_Functions_CmdletBindingAttribute` and
-`Get-Help about_Functions_Advanced_Methods` command in PowerShell.
+When using `ShouldContinue` in advanced functions, call it after the
+`ShouldProcess` method returns `$true`.
 
-## How
-
-Call the `ShouldContinue` method in advanced functions when `ShouldProcess` method returns `$true`.
+To learn more, see [about_Functions_CmdletBindingAttribute][01] and
+[about_Functions_Advanced_Methods][02].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Function Test-ShouldContinue
@@ -39,7 +40,7 @@ Function Test-ShouldContinue
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Function Test-ShouldContinue
@@ -57,3 +58,7 @@ Function Test-ShouldContinue
     }
 }
 ```
+
+<!-- link references -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute
+[02]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_advanced_methods

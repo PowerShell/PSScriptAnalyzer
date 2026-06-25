@@ -1,6 +1,6 @@
 ---
-description: Avoid Using Write-Host
-ms.date: 12/05/2024
+description: Avoid using Write-Host cmdlet
+ms.date: 06/02/2026
 ms.topic: reference
 title: AvoidUsingWriteHost
 ---
@@ -10,24 +10,23 @@ title: AvoidUsingWriteHost
 
 ## Description
 
-The primary purpose of the `Write-Host` cmdlet is to produce display-only output in the host. For
-example: printing colored text or prompting the user for input when combined with `Read-Host`.
-`Write-Host` uses the `ToString()` method to write the output. The particular result depends on the
-program that's hosting PowerShell. The output from `Write-Host` isn't sent to the pipeline. To
-output data to the pipeline, use `Write-Output` or implicit output.
+This rule detects usage of `Write-Host` in functions that don't use the `Show` verb. `Write-Host` is
+designed to produce display-only output in the host, like printing colored text or prompting users
+for input with `Read-Host`. It uses the `ToString()` method to write output, with results depending
+on the PowerShell host program.
 
-The use of `Write-Host` in a function is discouraged unless the function uses the `Show` verb. The
-`Show` verb explicitly means _display information to the user_. This rule doesn't apply to functions
-with the `Show` verb.
+Since `Write-Host` doesn't send output to the pipeline, you'll need `Write-Output` or implicit
+output to pass data down the pipeline.
 
-## How
+Avoid using `Write-Host` in functions unless they use the `Show` verb, which explicitly means
+_display information to the user_. This rule doesn't apply to functions with the `Show` verb.
 
-Replace `Write-Host` with `Write-Output` or `Write-Verbose` depending on whether the intention is
-logging or returning one or more objects.
+Replace [Write-Host][01] with [Write-Output][02] or [Write-Verbose][03] based on your intention. Use
+`Write-Verbose` for logging and `Write-Output` for returning objects.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Get-MeaningOfLife
@@ -37,26 +36,25 @@ function Get-MeaningOfLife
 }
 ```
 
-### Correct
+### Compliant
 
 Use `Write-Verbose` for informational messages. The user can decide whether to see the message by
 providing the **Verbose** parameter.
 
 ```powershell
-function Get-MeaningOfLife
-{
+function Get-MeaningOfLife {
     [CmdletBinding()]Param() # makes it possible to support Verbose output
 
     Write-Verbose 'Computing the answer to the ultimate question of life, the universe and everything'
     Write-Output 42
 }
 
-function Show-Something
-{
-    Write-Host 'show something on screen'
+function Show-Something {
+    Write-Host 'Show something on screen'
 }
 ```
 
-## More information
-
-[Write-Host](xref:Microsoft.PowerShell.Utility.Write-Host)
+<!-- links reference -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/write-host
+[02]: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/write-output
+[03]: https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/write-verbose

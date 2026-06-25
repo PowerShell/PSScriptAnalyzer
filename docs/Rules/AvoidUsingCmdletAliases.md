@@ -1,6 +1,6 @@
 ---
-description: Avoid Using Cmdlet Aliases or omitting the 'Get-' prefix.
-ms.date: 06/28/2023
+description: Avoid using cmdlet aliases or omitting the Get- prefix
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidUsingCmdletAliases
 ---
@@ -10,35 +10,44 @@ title: AvoidUsingCmdletAliases
 
 ## Description
 
-An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function,
-script, file, or executable file. You can use the alias instead of the command name in any
-PowerShell commands.
+This rule detects the use of cmdlet aliases and omission of the `Get-` prefix in implicit alias
+scenarios. An alias is an alternate name or nickname for a cmdlet or command element, such as a
+function, script, file, or executable file. While you can use aliases instead of the full command
+name, doing so reduces code readability and maintainability.
 
-There are also implicit aliases. When PowerShell cannot find the cmdlet name, it will try to append
-`Get-` to the command as a last resort. Therefore using the command `verb` will execute `Get-Verb`.
+PowerShell also supports implicit aliases. When a cmdlet name isn't found, PowerShell appends
+`Get-` to the command as a fallback. For example, typing `verb` executes `Get-Verb`.
 
-Every PowerShell author learns the actual command names, but different authors learn and use
-different aliases. Aliases can make code difficult to read, understand and impact availability.
+Aliases create inconsistency across codebases because different authors learn and use different
+aliases. Aliases can potentially make code difficult to read and understand in collaborative
+environments. It can also cause issues with script portability and availability.
 
-Using the full command name makes it easier to maintain your scripts in the the future.
+Using full cmdlet names improves code clarity, makes scripts easier to maintain, and enables proper
+syntax highlighting in code editors and platforms like GitHub and Visual Studio Code. Always use the
+full cmdlet name instead of aliases.
 
-Using the full command names also allows for syntax highlighting in sites and applications like
-GitHub and Visual Studio Code.
+## Example
 
-## How to Fix
+### Noncompliant
 
-Use the full cmdlet name and not an alias.
+```powershell
+gps | Where-Object {$_.WorkingSet -gt 20000000}
+```
 
-## Alias Allowlist
+### Compliant
 
-To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create an allowlist of the
+```powershell
+Get-Process | Where-Object {$_.WorkingSet -gt 20000000}
+```
+
+## Configure rule
+
+To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create an allow list of the
 aliases in your settings file and point `PSScriptAnalyzer` to use the settings file. For example, to
 disable `PSScriptAnalyzer` from flagging `cd`, which is an alias of `Set-Location`, set the settings
 file content to the following.
 
 ```powershell
-# PSScriptAnalyzerSettings.psd1
-
 @{
     'Rules' = @{
         'PSAvoidUsingCmdletAliases' = @{
@@ -46,18 +55,4 @@ file content to the following.
         }
     }
 }
-```
-
-## Example
-
-### Wrong
-
-```powershell
-gps | Where-Object {$_.WorkingSet -gt 20000000}
-```
-
-### Correct
-
-```powershell
-Get-Process | Where-Object {$_.WorkingSet -gt 20000000}
 ```

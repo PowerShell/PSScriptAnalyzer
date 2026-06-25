@@ -1,6 +1,6 @@
 ---
-description: Avoid overwriting built in cmdlets
-ms.date: 12/12/2024
+description: Avoid overwriting built-in cmdlets
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidOverwritingBuiltInCmdlets
 ---
@@ -10,44 +10,78 @@ title: AvoidOverwritingBuiltInCmdlets
 
 ## Description
 
-This rule flags cmdlets that are available in a given edition/version of PowerShell on a given
-operating system which are overwritten by a function declaration. It works by comparing function
-declarations against a set of allowlists that ship with PSScriptAnalyzer. These allowlist files are
-used by other PSScriptAnalyzer rules. More information can be found in the documentation for the
-[UseCompatibleCmdlets][01] rule.
+This rule detects and warns when a script defines a function that uses the name of a built-in cmdlet
+available for a target PowerShell version and operating system. Overwriting built-in cmdlet names
+can cause confusing behavior because callers might run your function when they expected the platform
+cmdlet.
 
-## Configuration
+The rule compares function declarations in your script against command allow lists that ship with
+PSScriptAnalyzer. The allow lists are also used by other compatibility rules. To learn more, see
+[UseCompatibleCmdlets][01].
 
-To enable the rule to check if your script is compatible on PowerShell Core on Windows, put the
-following your settings file.
+## Example
+
+### Noncompliant
+
+```powershell
+function Get-ChildItem {
+    param(
+        [string]$Path = '.'
+    )
+
+    "Custom listing for: $Path"
+}
+```
+
+### Compliant
+
+```powershell
+function Get-CustomChildItem {
+    param(
+        [string]$Path = '.'
+    )
+
+    "Custom listing for: $Path"
+}
+```
+
+## Configure rule
+
+To enable the rule to check if your script is compatible on PowerShell Core on Windows, add the
+following lines in your settings file.
 
 ```powershell
 @{
     'Rules' = @{
         'PSAvoidOverwritingBuiltInCmdlets' = @{
-            'PowerShellVersion' = @('core-6.1.0-windows')
+            'PowerShellVersion' = @('core-7.0.0-windows')
         }
     }
 }
 ```
 
-### Parameters
+## Parameters
 
-#### PowerShellVersion
+### PowerShellVersion
 
-The parameter `PowerShellVersion` is a list of allowlists that ship with PSScriptAnalyzer.
+The `PowerShellVersion` parameter accepts one or more command allow list names that ship with
+PSScriptAnalyzer. Set this value to the PowerShell version and platform you want to validate
+against.
 
 > [!NOTE]
-> The default value for `PowerShellVersion` is `core-6.1.0-windows` if PowerShell 6 or
-> later is installed, and `desktop-5.1.14393.206-windows` if it's not.
+> The default value for `PowerShellVersion` is `core-7.0.0-windows` if PowerShell 7 or later is
+installed, and `desktop-5.1.17763.316-windows` if it's not.
 
-Usually, patched versions of PowerShell have the same cmdlet data, therefore only settings of major
-and minor versions of PowerShell are supplied. One can also create a custom settings file as well
-with the [New-CommandDataFile.ps1][02] script and use it by placing the created `JSON` into the
-`Settings` folder of the `PSScriptAnalyzer` module installation folder, then the `PowerShellVersion`
-parameter is just its filename (that can also be changed if desired). Note that the `core-6.0.2-*`
-files were removed in PSScriptAnalyzer 1.18 since PowerShell 6.0 reached end of life.
+Patched PowerShell releases usually share the same cmdlet metadata, so the built-in allow lists are
+provided by major and minor version. You can also generate a custom allow list with
+[New-CommandDataFile.ps1][02]. To use a custom allow list, place the generated JSON file in the
+`Settings` folder of the PSScriptAnalyzer module installation path, then set `PowerShellVersion` to
+that filename.
+
+The `core-6.0.2-*` files were removed in PSScriptAnalyzer 1.18 because PowerShell 6.0 reached end of
+life.
 
 <!-- link references -->
-[01]: ./UseCompatibleCmdlets.md
+
+[01]: UseCompatibleCmdlets.md
 [02]: https://github.com/PowerShell/PSScriptAnalyzer/blob/main/Utils/New-CommandDataFile.ps1

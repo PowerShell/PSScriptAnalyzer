@@ -1,6 +1,6 @@
 ---
-description: Avoid multiple type specifiers on parameters.
-ms.date: 06/28/2023
+description: Avoid multiple type specifiers on parameters
+ms.date: 06/01/2026
 ms.topic: reference
 title: AvoidMultipleTypeAttributes
 ---
@@ -10,16 +10,16 @@ title: AvoidMultipleTypeAttributes
 
 ## Description
 
-Parameters should not have more than one type specifier. Multiple type specifiers on parameters
-can cause runtime errors.
+This rule detects parameters that have multiple type specifiers applied to them. Parameters
+shouldn't have multiple type specifiers. When you apply more than one type attribute to a parameter,
+it can lead to unexpected type coercion or runtime errors.
 
-## How
-
-Ensure each parameter has only 1 type specifier.
+Each parameter should have exactly one type specifier to ensure predictable behavior and type
+safety.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Test-Script
@@ -34,7 +34,7 @@ function Test-Script
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Test-Script

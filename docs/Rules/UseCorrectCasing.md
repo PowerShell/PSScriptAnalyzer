@@ -1,6 +1,6 @@
 ---
-description: Use exact casing of cmdlet/function/parameter name.
-ms.date: 03/19/2025
+description: Use exact casing for cmdlet names, functions, and parameters
+ms.date: 06/10/2026
 ms.topic: reference
 title: UseCorrectCasing
 ---
@@ -10,16 +10,41 @@ title: UseCorrectCasing
 
 ## Description
 
-This is a style/formatting rule. PowerShell is case insensitive wherever possible, so the casing of
-cmdlet names, parameters, keywords and operators doesn't matter. This rule nonetheless ensures
-consistent casing for clarity and readability. Using lowercase keywords helps distinguish them from
-commands. Using lowercase operators helps distinguish them from parameters.
+This rule detects inconsistent casing in cmdlet names, parameters, type names, keywords, and
+operators. PowerShell is case-insensitive wherever possible, so the casing of cmdlet names,
+parameters, keywords, and operators don't affect functionality.
 
-## How
+However, this rule ensures consistent casing for clarity and readability. Using lowercase keywords
+helps distinguish them from commands, while using lowercase operators helps distinguish them from
+parameters.
+
+To follow this rule:
 
 - Use exact casing for type names.
-- Use exact casing of the cmdlet and its parameters.
+- Use exact casing for cmdlet and parameter names.
 - Use lowercase for language keywords and operators.
+
+## Example
+
+### Noncompliant
+
+```powershell
+ForEach ($file in Get-childitem -Recurse) {
+    $file.Extension -EQ '.txt'
+}
+
+invoke-command { 'foo' } -runasadministrator
+```
+
+### Compliant
+
+```powershell
+foreach ($file in Get-ChildItem -Recurse) {
+    $file.Extension -eq '.txt'
+}
+
+Invoke-Command { 'foo' } -RunAsAdministrator
+```
 
 ## Configuration
 
@@ -36,40 +61,22 @@ Rules = @{
 
 ## Parameters
 
-### Enable: bool (Default value is `$false`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks code against this rule. It accepts a boolean
+value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-### CheckCommands: bool (Default value is `$true`)
+### CheckCommands
 
-If true, require the case of all command and parameter names to match their canonical casing.
+This parameter controls whether ScriptAnalyzer checks that the casing of all command and parameter
+names matches their canonical casing. It accepts a boolean value. The default value is `$true`.
 
-### CheckKeyword: bool (Default value is `$true`)
+### CheckKeyword
 
-If true, require the case of all keywords to be lowercase.
+This parameter controls whether ScriptAnalyzer checks that all language keywords are lowercase. It
+accepts a boolean value. The default value is `$true`.
 
-### CheckOperator: bool (Default value is `$true`)
+### CheckOperator
 
-If true, require the case of all operators to be lowercase. For example: `-eq`, `-ne`, `-gt`
-
-## Examples
-
-### Wrong way
-
-```powershell
-ForEach ($file in Get-childitem -Recurse) {
-    $file.Extension -EQ '.txt'
-}
-
-invoke-command { 'foo' } -runasadministrator
-```
-
-### Correct way
-
-```powershell
-foreach ($file in Get-ChildItem -Recurse) {
-    $file.Extension -eq '.txt'
-}
-
-Invoke-Command { 'foo' } -RunAsAdministrator
-```
+This parameter controls whether ScriptAnalyzer checks that all operators are lowercase. For example,
+`-eq`, `-ne`, and `-gt`. It accepts a boolean value. The default value is `$true`.
