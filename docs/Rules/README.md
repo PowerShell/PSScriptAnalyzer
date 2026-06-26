@@ -6,15 +6,10 @@ title: List of PSScriptAnalyzer rules
 ---
 # PSScriptAnalyzer Rules
 
-The PSScriptAnalyzer module includes the following built-in rule definitions. You can disable most
-configurable rules by setting the `Enable` property to `$false` in a custom rule configuration file.
-Rules listed as _Always enabled_ can't be disabled using configuration. However, there are two ways
-to avoid rules you don't want to use:
-
  The PSScriptAnalyzer module includes the following built-in rule definitions. For rules that
  support settings, you can enable or disable them by setting the `Enable` configuration property in
  a custom settings file. Rules listed as _Always enabled_ don't expose a per-rule `Enable` property.
- There are two way to avoid using these rules:
+ There are two ways to avoid using these rules:
 
 - Create a custom rule configuration file to include only the rules you want or exclude the rules
   you don't want.
