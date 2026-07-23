@@ -6,7 +6,7 @@ title: UseCompatibleSyntax
 ---
 # UseCompatibleSyntax
 
-**Severity Level: Warning**
+**Severity Level: Error**
 
 **Default state: Disabled**
 

@@ -1,12 +1,12 @@
 ---
 description: Use -gt or -ge comparison operators instead of redirection operators
-ms.date: 07/21/2026
+ms.date: 07/23/2026
 ms.topic: reference
 title: PossibleIncorrectUsageOfRedirectionOperator
 ---
 # PossibleIncorrectUsageOfRedirectionOperator
 
-**Severity Level: Information**
+**Severity Level: Warning**
 
 **Default state: Always enabled**
 

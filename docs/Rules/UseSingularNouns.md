@@ -1,6 +1,6 @@
 ---
 description: Use single cmdlet nouns
-ms.date: 07/21/2026
+ms.date: 07/23/2026
 ms.topic: reference
 title: UseSingularNouns
 ---
@@ -68,6 +68,6 @@ boolean value. To disable this rule, set this parameter to `$false`. The default
 
 ### NounAllowList
 
-This parameter specifies which noun commands to exclude from this rule. It accepts a string array.
+This parameter specifies which command nouns to exclude from this rule. It accepts a string array.
 Both `Data` and `Windows` are common false positives and excluded by default. Default values are
 `'Data'` and `'Windows'`.

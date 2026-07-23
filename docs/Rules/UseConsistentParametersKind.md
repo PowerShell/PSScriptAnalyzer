@@ -1,6 +1,6 @@
 ---
 description: Use the same pattern when defining parameters
-ms.date: 07/21/2026
+ms.date: 07/23/2026
 ms.topic: reference
 title: UseConsistentParametersKind
 ---
@@ -54,3 +54,9 @@ Rules = @{
 
 This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
 boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
+
+### ParametersKind
+
+Use this parameter to specify the type of parameter definition pattern that should be used
+consistently across all functions. It accepts a string value, which can be either `Inline` or
+`ParamBlock`. The default value is `ParamBlock`.
