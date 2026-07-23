@@ -43,6 +43,7 @@ function g {
 Rules = @{
     PSUseConsistentParametersKind  = @{
         Enable = $true
+        ParametersKind = 'ParamBlock'
     }
 }
 ```

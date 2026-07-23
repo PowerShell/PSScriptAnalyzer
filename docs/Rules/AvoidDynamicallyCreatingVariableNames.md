@@ -75,5 +75,5 @@ Rules = @{
 - [about_Scopes][01]
 
 <!-- link references -->
-[01]: /powershell/modules/microsoft.powershell.core/about/about_scopes
+[01]: /powershell/module/microsoft.powershell.core/about/about_scopes
 [02]: xref:Microsoft.PowerShell.Utility.New-Variable

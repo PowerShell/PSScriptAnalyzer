@@ -37,7 +37,7 @@ diagnostic record points to the offending text in the file. This is the same obj
 `Invoke-ScriptAnalyzer`, so existing formatting and tooling works by default. When the file is
 valid, the command produces no output.
 
-If you use the **Quiet** parameter, the command only `$true` or `$false` and suppresses all
+If you use the **Quiet** parameter, the command returns only `$true` or `$false` and suppresses all
 diagnostic output.
 
 ## EXAMPLES
