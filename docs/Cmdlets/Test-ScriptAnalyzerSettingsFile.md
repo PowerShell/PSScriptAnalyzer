@@ -1,13 +1,13 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
-ms.date: 04/17/2026
+ms.date: 07/21/2026
 schema: 2.0.0
 ---
-
 # Test-ScriptAnalyzerSettingsFile
 
 ## SYNOPSIS
+
 Validates a PSScriptAnalyzer settings file as a self-contained unit.
 
 ## SYNTAX
@@ -25,19 +25,19 @@ see when given the same file.
 
 The cmdlet verifies that:
 
-- The file can be parsed as a PowerShell data file.
+- The file is parseable as a PowerShell data file
 - All rule names referenced in `IncludeRules`, `ExcludeRules`, and `Rules` correspond to known
-  rules (wildcard patterns are skipped).
-- All `Severity` values are valid.
-- Rule option names in the `Rules` section correspond to actual configurable properties.
-- Rule option values that are constrained to a set of choices contain a valid value.
+  rules (wildcard patterns are skipped)
+- All `Severity` values are valid
+- Rule option names in the `Rules` section correspond to actual configurable properties
+- Rule option values that are constrained to a set of choices contain a valid value
 
-By default, when problems are found the cmdlet outputs a `DiagnosticRecord` for each one, with the
-source extent pointing to the offending text in the file. This is the same object type returned by
-`Invoke-ScriptAnalyzer`, so existing formatting and tooling works out of the box. When the file is
-valid, no output is produced.
+By default, the cmdlet outputs a `DiagnosticRecord` for each problem found. The source extent in the
+diagnostic record points to the offending text in the file. This is the same object type returned by
+`Invoke-ScriptAnalyzer`, so existing formatting and tooling works by default. When the file is
+valid, the command produces no output.
 
-When `-Quiet` is specified the cmdlet returns only `$true` or `$false` and suppresses all
+If you use the **Quiet** parameter, the command only `$true` or `$false` and suppresses all
 diagnostic output.
 
 ## EXAMPLES
@@ -121,26 +121,18 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ### Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord
 
-Without `-Quiet`, a `DiagnosticRecord` is output for each problem found. Each record includes the
-error message, the source extent (file, line and column), a severity, and the rule name
+Without the **Quiet** parameter, a `DiagnosticRecord` is output for each problem found. Each record
+includes the error message, the source extent (file, line and column), a severity, and the rule name
 `Test-ScriptAnalyzerSettingsFile`. No output is produced when the file is valid.
 
 ### System.Boolean
 
-With `-Quiet`, returns `$true` when the file is valid and `$false` otherwise.
+With the **Quiet** parameter, returns `$true` when the file is valid and `$false` otherwise.
 
 ## NOTES
 
-The cmdlet reads `CustomRulePath`, `RecurseCustomRulePath`, and `IncludeDefaultRules` from the
-settings file so it validates rule names against the same set of rules that `Invoke-ScriptAnalyzer`
-would load. This means the settings file is validated as a self-contained unit without requiring
-extra command-line parameters.
-
-Note: Relative paths in `CustomRulePath` are resolved from the caller's current working directory,
-not from the location of the settings file. This matches `Invoke-ScriptAnalyzer` behaviour.
-
-The `DiagnosticRecord` objects use the same type as `Invoke-ScriptAnalyzer`, so they benefit from
-the same default formatting and can be piped to the same downstream tooling.
+Relative paths in `CustomRulePath` are resolved from the caller's current working directory, not
+from the location of the settings file. This matches `Invoke-ScriptAnalyzer` behaviour.
 
 ## RELATED LINKS
 

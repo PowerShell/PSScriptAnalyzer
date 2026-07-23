@@ -1,6 +1,6 @@
 ---
-description: Use at most a single ValueFromPipeline parameter per parameter set.
-ms.date: 03/20/2026
+description: Use a single ValueFromPipeline parameter per parameter set
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseSingleValueFromPipelineParameter
 ---
@@ -8,21 +8,21 @@ title: UseSingleValueFromPipelineParameter
 
 **Severity Level: Warning**
 
+**Default state: Disabled**
+
 ## Description
 
-Parameter sets should have at most one parameter marked as `ValueFromPipeline = true`.
+This rule detects functions where multiple parameters within the same parameter set are marked as
+accepting pipeline input by value. Parameter sets should have at most one parameter with
+`ValueFromPipeline = true`.
 
-This rule identifies functions where multiple parameters within the same parameter set have
-`ValueFromPipeline` set to `true` (either explicitly or implicitly).
-
-## How
-
-Ensure that only one parameter per parameter set accepts pipeline input by value. If you need
-multiple parameters to accept different types of pipeline input, use separate parameter sets.
+When you need multiple parameters to accept different types of pipeline input, use separate
+parameter sets instead. Each parameter set can have its own single `ValueFromPipeline` parameter,
+but you can't have more than one within the same parameter set.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Process-Data {
@@ -41,8 +41,7 @@ function Process-Data {
 }
 ```
 
-
-### Correct
+### Compliant
 
 ```powershell
 function Process-Data {
@@ -60,10 +59,27 @@ function Process-Data {
 }
 ```
 
+## Configure rule
+
+```powershell
+Rules = @{
+    PSUseSingleValueFromPipelineParameter  = @{
+        Enable = $true
+    }
+}
+```
+
+## Parameters
+
+### Enable
+
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
+
 ## Suppression
 
-To suppress this rule for a specific parameter set, use the `SuppressMessage` attribute with the
-parameter set name:
+This rule is disabled by default. If you have enabled it in your configuration but want to suppress
+it for a specific function, you can use the `SuppressMessage` attribute:
 
 ```powershell
 function Process-Data {
@@ -91,9 +107,9 @@ For the default parameter set, use `'default'` as the suppression target:
 ## Notes
 
 - This rule applies to both explicit `ValueFromPipeline = $true` and implicit `ValueFromPipeline`
-  (which is the same as using `= $true`)
-- Parameters with `ValueFromPipeline=$false` are not flagged by this rule
+  (which is the same as using `= $true`).
+- This rule doesn't flag parameters with `ValueFromPipeline = $false`.
 - The rule correctly handles the default parameter set (`__AllParameterSets`) and named parameter
-  sets
+  sets.
 - Different parameter sets can each have their own single `ValueFromPipeline` parameter without
-  triggering this rule
+  triggering this rule.

@@ -1,6 +1,6 @@
 ---
-description: \'>\' is not a comparison operator. Use \'-gt\' (greater than) or \'-ge\' (greater or equal).
-ms.date: 06/28/2023
+description: Use -gt or -ge comparison operators instead of redirection operators
+ms.date: 07/21/2026
 ms.topic: reference
 title: PossibleIncorrectUsageOfRedirectionOperator
 ---
@@ -8,19 +8,21 @@ title: PossibleIncorrectUsageOfRedirectionOperator
 
 **Severity Level: Information**
 
+**Default state: Always enabled**
+
 ## Description
 
-In many programming languages, the comparison operator for 'greater than' is `>` but `PowerShell`
-uses `-gt` for it and `-ge` (greater or equal) for `>=`. Therefore, it can easily happen that the
-wrong operator is used unintentionally. This rule catches a few special cases where the likelihood
-of that is quite high.
+This rule detects the use of the sequences `>` and `>=` in conditional statements where comparison
+operators are intended. This rule catches instances where `>` or `>=` appears inside `if`, `elseif`,
+`while`, and `do-while` statements, which are almost always unintentional.
 
-The rule looks for usages of `>` or `>=` operators inside `if`, `elseif`, `while` and `do-while`
-statements because this is likely going to be unintentional usage.
+In many programming languages, `>` is the comparison operator for _greater than_, but PowerShell
+uses `-gt` (greater than) and `-ge` (greater or equal) instead. It's easy to accidentally use the
+wrong operator, especially if you're familiar with other languages.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 if ($a > $b)
@@ -29,7 +31,7 @@ if ($a > $b)
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 if ($a -gt $b)
@@ -37,3 +39,16 @@ if ($a -gt $b)
     ...
 }
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[02]: ../using-scriptanalyzer.md

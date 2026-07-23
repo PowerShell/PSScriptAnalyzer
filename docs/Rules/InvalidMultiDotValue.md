@@ -1,6 +1,6 @@
 ---
 description: Invalid unquoted multi-dot value construction
-ms.date: 04/24/2024
+ms.date: 07/21/2026
 ms.topic: reference
 title: InvalidMultiDotValue
 ---
@@ -8,19 +8,20 @@ title: InvalidMultiDotValue
 
 **Severity Level: Error**
 
+**Default state: Disabled**
+
 ## Description
 
 PowerShell doesn't support unquoted literal values with multiple dots (`.`). Any value with two or
-more dots results in `$null`. This rule identifies instances where such values are used, which can
-lead to unexpected behavior or errors in the code.
+more dots results in `$null`, which can lead to unexpected behavior or errors in the code. This rule
+identifies instances where such values are used.
 
-To create values of the intended type, enclose the value in quotes and use type-casting or use type
-constructor methods to create the appropriate object.
-
+To create values with multiple dots you must enclose the value in quotes and use type-casting or use
+type constructor methods to create the appropriate object.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 $version = 1.2.3
@@ -32,9 +33,9 @@ or even:
 $IP = [System.Net.IPAddress]127.0.0.1
 ```
 
-Where both examples will result in `$null` instead of any specific object.
+Where both examples result in `$null` instead of the expected value.
 
-### Correct
+### Compliant
 
 ```powershell
 # Use type-casting with quoted value
@@ -45,7 +46,7 @@ $version = [Version]'1.2.3'
 $version = [Version]::new(1, 2, 3)
 ```
 
-## Configuration
+## Configure rule
 
 ```powershell
 Rules = @{

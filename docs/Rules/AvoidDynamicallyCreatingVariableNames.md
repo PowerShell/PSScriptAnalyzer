@@ -1,6 +1,6 @@
 ---
 description: Avoid dynamic variable names, instead use a hash table or similar dictionary type.
-ms.date: 04/21/2026
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidDynamicallyCreatingVariableNames
 ---
@@ -8,25 +8,22 @@ title: AvoidDynamicallyCreatingVariableNames
 
 **Severity Level: Information**
 
+**Default state: Disabled**
+
 ## Description
 
-Don't create variables with dynamic names. It also makes the code difficult to understand and can
-lead to unexpected behavior if the variable names are not unique or if they collide with existing
-variables. A dynamic name is a name constructed using string concatenation or interpolation.
-This rule checks for the use of `New-Variable` with a dynamic name.
+This rule checks for the use of `New-Variable` with a dynamic name. Don't create variables with
+dynamic names. A dynamic name is a name constructed using string concatenation or interpolation.
+Dynamic names make the code difficult to understand and can lead to unexpected behavior if the
+variable names aren't unique.
 
-> [!NOTE]
-> This rule is not enabled by default. The user needs to enable it through settings.
-
-## How to Fix
-
-Use a hash table or similar dictionary type to store values with dynamic keys. When you require a
+Use a hash table or similar dictionary type to store values with dynamic keys. If you require a
 specific scope, option, or visibility, put the dictionary (hashtable) in that scope and apply the
 appropriate option or visibility.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 'One', 'Two', 'Three' | ForEach-Object -Begin { $i = 1 } -Process {
@@ -35,7 +32,7 @@ appropriate option or visibility.
 $MyTwo # returns 2
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 $My = @{}
@@ -56,7 +53,7 @@ New-Variable -Name My -Value @{} -Option ReadOnly -Scope Script
 $Script:My.Two # returns 2
 ```
 
-## Configuration
+## Configure rule
 
 ```powershell
 Rules = @{
@@ -73,5 +70,10 @@ Rules = @{
   Enable or disable the rule during ScriptAnalyzer invocation.
 
 ## References
-- [New-Variable](xref:Microsoft.PowerShell.Utility.New-Variable)
 
+- [New-Variable][02]
+- [about_Scopes][01]
+
+<!-- link references -->
+[01]: /powershell/modules/microsoft.powershell.core/about/about_scopes
+[02]: xref:Microsoft.PowerShell.Utility.New-Variable

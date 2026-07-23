@@ -9,6 +9,7 @@ schema: 2.0.0
 # Invoke-Formatter
 
 ## SYNOPSIS
+
 Formats a script text based on the input settings or default settings.
 
 ## SYNTAX

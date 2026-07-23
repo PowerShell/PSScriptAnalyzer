@@ -1,6 +1,6 @@
 ---
 description: Changing automatic variables might have undesired side effects
-ms.date: 06/28/2023
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidAssignmentToAutomaticVariable
 ---
@@ -8,28 +8,26 @@ title: AvoidAssignmentToAutomaticVariable
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-PowerShell has built-in variables known as automatic variables. Many of them are read-only and
-PowerShell throws an error when trying to assign an value on those. Other automatic variables should
-only be assigned in certain special cases to achieve a certain effect as a special technique.
+Avoid using automatic variable names in your functions and parameters. This rule detects assignments
+to automatic variables and parameter names that use automatic variable names. PowerShell
+automatically defines variables that store internal state information and manages them on its own.
+Even though you _can_ override many automatic variables, doing so can have unexpected effects for
+users and make your code harder to maintain and debug.
 
-To understand more about automatic variables, see `Get-Help about_Automatic_Variables`.
+Reserve automatic variables for PowerShell's internal use only, and rely on them only to read state
+information.
 
-<!-- TODO
-Ability to suppress was added in https://github.com/PowerShell/PSScriptAnalyzer/pull/1896
-Need documentation for how to configure suppression of this rule.
--->
-
-## How
-
-Use variable names in functions or their parameters that do not conflict with automatic variables.
+To learn more, see [about_Automatic_Variables][01].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
-The variable `$Error` is an automatic variables that exists in the global scope and should therefore
+The variable `$Error` is an automatic variable that exists in the global scope and should therefore
 never be used as a variable or parameter name.
 
 ```powershell
@@ -40,8 +38,22 @@ function foo($Error){ }
 function Get-CustomErrorMessage($ErrorMessage){ $Error = "Error occurred: $ErrorMessage" }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Get-CustomErrorMessage($ErrorMessage){ $FinalErrorMessage = "Error occurred: $ErrorMessage" }
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- Link references -->
+[01]: /powershell/module/microsoft.powershell.core/about/about_automatic_variables
+[02]: ../using-scriptanalyzer.md

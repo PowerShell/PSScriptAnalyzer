@@ -1,6 +1,6 @@
 ---
-description: Use patterns compatible with Constrained Language Mode
-ms.date: 03/20/2026
+description: Use patterns compatible with Constrained Language Mode (CLM)
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseConstrainedLanguageMode
 ---
@@ -8,15 +8,19 @@ title: UseConstrainedLanguageMode
 
 **Severity Level: Warning**
 
+**Default state: Disabled**
+
 ## Description
 
-This rule identifies PowerShell patterns that are restricted or not permitted in Constrained
-Language Mode (CLM).
+This rule detects PowerShell patterns that are restricted or not permitted in Constrained Language
+Mode (CLM). Use it when scripts must remain compatible with restricted PowerShell environments such
+as App Control for Business, AppLocker, or Just Enough Administration (JEA) endpoints. This rule is
+**disabled** by default.
 
-Constrained Language Mode is a PowerShell security feature that restricts:
+CLM is a PowerShell security feature that restricts:
 
 - .NET types that can be used
-- COM objects that can be instantiated
+- Component Object Model (COM) objects that can be instantiated
 - Commands that can be executed
 - Language features that can be used
 
@@ -24,144 +28,43 @@ CLM is commonly used in:
 
 - Application Control environments (Application Control for Business, AppLocker)
 - Just Enough Administration (JEA) endpoints
-- Secure environments requiring additional PowerShell restrictions
+- Secure environments requiring other PowerShell restrictions
 
-Digitally signed scripts from trusted publishers execute in Full Language Mode (FLM) even in CLM
-environments. The rule detects signature blocks (`# SIG # Begin signature block`) and adjusts checks
-accordingly. Most restrictions don't apply to signed scripts, but certain checks (dot-sourcing,
-parameter types, manifest best practices) are always enforced.
-
-> [!IMPORTANT]
-> The rule performs a simple text check for signature blocks and does NOT validate signature
-> authenticity or certificate trust. Actual signature validation is performed by PowerShell at
-> runtime.
-
-## Constrained Language Mode Restrictions
-
-### Unsigned Scripts (Full CLM Checking)
-
-The following are flagged for unsigned scripts:
-
-1. **Add-Type** - Code compilation not permitted
-1. **Disallowed COM Objects** - Only Scripting.Dictionary, Scripting.FileSystemObject,
-   VBScript.RegExp allowed
-1. **Disallowed .NET Types** - Only ~70 allowed types (string, int, hashtable, pscredential, etc.)
-1. **Type Constraints** - On parameters and variables
-1. **Type Expressions** - Static type references like `[Type]::Method()`
-1. **Type Casts** - Converting to disallowed types
-1. **Member Invocations** - Methods/properties on disallowed types
-1. **PowerShell Classes** - `class` keyword not permitted
-1. **XAML/WPF** - Not permitted
-1. **Invoke-Expression** - Restricted
-1. **Dot-Sourcing** - May be restricted depending on the file being sourced
-1. **Module Manifest Wildcards** - Wildcard exports not recommended
-1. **Module Manifest .ps1 Files** - Script modules ending with .ps1 not allowed
-
-Always enforced, even for signed scripts
-
-### Signed Scripts (Selective Checking)
-
-For scripts with signature blocks, only these are checked:
-
-- Dot-sourcing
-- Parameter type constraints
-- Module manifest wildcards (.psd1 files)
-- Module manifest script modules (.psd1 files)
-
-## Configuration
-
-### Basic Configuration
-
-```powershell
-@{
-    Rules = @{
-        PSUseConstrainedLanguageMode = @{
-            Enable = $true
-        }
-    }
-}
-```
-
-### Parameters
-
-#### Enable: bool (Default value is `$false`)
-
-Enable or disable the rule during ScriptAnalyzer invocation. This rule is disabled by default
-because not all scripts need CLM compatibility.
-
-#### IgnoreSignatures: bool (Default value is `$false`)
-
-Control signature detection behavior:
-
-- `$false` (default): Automatically detect signatures. Signed scripts get selective checking,
-  unsigned get full checking.
-- `$true`: Bypass signature detection. ALL scripts get full CLM checking regardless of signature
-  status.
-
-```powershell
-@{
-    Rules = @{
-        PSUseConstrainedLanguageMode = @{
-            Enable = $true
-            IgnoreSignatures = $true  # Enforce full CLM compliance for all scripts
-        }
-    }
-}
-```
-
-Use `IgnoreSignatures = $true` when:
-
-- Auditing signed scripts for complete CLM compatibility
-- Preparing scripts for untrusted environments
-- Enforcing strict CLM compliance organization-wide
-- Development/testing to see all potential issues
-
-## How to Fix
-
-### Replace Add-Type
-
-Use allowed cmdlets or pre-compile assemblies.
-
-### Replace Disallowed COM Objects
-
-Use only allowed COM objects (Scripting.Dictionary, Scripting.FileSystemObject, VBScript.RegExp) or
-PowerShell cmdlets.
-
-### Replace Disallowed Types
-
-Use allowed type accelerators (`[string]`, `[int]`, `[hashtable]`, etc.) or allowed cmdlets instead
-of disallowed .NET types.
-
-### Replace PowerShell Classes
-
-Use `New-Object PSObject` with `Add-Member` or hashtables instead of classes.
+Digitally signed scripts from trusted publishers run in Full Language Mode (FLM), even in CLM
+environments. The rule detects signature blocks (`# SIG # Begin signature block`) and adjusts its
+checks accordingly. Most restrictions don't apply to signed scripts, but some checks are still
+enforced.
 
 > [!IMPORTANT]
-> `[PSCustomObject]@{}` syntax is NOT allowed in CLM because it uses type casting.
+> The rule performs a simple text check for signature blocks and doesn't validate signature
+> authenticity or certificate trust. PowerShell performs actual signature validation at runtime.
 
-### Avoid XAML
+## CLM restriction and remediation reference
 
-Don't use WPF/XAML in CLM-compatible scripts.
+Use the following table for a consolidated view of each CLM restriction, what it means, the
+recommended remediation, and whether checks apply to signed scripts, unsigned scripts, or both.
 
-### Replace Invoke-Expression
-
-Use direct execution (`&`) or safer alternatives.
-
-### Replace Dot-Sourcing
-
-Use modules with Import-Module instead of dot-sourcing when possible.
-
-### Fix Module Manifests
-
-- Replace wildcard exports (`*`) with explicit lists.
-- Use `.psm1` or `.dll` instead of `.ps1` for RootModule/NestedModules.
-- Don't use `ScriptsToProcess`. These scripts are loaded in the caller's scope and are blocked.
+|         Restriction          |                                                                                       What it means                                                                                        |                                                                  Recommended remediation                                                                   |                                             Enforced for                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Add-Type                     | `Add-Type` compiles arbitrary C# code, which isn't permitted in CLM.                                                                                                                       | Use allowed cmdlets, or precompile, sign, and load assemblies.                                                                                             | Unsigned scripts only                                                                                 |
+| Disallowed COM objects       | Only `Scripting.Dictionary`, `Scripting.FileSystemObject`, and `VBScript.RegExp` are allowed. Other COM objects (for example, `Excel.Application`) are flagged.                            | Use one of the allowed COM objects, or replace COM usage with PowerShell cmdlets.                                                                          | Unsigned scripts only                                                                                 |
+| Disallowed .NET types        | Only about 70 .NET and type-accelerator types are allowed. These types include common primitives, selected collections, PowerShell-specific types, utilities, and arrays of allowed types. | Replace disallowed types with allowed accelerators such as `[string]`, `[int]`, and `[hashtable]`, or use cmdlets that avoid direct disallowed type usage. | Parameter type constraints are always enforced; other .NET type checks apply to unsigned scripts only |
+| Type constraints             | Type constraints on parameters and variables are checked for CLM compatibility.                                                                                                            | Use allowed types in constraints, especially in parameter declarations.                                                                                    | Parameter constraints are always enforced; variable constraints are unsigned scripts only             |
+| Type expressions             | Static references such as `[Type]::Method()` are flagged when they use disallowed types.                                                                                                   | Replace with CLM-compatible cmdlet-based patterns or allowed type usage.                                                                                   | Unsigned scripts only                                                                                 |
+| Type casts                   | Casts to disallowed types are flagged.                                                                                                                                                     | Remove the cast or cast to an allowed type.                                                                                                                | Unsigned scripts only                                                                                 |
+| Member invocations           | Method or property calls on disallowed typed objects are flagged.                                                                                                                          | Use allowed types and CLM-compatible cmdlets instead of disallowed typed objects.                                                                          | Unsigned scripts only                                                                                 |
+| PowerShell classes           | The `class` keyword isn't permitted in CLM.                                                                                                                                                | Use `New-Object PSObject` with `Add-Member` or use hashtables. Avoid `[PSCustomObject]@{}` because it uses type casting.                                   | Unsigned scripts only                                                                                 |
+| XAML or WPF                  | XAML or WPF usage isn't permitted in CLM.                                                                                                                                                  | Avoid XAML and WPF in CLM-compatible scripts.                                                                                                              | Unsigned scripts only                                                                                 |
+| Invoke-Expression            | `Invoke-Expression` is restricted in CLM.                                                                                                                                                  | Use direct invocation (`&`) or safer alternatives.                                                                                                         | Unsigned scripts only                                                                                 |
+| Dot-sourcing                 | Dot-sourcing can be restricted depending on the source location.                                                                                                                           | Prefer modules and `Import-Module` over dot-sourcing where possible.                                                                                       | All scripts (signed and unsigned)                                                                     |
+| Module manifest wildcards    | Wildcards in `FunctionsToExport`, `CmdletsToExport`, `AliasesToExport`, or `VariablesToExport` aren't recommended and can be blocked in CLM contexts.                                      | Replace `*` with explicit export lists.                                                                                                                    | All `.psd1` files (signed and unsigned)                                                               |
+| Module manifest `.ps1` files | Attempts to use `.ps1` for `RootModule`, `ModuleToProcess`, or `NestedModules` isn't CLM-friendly.                                                                                         | Use `.psm1` (script module) or `.dll` (binary module). Avoid `ScriptsToProcess`.                                                                           | All `.psd1` files (signed and unsigned)                                                               |
 
 ## Examples
 
-### Example 1: Add-Type
+### Add-Type
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 Add-Type -TypeDefinition @"
@@ -171,24 +74,24 @@ Add-Type -TypeDefinition @"
 "@
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
- # Code sign your scripts/modules using proper signing tools
- #   (for example, Set-AuthenticodeSignature or external signing processes)
- # Use allowed cmdlets instead of Add-Type-defined types where possible
- # Or pre-compile, sign, and load the assembly (for example, via Add-Type -Path)
+# Sign your scripts or modules by using appropriate signing tools
+# (for example, Set-AuthenticodeSignature or an external signing process).
+# Use allowed cmdlets instead of Add-Type-defined types where possible.
+# Or precompile, sign, and load the assembly (for example, by using Add-Type -Path).
 ```
 
-### Example 2: COM Objects
+### COM objects
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 $excel = New-Object -ComObject Excel.Application
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
 # Use allowed COM object
@@ -198,9 +101,9 @@ $dict = New-Object -ComObject Scripting.Dictionary
 Import-Excel -Path $file  # From ImportExcel module
 ```
 
-### Example 3: Disallowed Types
+### Disallowed types
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 # Type constraint and member invocation flagged
@@ -214,7 +117,7 @@ function Download-File {
 $data = $client.DownloadData($url)
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
 # Use allowed cmdlets
@@ -230,9 +133,9 @@ function Process-Text {
 }
 ```
 
-### Example 4: PowerShell Classes
+### PowerShell classes
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 class MyClass {
@@ -249,7 +152,7 @@ $obj = [PSCustomObject]@{
 }
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
 # Option 1: New-Object PSObject with Add-Member
@@ -270,9 +173,9 @@ $obj = @{
 }
 ```
 
-### Example 5: Module Manifests
+### Module manifests
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 @{
@@ -283,7 +186,7 @@ $obj = @{
 }
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
 @{
@@ -297,16 +200,16 @@ $obj = @{
 }
 ```
 
-### Example 6: Array Types
+### Array types
 
-#### Wrong
+#### Noncompliant
 
 ```powershell
 # Disallowed type in array
 param([System.Net.WebClient[]]$Clients)
 ```
 
-#### Correct
+#### Compliant
 
 ```powershell
 # Allowed types in arrays are fine
@@ -315,92 +218,62 @@ param([int[]]$Numbers)
 param([hashtable[]]$Configuration)
 ```
 
-## Detailed Restrictions
+## Configure rule
 
-### 1. Add-Type
+```powershell
+@{
+    Rules = @{
+        PSUseConstrainedLanguageMode = @{
+            Enable = $true
+        }
+    }
+}
+```
 
-`Add-Type` allows compiling arbitrary C# code and isn't permitted in CLM.
+## Parameters
 
-**Enforced For**: Unsigned scripts only
+### Enable
 
-### 2. COM Objects
+This parameter controls whether ScriptAnalyzer checks code against this rule. It accepts a boolean
+value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-Only three COM objects are allowed:
+### IgnoreSignatures
 
-- `Scripting.Dictionary`
-- `Scripting.FileSystemObject`
-- `VBScript.RegExp`
+This parameter controls how the rule handles signature detection. It accepts a boolean value. The
+default value is `$false`.
 
-All others (Excel.Application, WScript.Shell, etc.) are flagged.
+When this parameter is set to `$false`, ScriptAnalyzer automatically detects whether a script is
+signed. Signed scripts get selective CLM checking, and unsigned scripts get full CLM checking.
 
-**Enforced For**: Unsigned scripts only
+When this parameter is set to `$true`, ScriptAnalyzer skips signature detection and applies full CLM
+checking to all scripts, regardless of signature status.
 
-### 3. .NET Types
+The behavior is:
 
-Only ~70 allowed types including:
+- `$false` (default): Automatically detect signatures. Signed scripts receive selective checking.
+  Unsigned scripts receive full checks.
+- `$true`: Bypass signature detection. All scripts get full CLM checking regardless of signature
+  status.
 
-- Primitives: `string`, `int`, `bool`, `byte`, `char`, `datetime`, `decimal`, `double`, etc.
-- Collections: `hashtable`, `array`, `arraylist`
-- PowerShell: `pscredential`, `psobject`, `securestring`
-- Utilities: `regex`, `guid`, `version`, `uri`, `xml`
-- Arrays: `string[]`, `int[][]`, etc. (array of any allowed type)
+```powershell
+@{
+    Rules = @{
+        PSUseConstrainedLanguageMode = @{
+            Enable = $true
+            IgnoreSignatures = $true  # Enforce full CLM compliance for all scripts
+        }
+    }
+}
+```
 
-The rule checks type usage in:
+Use `IgnoreSignatures = $true` when:
 
-- Parameter type constraints (**always enforced, even for signed scripts**)
-- Variable type constraints
-- New-Object -TypeName
-- Type expressions (`[Type]::Method()`)
-- Type casts (`[Type]$variable`)
-- Member invocations on typed variables
+- Auditing signed scripts for complete CLM compatibility
+- Preparing scripts for untrusted environments
+- Enforcing strict CLM compliance organization-wide
+- During development and testing, to see all potential issues
 
-**Enforced For**: Parameter constraints always; others unsigned only
-
-### 4. PowerShell Classes
-
-The `class` keyword is not permitted. Use `New-Object PSObject` with `Add-Member` or hashtables.
-
-**Note**: `[PSCustomObject]@{}` is also not allowed because it uses type casting.
-
-**Enforced For**: Unsigned scripts only
-
-### 5. XAML/WPF
-
-XAML and WPF are not permitted in CLM.
-
-**Enforced For**: Unsigned scripts only
-
-### 6. Invoke-Expression
-
-`Invoke-Expression` is restricted in CLM.
-
-**Enforced For**: Unsigned scripts only
-
-### 7. Dot-Sourcing
-
-Dot-sourcing (`. $PSScriptRoot\script.ps1`) may be restricted depending on source location.
-
-**Enforced For**: ALL scripts (unsigned and signed)
-
-### 8. Module Manifest Best Practices
-
-#### Wildcard Exports
-
-Don't use `*` in: `FunctionsToExport`, `CmdletsToExport`, `AliasesToExport`, `VariablesToExport`
-
-Use explicit lists for security and clarity.
-
-**Enforced For**: ALL .psd1 files (unsigned and signed)
-
-#### Script Module Files
-
-Don't use `.ps1` files in: `RootModule`, `ModuleToProcess`, `NestedModules`
-
-Use `.psm1` (script modules) or `.dll` (binary modules) for better performance and compatibility.
-
-**Enforced For**: ALL .psd1 files (unsigned and signed)
-
-## More Information
+## See also
 
 - [About Language Modes][01]
 - [PowerShell Constrained Language Mode][03]
@@ -408,7 +281,7 @@ Use `.psm1` (script modules) or `.dll` (binary modules) for better performance a
 - [PowerShell Constrained Language Mode and the Dot-Source Operator][02]
 
 <!-- link references -->
-[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_language_modes
+[01]: /powershell/module/microsoft.powershell.core/about/about_language_modes
 [02]: https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode-and-the-dot-source-operator/
 [03]: https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode/
 [04]: https://devblogs.microsoft.com/powershell/powershell-module-function-export-in-constrained-language/

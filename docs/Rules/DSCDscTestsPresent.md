@@ -1,6 +1,6 @@
 ---
-description: Dsc tests are present
-ms.date: 06/28/2023
+description: DSC tests are present
+ms.date: 07/21/2026
 ms.topic: reference
 title: DSCDscTestsPresent
 ---
@@ -8,25 +8,26 @@ title: DSCDscTestsPresent
 
 **Severity Level: Information**
 
+**Default state: Always enabled**
+
 ## Description
 
-Checks that DSC tests for given resource are present.
+This rule detects if Desired State Configuration (DSC) tests for a given resource are present.
 
-## How
+To fix a violation of this rule, you must ensure that the `Tests` directory is present for:
 
-To fix a violation of this rule, please make sure `Tests` directory is present:
+- Non-class based resources, it should exist at the same folder level as the `DSCResources`
+  folder.
+- Class based resources, it should be at the same folder level as the resource's `.psm1` file.
 
-- For non-class based resources it should exist at the same folder level as `DSCResources` folder.
-- For class based resources it should be present at the same folder level as resource `.psm1` file.
-
-The `Tests` folder should contain test script for given resource. The filename should contain the
-resource's name.
+The `Tests` folder must contain a test script for the given resource. The filename should include
+the resource's name.
 
 ## Example
 
 ### Non-class based resource
 
-Let's assume we have non-class based resource with a following file structure:
+Let's assume we have non-class based resource with the following file structure:
 
 - xAzure
   - DSCResources
@@ -34,7 +35,7 @@ Let's assume we have non-class based resource with a following file structure:
       - MSFT_xAzureSubscription.psm1
       - MSFT_xAzureSubscription.schema.mof
 
-In this case, to fix this warning, we should add tests in a following way:
+In this case, to fix this warning, add tests in the following way:
 
 - xAzure
   - DSCResources
@@ -46,16 +47,29 @@ In this case, to fix this warning, we should add tests in a following way:
 
 ### Class based resource
 
-Let's assume we have class based resource with a following file structure:
+Let's assume we have class based resource with the following file structure:
 
 - MyDscResource
   - MyDscResource.psm1
   - MyDscResource.psd1
 
-In this case, to fix this warning, we should add tests in a following way:
+In this case, to fix this warning, add tests in the following way:
 
 - MyDscResource
   - MyDscResource.psm1
   - MyDscResource.psd1
   - Tests
     - MyDscResource_Tests.ps1
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[02]: ../using-scriptanalyzer.md

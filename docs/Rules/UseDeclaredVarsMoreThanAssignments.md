@@ -1,6 +1,6 @@
 ---
-description: Extra Variables
-ms.date: 03/06/2024
+description: Detect variables that are assigned but never used
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseDeclaredVarsMoreThanAssignments
 ---
@@ -8,21 +8,17 @@ title: UseDeclaredVarsMoreThanAssignments
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-Variables that are assigned but not used are not needed.
-
-> [!NOTE]
-> For this rule, the variable must be used within the same scriptblock that it was declared or it
-> won't be considered to be 'used'.
-
-## How
-
-Remove the variables that are declared but not used.
+This rule detects variables that are assigned a value but never used. A variable counts as "used"
+only when code references it in the same script block as its assignment. Variables that exist only
+as assignments add noise to the code and should be removed.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Test
@@ -33,7 +29,7 @@ function Test
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Test
@@ -43,13 +39,13 @@ function Test
 }
 ```
 
-### Special cases
+## Special cases
 
 The following examples trigger the **PSUseDeclaredVarsMoreThanAssignments** warning. This behavior
-is a limitation of the rule. There is no way to avoid these false positive warnings.
+is a limitation of the rule. There's no way to avoid these false positive warnings.
 
-In this case, the warning is triggered because `$bar` is not used within the scriptblock where it
-was defined.
+In this case, the warning is triggered because `$bar` isn't used within the scriptblock where it was
+defined.
 
 ```powershell
 $foo | ForEach-Object {
@@ -70,3 +66,16 @@ the `Write-Host` command.
 $errResult = $null
 Write-Host 'Ugh:' -ErrorVariable errResult
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[02]: ../using-scriptanalyzer.md

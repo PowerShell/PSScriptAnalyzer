@@ -1,6 +1,6 @@
 ---
-description: Avoid Using Invoke-Expression
-ms.date: 06/28/2023
+description: Avoid using Invoke-Expression
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidUsingInvokeExpression
 ---
@@ -8,28 +8,41 @@ title: AvoidUsingInvokeExpression
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-Care must be taken when using the `Invoke-Expression` command. The `Invoke-Expression` executes the
-specified string and returns the results.
+This rule detects the use of the `Invoke-Expression` command, which poses security risks in your
+scripts and applications. You must be careful when using the `Invoke-Expression` command. It
+executes the specified string and returns the results.
 
-Code injection into your application or script can occur if the expression passed as a string
-includes any data provided from the user.
-
-## How
-
-Remove the use of `Invoke-Expression`.
+Code injection vulnerabilities can occur if the expression passed as a string includes user-provided
+data, making your application susceptible to malicious attacks. Avoid using `Invoke-Expression`
+whenever possible.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 Invoke-Expression 'Get-Process'
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Get-Process
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- Link references -->
+[02]: ../using-scriptanalyzer.md

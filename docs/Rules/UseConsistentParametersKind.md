@@ -1,6 +1,6 @@
 ---
-description: Use the same pattern when defining parameters.
-ms.date: 03/20/2026
+description: Use the same pattern when defining parameters
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseConsistentParametersKind
 ---
@@ -8,62 +8,48 @@ title: UseConsistentParametersKind
 
 **Severity Level: Warning**
 
+**Default state: Disabled**
+
 ## Description
 
-All functions should use the same pattern when defining parameters. Possible pattern types are:
-
-1. `Inline`
-
-   ```powershell
-   function f([Parameter()]$FirstParam) {
-       return
-   }
-   ```
-
-1. `ParamBlock`
-
-   ```powershell
-   function f {
-       param([Parameter()]$FirstParam)
-       return
-   }
-   ```
-
-In simple scenarios, both function definitions shown are considered to be equal. The purpose of this
-rule is to enforce consistent code style across the codebase.
-
-## How to Fix
-
-Rewrite function so it defines parameters as specified in the rule
+This rule detects when functions don't consistently use the same pattern for defining parameters.
+All functions should use the same parameter definition pattern to enforce consistent code style
+across the codebase. Rewrite any function that doesn't match the configured parameter definition
+kind. In simple scenarios, both the `Inline` and `ParamBlock` function definition patterns are
+functionally equivalent.
 
 ## Example
 
-When the rule sets parameters definition kind to `Inline`:
+### Noncompliant
 
 ```powershell
-# Correct
 function f([Parameter()]$FirstParam) {
     return
 }
+```
 
-# Incorrect
+### Compliant
+
+```powershell
 function g {
     param([Parameter()]$FirstParam)
     return
 }
 ```
 
-When the rule sets parameters definition kind to `ParamBlock`:
+## Configure rule
 
 ```powershell
-# Incorrect
-function f([Parameter()]$FirstParam) {
-    return
-}
-
-# Correct
-function g {
-    param([Parameter()]$FirstParam)
-    return
+Rules = @{
+    PSUseConsistentParametersKind  = @{
+        Enable = $true
+    }
 }
 ```
+
+## Parameters
+
+### Enable
+
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
