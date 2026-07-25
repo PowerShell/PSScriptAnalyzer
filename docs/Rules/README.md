@@ -48,7 +48,7 @@ title: List of PSScriptAnalyzer rules
 | [AvoidUsingEmptyCatchBlock][28]                    | Warning     | Always enabled |              |
 | [AvoidUsingInvokeExpression][29]                   | Warning     | Always enabled |              |
 | [AvoidUsingPlainTextForPassword][30]               | Warning     | Always enabled |              |
-| [AvoidUsingPositionalParameters][31]               | Information | Enabled        |              |
+| [AvoidUsingPositionalParameters][31]               | Information |    Enabled     |     Yes      |
 | [AvoidUsingUsernameAndPasswordParams][32]          | Error       | Always enabled |              |
 | [AvoidUsingWMICmdlet][33]                          | Warning     | Always enabled |              |
 | [AvoidUsingWriteHost][34]                          | Warning     | Always enabled |              |
@@ -59,7 +59,7 @@ title: List of PSScriptAnalyzer rules
 | [DSCUseIdenticalMandatoryParametersForDSC][39]     | Error       | Always enabled |              |
 | [DSCUseIdenticalParametersForDSC][40]              | Error       | Always enabled |              |
 | [DSCUseVerboseMessageInDSCResource][41]            | Information | Always enabled |              |
-| [InvalidMultiDotValue][42]                         | Error       |    Disabled    |     Yes      |
+| [InvalidMultiDotValue][42]                         | Warning     |    Disabled    |     Yes      |
 | [MisleadingBacktick][43]                           | Warning     | Always enabled |              |
 | [MissingModuleManifestField][44]                   | Warning     | Always enabled |              |
 | [MissingTryBlock][45]                              | Warning     |    Disabled    |     Yes      |
