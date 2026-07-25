@@ -1,12 +1,12 @@
 ---
 description: Invalid unquoted multi-dot value construction
-ms.date: 07/21/2026
+ms.date: 07/24/2026
 ms.topic: reference
 title: InvalidMultiDotValue
 ---
 # InvalidMultiDotValue
 
-**Severity Level: Error**
+**Severity Level: Warning**
 
 **Default state: Disabled**
 
