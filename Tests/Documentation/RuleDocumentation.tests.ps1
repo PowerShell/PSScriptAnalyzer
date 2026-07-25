@@ -30,7 +30,7 @@ Describe "Validate rule documentation files" {
         $linkDefRegex = '^\[(?<ref>[^\]]+)\]:\s*(?<target>\S+)'
         # Any reference-style usage anywhere: ...][ref]...
         $refUsageRegex = '\]\[(?<ref>[^\]]+)\]'
-        $lines = Get-Content 'C:\Git\PS-Src\PSScriptAnalyzer\docs\Rules\README.md'
+        $lines = Get-Content (Join-Path $ruleDocDirectory 'README.md')
         $lineNumber = 0
         foreach ($line in $lines) {
             $lineNumber++
