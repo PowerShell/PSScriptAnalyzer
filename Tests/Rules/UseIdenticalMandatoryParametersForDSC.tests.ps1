@@ -32,7 +32,7 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
         }
 
         # todo add a test to check one violation per function
-        It "Should find a violations" -pending {
+        It "Should find a violations" -Skip {
             $violations.Count | Should -Be 0
         }
     }
