@@ -650,6 +650,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     lhsExtent.EndColumnNumber,
                     equalsExtent.StartColumnNumber,
                     new string(' ', targetColumn - lhsExtent.EndColumnNumber),
+                    lhsExtent.File,
                     string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementError)
                 )
             };
