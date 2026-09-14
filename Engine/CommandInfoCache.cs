@@ -93,6 +93,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
+#if DISABLE_ENGINE_RETRIES
+            return GetCachedCommandInfo(commandName, commandTypes, bypassCache);
+#else
+            try
+            {
+                return GetCachedCommandInfo(commandName, commandTypes, bypassCache);
+            }
+            catch (Exception exception) when (IsGetCommandResolutionException(exception))
+            {
+                // Failed Lazy lookups have already been evicted; never cache an exhausted retry as a miss.
+                return null;
+            }
+#endif
+        }
+
+        private CommandInfo GetCachedCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache)
+        {
             if (string.IsNullOrWhiteSpace(commandName))
             {
                 return null;
@@ -111,12 +128,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             try
             {
-                var commandInfo = lazyCommandInfo.Value;
-                if (commandInfo == null)
-                {
-                    RemoveLookup(key, lazyCommandInfo);
-                }
-                return commandInfo;
+                return lazyCommandInfo.Value;
             }
             catch
             {
@@ -220,7 +232,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #else
                             if (attempt >= MaxLookupAttempts)
                             {
-                                return null;
+                                throw;
                             }
                             PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
                             continue;
@@ -237,7 +249,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #else
                             if (attempt >= MaxLookupAttempts)
                             {
-                                return null;
+                                throw ps.Streams.Error[0].Exception;
                             }
                             PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
                             continue;

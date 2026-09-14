@@ -154,8 +154,9 @@ To install **PSScriptAnalyzer** from source code:
   Command metadata recovery lives in `CommandInfoCache`, not individual rules. Its parameter,
   parameter-set and snapshot APIs return null when metadata is unavailable in normal builds;
   known affinity exceptions get at most one fresh lookup, while other PowerShell metadata
-  exceptions are not retried. Unexpected exceptions still propagate. Null command lookups and
-  command objects with failed metadata are evicted so subsequent calls can recover.
+  exceptions are not retried. Unexpected exceptions still propagate. Exhausted lookup failures
+  and command objects with failed metadata are evicted so subsequent calls can recover;
+  genuine missing commands retain negative caching.
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
 built-in rules.

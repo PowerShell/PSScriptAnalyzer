@@ -238,11 +238,35 @@ New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
         $stats['LookupRetries'] | Should -Be $expectedRetries
     }
 
-    It "does not retain a null command lookup" {
-        [MetadataSnapshotTests]::Parameters($cache, 'Test-LaterMetadata') | Should -BeNullOrEmpty
-        [MetadataSnapshotTests]::Configure($cache, 'function global:Test-LaterMetadata { param($Example) }')
-        [MetadataSnapshotTests]::Parameters($cache, 'Test-LaterMetadata').ContainsKey('Example') | Should -BeTrue
+    It "does not cache an exhausted command resolution failure as a missing command" {
+        [MetadataSnapshotTests]::Configure($cache, @'
+New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
+    function Get-Command {
+        param($Name)
+        Write-Error -Exception ([System.Management.Automation.CommandNotFoundException]::new(
+            'Transient command resolution failure')) -ErrorAction Continue
+    }
+    Export-ModuleMember -Function Get-Command
+} | Import-Module -Force
+'@)
+        if ($retriesEnabled) {
+            [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') | Should -BeNullOrEmpty
+        }
+        else {
+            { [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') } | Should -Throw
+        }
+        [MetadataSnapshotTests]::Configure($cache, 'Remove-Module Microsoft.PowerShell.Core')
+        [MetadataSnapshotTests]::Parameters($cache, 'Write-Output').ContainsKey('InputObject') | Should -BeTrue
         $telemetry.GetMethod('Snapshot').Invoke($null, @())['LookupMisses'] | Should -Be 2
+    }
+
+    It "retains negative caching for genuine missing commands" {
+        1..2 | ForEach-Object {
+            [MetadataSnapshotTests]::Parameters($cache, 'Test-NonexistentMetadataCommand') | Should -BeNullOrEmpty
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupMisses'] | Should -Be 1
+        $stats['LookupRetries'] | Should -Be 0
     }
 
     It "handles invalid PowerShell metadata centrally for <Method>" -TestCases @(
