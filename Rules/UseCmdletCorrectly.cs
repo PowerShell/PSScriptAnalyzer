@@ -148,8 +148,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var mandatoryParameters = new List<ParameterMetadata>();
             try
             {
-                int noOfParamSets = cmdInfo.ParameterSets.Count;
-                foreach (ParameterMetadata pm in cmdInfo.Parameters.Values)
+                int noOfParamSets = Helper.Instance.GetCommandParameterSets(cmdAst.GetCommandName()).Count;
+                foreach (ParameterMetadata pm in Helper.Instance.GetCommandParameters(cmdAst.GetCommandName()).Values)
                 {
                     int count = 0;
 
@@ -253,7 +253,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
 
 
 

@@ -37,7 +37,11 @@ public static class ConcurrentCommandLookup
                 for (int j = 0; j < 100; j++)
                 {
                     helper.GetCommandInfo("Get-Command", bypassCache: true);
-                    var parameters = helper.GetCommandInfo("Get-Item").Parameters;
+                    var parameters = helper.GetCommandParameters("Get-Item");
+                    if (!parameters.ContainsKey("Path") || helper.GetCommandParameterSets("Get-Item").Count == 0)
+                    {
+                        throw new System.InvalidOperationException("Command parameter metadata was not resolved.");
+                    }
                     var exports = helper.GetExportedFunction(ast);
                     if (!exports.SetEquals(new[] { "Test-Example" }))
                     {

@@ -123,7 +123,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     Dictionary<string, ParameterMetadata> availableParameters;
                     try
                     {
-                        availableParameters = commandInfo.Parameters;
+                        availableParameters = Helper.Instance.GetCommandParameters(commandName);
                     }
                     // It's a known issue that objects from PowerShell can have a runspace affinity,
                     // therefore if that happens, we query a fresh object instead of using the cache.
@@ -176,7 +176,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             try
             {
-                return Helper.Instance.GetCommandInfo(commandName, bypassCache: true)?.Parameters;
+                return Helper.Instance.GetCommandParameters(commandName, bypassCache: true);
             }
             catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
             {

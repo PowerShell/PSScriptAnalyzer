@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Linq;
 using System.Management.Automation.Runspaces;
@@ -207,6 +208,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private static bool IsGetCommandResolutionError(ErrorRecord errorRecord)
         {
             return IsGetCommandResolutionException(errorRecord?.Exception);
+        }
+
+        /// <summary>
+        /// Retrieves parameter metadata without allowing other threads to drive the command's runspace.
+        /// </summary>
+        public Dictionary<string, ParameterMetadata> GetCommandParameters(
+            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+        {
+            // Resolve the Lazy value before taking the lock: its factory may already be
+            // running on another thread that needs the same lock to finish the lookup.
+            var commandInfo = GetCommandInfo(commandName, commandTypes, bypassCache);
+            lock (_runspaceLock)
+            {
+                // Dynamic parameter getters execute PowerShell code and mutate runspace state,
+                // even though they look like ordinary property reads.
+                return disposed ? null : commandInfo?.Parameters;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves parameter sets under the same lock as command lookups and dynamic parameter queries.
+        /// </summary>
+        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName)
+        {
+            var commandInfo = GetCommandInfo(commandName);
+            lock (_runspaceLock)
+            {
+                return disposed ? null : commandInfo?.ParameterSets;
+            }
         }
 
         private static bool IsGetCommandResolutionException(Exception exception)

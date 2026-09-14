@@ -402,17 +402,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
                 && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
 
-            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
-
-            if (exportMM == null)
-            {
-                return exportedFunctions;
-            }
-
             // Export-ModuleMember has no dynamic parameters. Resolve names from its static
             // metadata instead of ResolveParameter(), which re-enters the cached command's
             // runspace and races with command lookups and metadata queries on other rule threads.
-            var parameters = exportMM.Parameters;
+            var parameters = GetCommandParameters("export-modulemember", CommandTypes.Cmdlet);
+            if (parameters == null)
+            {
+                return exportedFunctions;
+            }
             IEnumerable<ParameterMetadata> switchParams = parameters.Values.Where(pm => pm.SwitchParameter);
 
             foreach (CommandAst cmdAst in cmdAsts)
@@ -685,6 +682,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null, bool bypassCache = false)
         {
             return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType, bypassCache: bypassCache);
+        }
+
+        /// <summary>
+        /// Retrieves command parameters while serializing access to the cached command's runspace.
+        /// </summary>
+        public Dictionary<string, ParameterMetadata> GetCommandParameters(
+            string name, CommandTypes? commandType = null, bool bypassCache = false)
+        {
+            return CommandInfoCache.GetCommandParameters(name, commandType, bypassCache);
+        }
+
+        /// <summary>
+        /// Retrieves command parameter sets while serializing access to the cached command's runspace.
+        /// </summary>
+        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string name)
+        {
+            return CommandInfoCache.GetCommandParameterSets(name);
         }
 
         /// <summary>
