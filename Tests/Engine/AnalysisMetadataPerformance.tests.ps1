@@ -28,6 +28,24 @@ Describe "Analysis metadata work" {
         $telemetry.GetMethod('Snapshot').Invoke($null, @())['MetadataQueries'] | Should -Be 0
     }
 
+    It "checks static, dynamic and alias parameter casing without a fresh-command fallback" {
+        foreach ($iteration in 1..100) {
+            $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition (
+                'Write-Output -inputobject example; Get-Item -path .; gci -literalpath .'
+            ) -Settings $casingSettings -ErrorAction Stop)
+            $diagnostics.Count | Should -Be 3
+            $diagnostics.SuggestedCorrections.Text | Should -Contain 'InputObject'
+            $diagnostics.SuggestedCorrections.Text | Should -Contain 'Path'
+            $diagnostics.SuggestedCorrections.Text | Should -Contain 'LiteralPath'
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupBypasses'] | Should -Be 0
+        $stats['LookupResolutionFailures'] | Should -Be 0
+        $stats['LookupRetries'] | Should -Be 0
+        $stats['MetadataFailures'] | Should -Be 0
+        $stats['MetadataRetries'] | Should -Be 0
+    }
+
     It "preserves recursive casing checks for parameters nested in script blocks" {
         $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition 'Get-Item { Unknown-SnapshotCommand -path value }' -Settings $casingSettings)
         $diagnostics.Count | Should -Be 1

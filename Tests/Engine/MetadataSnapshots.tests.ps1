@@ -34,6 +34,30 @@ public class SnapshotDynamicCommand : PSCmdlet, IDynamicParameters
     }
 }
 
+[Cmdlet("Test", "SnapshotStatic")]
+public class SnapshotStaticCommand : PSCmdlet
+{
+    [Parameter(Mandatory = true)]
+    public string Example { get; set; }
+}
+
+public class FaultingMetadataInfo : CmdletInfo
+{
+    public static Exception Failure;
+    public static int FailuresRemaining;
+
+    public FaultingMetadataInfo() : base("Test-SnapshotStatic", typeof(SnapshotStaticCommand)) { }
+
+    public override Dictionary<string, ParameterMetadata> Parameters
+    {
+        get
+        {
+            if (FailuresRemaining-- > 0) throw Failure;
+            return base.Parameters;
+        }
+    }
+}
+
 public static class MetadataSnapshotTests
 {
     private static readonly Type CacheType = typeof(Helper).Assembly.GetType(
@@ -50,6 +74,13 @@ public static class MetadataSnapshotTests
 
     public static object Mandatory(IDisposable cache, string name)
         => CacheType.GetMethod("GetMandatoryParameterNames").Invoke(cache, new object[] { name });
+
+    public static object ReadMetadata(IDisposable cache, string name, string method, bool bypass = false)
+    {
+        var arguments = method == "GetCommandParameterSets" || method == "GetMandatoryParameterNames"
+            ? new object[] { name } : new object[] { name, null, bypass };
+        return CacheType.GetMethod(method).Invoke(cache, arguments);
+    }
 
     public static void ConcurrentStatic(IDisposable cache)
     {
@@ -100,6 +131,8 @@ public static class MetadataSnapshotTests
         $cache = [MetadataSnapshotTests]::Create()
         $telemetry.GetMethod('Reset').Invoke($null, @())
         $telemetry.GetProperty('Enabled').SetValue($null, $true)
+        $retriesEnabled = $null -ne $cache.GetType().GetField(
+            'MaxLookupAttempts', [System.Reflection.BindingFlags]'NonPublic, Static')
     }
 
     AfterEach {
@@ -172,5 +205,184 @@ public static class MetadataSnapshotTests
         $cache.Dispose()
         [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') | Should -BeNullOrEmpty
         [MetadataSnapshotTests]::Mandatory($cache, 'Write-Output') | Should -BeNullOrEmpty
+    }
+
+    It "counts injected resolution failures and honors the compiled retry mode" {
+        [MetadataSnapshotTests]::Configure($cache, @'
+New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
+    function Get-Command {
+        [CmdletBinding()]
+        param($Name)
+        Write-Error -Exception ([System.Management.Automation.CommandNotFoundException]::new(
+            'Injected command resolution failure')) -ErrorAction Continue
+    }
+    Export-ModuleMember -Function Get-Command
+} | Import-Module -Force
+'@)
+        $cacheType = $cache.GetType()
+        $lookup = $cacheType.GetMethod('GetCommandInfo')
+        $retryLimit = $cacheType.GetField('MaxLookupAttempts', [System.Reflection.BindingFlags]'NonPublic, Static')
+        if ($null -eq $retryLimit) {
+            { $lookup.Invoke($cache, @('Write-Output', $null, $false)) } |
+                Should -Throw '*Injected command resolution failure*'
+            $expectedFailures = 1
+            $expectedRetries = 0
+        }
+        else {
+            $lookup.Invoke($cache, @('Write-Output', $null, $false)) | Should -BeNullOrEmpty
+            $expectedFailures = $retryLimit.GetRawConstantValue()
+            $expectedRetries = $expectedFailures - 1
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupResolutionFailures'] | Should -Be $expectedFailures
+        $stats['LookupRetries'] | Should -Be $expectedRetries
+    }
+
+    It "does not cache an exhausted command resolution failure as a missing command" {
+        [MetadataSnapshotTests]::Configure($cache, @'
+New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
+    function Get-Command {
+        param($Name)
+        Write-Error -Exception ([System.Management.Automation.CommandNotFoundException]::new(
+            'Transient command resolution failure')) -ErrorAction Continue
+    }
+    Export-ModuleMember -Function Get-Command
+} | Import-Module -Force
+'@)
+        if ($retriesEnabled) {
+            [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') | Should -BeNullOrEmpty
+        }
+        else {
+            { [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') } | Should -Throw
+        }
+        [MetadataSnapshotTests]::Configure($cache, 'Remove-Module Microsoft.PowerShell.Core')
+        [MetadataSnapshotTests]::Parameters($cache, 'Write-Output').ContainsKey('InputObject') | Should -BeTrue
+        $telemetry.GetMethod('Snapshot').Invoke($null, @())['LookupMisses'] | Should -Be 2
+    }
+
+    It "retains negative caching for genuine missing commands" {
+        1..2 | ForEach-Object {
+            [MetadataSnapshotTests]::Parameters($cache, 'Test-NonexistentMetadataCommand') | Should -BeNullOrEmpty
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupMisses'] | Should -Be 1
+        $stats['LookupRetries'] | Should -Be 0
+    }
+
+    It "handles invalid PowerShell metadata centrally for <Method>" -TestCases @(
+        @{ Method = 'GetCommandParameters' }
+        @{ Method = 'GetCommandParameterSets' }
+        @{ Method = 'GetParameterSnapshot' }
+        @{ Method = 'GetMandatoryParameterNames' }
+    ) {
+        param($Method)
+        [MetadataSnapshotTests]::Configure($cache, @'
+function global:Test-InvalidMetadata {
+    param([Parameter(ParameterSetName='A')][Parameter(ParameterSetName='A')]$Example)
+}
+'@)
+        if ($retriesEnabled) {
+            [MetadataSnapshotTests]::ReadMetadata($cache, 'Test-InvalidMetadata', $Method) | Should -BeNullOrEmpty
+        }
+        else {
+            { [MetadataSnapshotTests]::ReadMetadata($cache, 'Test-InvalidMetadata', $Method) } | Should -Throw
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['MetadataFailures'] | Should -Be 1
+        $stats['MetadataRetries'] | Should -Be 0
+
+        [MetadataSnapshotTests]::Configure($cache, 'function global:Test-InvalidMetadata { param([Parameter(Mandatory)]$Example) }')
+        [MetadataSnapshotTests]::ReadMetadata($cache, 'Test-InvalidMetadata', $Method) | Should -Not -BeNullOrEmpty
+    }
+
+    It "returns unavailable native-command metadata without an exception or retry" {
+        $name = if ([Environment]::OSVersion.Platform -eq 'Win32NT') { 'cmd.exe' } else { 'sh' }
+        [MetadataSnapshotTests]::Parameters($cache, $name) | Should -BeNullOrEmpty
+        [MetadataSnapshotTests]::Mandatory($cache, $name) | Should -BeNullOrEmpty
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['MetadataFailures'] | Should -Be 0
+        $stats['MetadataRetries'] | Should -Be 0
+    }
+
+    Context "Runspace affinity recovery" {
+        BeforeEach {
+            [MetadataSnapshotTests]::Configure($cache, @'
+New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
+    function Get-Command { param($Name); [FaultingMetadataInfo]::new() }
+    Export-ModuleMember -Function Get-Command
+} | Import-Module -Force
+'@)
+            [FaultingMetadataInfo]::Failure = [InvalidOperationException]::new('Injected metadata failure')
+            [FaultingMetadataInfo]::FailuresRemaining = 1
+        }
+
+        It "retries <Method> with fresh metadata only in the retry-enabled build" -TestCases @(
+            @{ Method = 'GetCommandParameters' }
+            @{ Method = 'GetParameterSnapshot' }
+            @{ Method = 'GetMandatoryParameterNames' }
+        ) {
+            param($Method)
+            if ($retriesEnabled) {
+                [MetadataSnapshotTests]::ReadMetadata($cache, 'Test-SnapshotStatic', $Method) | Should -Not -BeNullOrEmpty
+            }
+            else {
+                { [MetadataSnapshotTests]::ReadMetadata($cache, 'Test-SnapshotStatic', $Method) } |
+                    Should -Throw '*Injected metadata failure*'
+            }
+            $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+            $stats['MetadataFailures'] | Should -Be 1
+            $stats['MetadataRetries'] | Should -Be ([int]$retriesEnabled)
+            $stats['LookupBypasses'] | Should -Be ([int]$retriesEnabled)
+        }
+
+        It "bounds recovery and does not cache a failed metadata result" {
+            [FaultingMetadataInfo]::Failure = [NullReferenceException]::new('Injected metadata failure')
+            [FaultingMetadataInfo]::FailuresRemaining = 2
+            if ($retriesEnabled) {
+                [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic') | Should -BeNullOrEmpty
+            }
+            else {
+                { [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic') } |
+                    Should -Throw '*Injected metadata failure*'
+            }
+            $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+            $stats['MetadataFailures'] | Should -Be (1 + [int]$retriesEnabled)
+            $stats['MetadataRetries'] | Should -Be ([int]$retriesEnabled)
+            [FaultingMetadataInfo]::FailuresRemaining = 0
+            [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic').ContainsKey('Example') | Should -BeTrue
+            $telemetry.GetMethod('Snapshot').Invoke($null, @())['LookupMisses'] | Should -Be 2
+        }
+
+        It "does not retry an explicitly fresh lookup" {
+            if ($retriesEnabled) {
+                [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic', $true) | Should -BeNullOrEmpty
+            }
+            else {
+                { [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic', $true) } | Should -Throw
+            }
+            $telemetry.GetMethod('Snapshot').Invoke($null, @())['MetadataRetries'] | Should -Be 0
+        }
+
+        It "does not swallow unrelated exceptions" {
+            [FaultingMetadataInfo]::Failure = [ArgumentException]::new('Unexpected metadata failure')
+            { [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic') } |
+                Should -Throw '*Unexpected metadata failure*'
+            $telemetry.GetMethod('Snapshot').Invoke($null, @())['MetadataFailures'] | Should -Be 0
+        }
+
+        It "does not retry metadata operations unsupported by PowerShell" {
+            [FaultingMetadataInfo]::Failure = [System.Management.Automation.PSNotSupportedException]::new(
+                'Unsupported metadata operation')
+            if ($retriesEnabled) {
+                [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic') | Should -BeNullOrEmpty
+            }
+            else {
+                { [MetadataSnapshotTests]::Parameters($cache, 'Test-SnapshotStatic') } |
+                    Should -Throw '*Unsupported metadata operation*'
+            }
+            $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+            $stats['MetadataFailures'] | Should -Be 1
+            $stats['MetadataRetries'] | Should -Be 0
+        }
     }
 }

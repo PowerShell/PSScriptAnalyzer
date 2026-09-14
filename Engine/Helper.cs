@@ -699,7 +699,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Retrieves command parameters while serializing access to the cached command's runspace.
+        /// Retrieves command parameters with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
             string name, CommandTypes? commandType = null, bool bypassCache = false)
@@ -708,21 +708,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Retrieves command parameter sets while serializing access to the cached command's runspace.
+        /// Retrieves command parameter sets with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
         public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string name)
         {
             return CommandInfoCache.GetCommandParameterSets(name);
         }
 
-        /// <summary>Gets detached parameter facts; only static cmdlet metadata is cached.</summary>
+        /// <summary>Gets detached parameter facts or null when unavailable; only static cmdlet metadata is cached.</summary>
         public IReadOnlyDictionary<string, CommandParameterSnapshot> GetCommandParameterSnapshot(
             string name, CommandTypes? commandType = null, bool bypassCache = false)
         {
             return CommandInfoCache.GetParameterSnapshot(name, commandType, bypassCache);
         }
 
-        /// <summary>Gets the mandatory parameter summary under a single runspace lock.</summary>
+        /// <summary>Gets the mandatory parameter summary under a single runspace lock, or null when unavailable.</summary>
         public IReadOnlyList<string> GetMandatoryParameterNames(string name)
         {
             return CommandInfoCache.GetMandatoryParameterNames(name);
