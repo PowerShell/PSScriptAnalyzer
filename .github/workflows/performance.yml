@@ -101,6 +101,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         workload: [powershell, semver]
+        benchmark-source: [upstream, fork, perf, perf-no-retry]
         include:
           - source: upstream
             benchmark-source: upstream
@@ -163,6 +164,12 @@ jobs:
         run: '& "$env:GITHUB_WORKSPACE/harness/tools/installPSResources.ps1"'
 
       - name: Build (Release, PowerShell 7)
+        if: matrix.source != 'perf'
+        working-directory: analyzer
+        run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose'
+
+      - name: Build perf (Release, PowerShell 7, DisableEngineRetries=${{ matrix.disable-engine-retries }})
+        if: matrix.source == 'perf'
         working-directory: analyzer
         run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose -DisableEngineRetries:$${{ matrix.disable-engine-retries }}'
 
@@ -195,6 +202,7 @@ jobs:
               Source = $env:BENCHMARK_SOURCE
               Repository = $env:BENCHMARK_REPOSITORY
               Revision = $revision
+              DisableEngineRetries = $${{ matrix.disable-engine-retries }}
               Workload = $env:BENCHMARK_WORKLOAD
               WorkloadRepository = $workloadRepository
               WorkloadRevision = $env:WORKLOAD_REVISION
@@ -330,8 +338,8 @@ jobs:
               "Each build gets $env:BENCHMARK_REPETITIONS fresh pwsh -NoProfile processes: cold is the first analysis, warm is the immediately following analysis in each process."
               'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
               ''
-              "| Source | Commit | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"
-              "| --- | --- | ---: | ---: | --- | --- |"
+              "| Source | Commit | DisableEngineRetries | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"
+              "| --- | --- | --- | ---: | ---: | --- | --- |"
           )
           foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
               $samples = $measurements[$source]
@@ -339,7 +347,7 @@ jobs:
               $cold = $samples.ColdSeconds | Measure-Object -Minimum -Maximum
               $warm = $samples.WarmSeconds | Measure-Object -Minimum -Maximum
               $marker = if (@($samples | Where-Object Inconsistent).Count) { ' ⚠️' } else { '' }
-              $summary += "| $($samples[0].Repository)@$reference$marker | $($samples[0].Revision) | $($medians[$source].Cold.ToString('F3')) | $($medians[$source].Warm.ToString('F3')) | $($cold.Minimum.ToString('F3'))–$($cold.Maximum.ToString('F3')) | $($warm.Minimum.ToString('F3'))–$($warm.Maximum.ToString('F3')) |"
+              $summary += "| $source ($($samples[0].Repository)@$reference)$marker | $($samples[0].Revision) | $($samples[0].DisableEngineRetries) | $($medians[$source].Cold.ToString('F3')) | $($medians[$source].Warm.ToString('F3')) | $($cold.Minimum.ToString('F3'))–$($cold.Maximum.ToString('F3')) | $($warm.Minimum.ToString('F3'))–$($warm.Maximum.ToString('F3')) |"
           }
           $summary += ''
           if ($report.UpstreamInconsistent) {
@@ -445,7 +453,7 @@ jobs:
           }
           $summary += @(
               ''
-              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf; perf-no-retry = jessehouwing/PSScriptAnalyzer@perf built with -DisableEngineRetries.'
+              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf built with -DisableEngineRetries:$false (retries ON); perf-no-retry = the same perf revision built with -DisableEngineRetries:$true (retries OFF).'
               'Compare timings only within the same OS/workload. Invalid results must not be used for performance comparisons; retried samples may be biased.'
               'Builds run on separate hosts, not a controlled statistical regression test. Per-combination summaries and artifacts retain revisions, ranges, diagnostics, and retry details.'
           )

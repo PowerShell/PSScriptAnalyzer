@@ -97,6 +97,69 @@ Describe 'Performance benchmark diagnostic normalization' -Skip:($PSVersionTable
     }
 }
 
+Describe 'Performance benchmark build matrix' -Skip:($PSVersionTable.PSVersion.Major -lt 7) {
+    BeforeAll {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/workflows/performance.yml') -Raw
+        $matrix = [regex]::Match($workflow, '(?ms)^  benchmark:.*?      matrix:\r?\n(?<matrix>.*?)^    defaults:').Groups['matrix'].Value
+        $builds = [regex]::Matches($workflow, '(?m)^        run: ''(?<command>& .*?/analyzer/build\.ps1.*?)''\r?$')
+        $builds.Count | Should -Be 2
+        $null = New-Item -ItemType Directory -Path (Join-Path $TestDrive 'analyzer') -Force
+        Set-Content -LiteralPath (Join-Path $TestDrive 'analyzer/build.ps1') -Value @'
+[CmdletBinding()]
+param([string]$Configuration, [int]$PSVersion, [switch]$DisableEngineRetries)
+[pscustomobject]@{
+    Configuration = $Configuration
+    PSVersion = $PSVersion
+    RetrySwitchBound = $PSBoundParameters.ContainsKey('DisableEngineRetries')
+    DisableEngineRetries = $DisableEngineRetries.IsPresent
+}
+'@
+    }
+
+    BeforeEach {
+        $savedWorkspace = $env:GITHUB_WORKSPACE
+        $env:GITHUB_WORKSPACE = $TestDrive
+    }
+
+    AfterEach {
+        $env:GITHUB_WORKSPACE = $savedWorkspace
+    }
+
+    It 'crosses all four benchmark sources with both operating systems and workloads' {
+        $matrix | Should -Match '(?m)^        os: \[ubuntu-latest, windows-latest\]'
+        $matrix | Should -Match '(?m)^        workload: \[powershell, semver\]'
+        $matrix | Should -Match '(?m)^        benchmark-source: \[upstream, fork, perf, perf-no-retry\]'
+    }
+
+    It 'maps <Benchmark> to the correct revision and retry setting' -ForEach @(
+        @{ Benchmark = 'upstream'; Source = 'upstream'; Repository = 'PowerShell/PSScriptAnalyzer'; Disabled = 'false' }
+        @{ Benchmark = 'fork'; Source = 'fork'; Repository = 'jessehouwing/PSScriptAnalyzer'; Disabled = 'false' }
+        @{ Benchmark = 'perf'; Source = 'perf'; Repository = 'jessehouwing/PSScriptAnalyzer'; Disabled = 'false' }
+        @{ Benchmark = 'perf-no-retry'; Source = 'perf'; Repository = 'jessehouwing/PSScriptAnalyzer'; Disabled = 'true' }
+    ) {
+        $matrix | Should -Match "(?m)^          - source: $Source\r?\n            benchmark-source: $Benchmark\r?\n            repository: $Repository\r?\n            disable-engine-retries: $Disabled\r?$"
+    }
+
+    It 'explicitly binds DisableEngineRetries to <Disabled> for perf builds' -ForEach @(
+        @{ Disabled = 'false'; Expected = $false }
+        @{ Disabled = 'true'; Expected = $true }
+    ) {
+        $command = $builds[1].Groups['command'].Value.Replace('${{ matrix.disable-engine-retries }}', $Disabled)
+        $result = & ([scriptblock]::Create($command))
+        $result.RetrySwitchBound | Should -BeTrue
+        $result.DisableEngineRetries | Should -Be $Expected
+        $result.Configuration | Should -Be 'Release'
+        $result.PSVersion | Should -Be 7
+        $workflow | Should -Match "(?m)^        if: matrix.source == 'perf'\r?$"
+    }
+
+    It 'does not pass the perf-only retry switch to baseline builds' {
+        $result = & ([scriptblock]::Create($builds[0].Groups['command'].Value))
+        $result.RetrySwitchBound | Should -BeFalse
+        $workflow | Should -Match "(?m)^        if: matrix.source != 'perf'\r?$"
+    }
+}
+
 Describe 'Performance comparison metrics policy' -Skip:($PSVersionTable.PSVersion.Major -lt 7) {
     BeforeAll {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/workflows/performance.yml') -Raw
@@ -115,9 +178,10 @@ Describe 'Performance comparison metrics policy' -Skip:($PSVersionTable.PSVersio
         $env:GITHUB_STEP_SUMMARY = Join-Path $TestDrive 'summary.txt'
         $resultDirectory = Join-Path $TestDrive 'results'
         $null = New-Item -ItemType Directory -Path $resultDirectory -Force
-        foreach ($build in 'upstream', 'fork', 'perf') {
+        foreach ($build in 'upstream', 'fork', 'perf', 'perf-no-retry') {
             @{
                 Revision = $build
+                DisableEngineRetries = $build -eq 'perf-no-retry'
                 MetricsRequested = $false
                 MetricsAvailable = $build -eq 'perf'
                 ColdDiagnosticCount = 1
@@ -144,13 +208,17 @@ Describe 'Performance comparison metrics policy' -Skip:($PSVersionTable.PSVersio
         { & $comparisonScript } | Should -Not -Throw
         $report = Get-Content -LiteralPath (Join-Path $resultDirectory 'comparison.json') -Raw | ConvertFrom-Json
         $report.FindingsVerified | Should -BeTrue
-        $report.Measurements.Count | Should -Be 3
+        $report.Measurements.Count | Should -Be 4
+        $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
+        $text | Should -Match '\| perf \(.*\| False \|'
+        $text | Should -Match '\| perf-no-retry \(.*\| True \|'
     }
 
     It 'rejects metrics-enabled <Source> samples' -ForEach @(
         @{ Source = 'upstream' }
         @{ Source = 'fork' }
         @{ Source = 'perf' }
+        @{ Source = 'perf-no-retry' }
     ) {
         $path = Join-Path $resultDirectory "$Source-1.json"
         $sample = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
@@ -181,7 +249,7 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
                 $null = New-Item -ItemType Directory -Path $directory -Force
                 @{
                     FindingsVerified = $true
-                    Measurements = @(foreach ($source in 'upstream', 'fork', 'perf') {
+                    Measurements = @(foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
                         foreach ($seconds in 9.0, 1.0, 2.0) {
                             @{
                                 Source = $source
@@ -202,13 +270,13 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         $env:GITHUB_STEP_SUMMARY = $savedSummary
     }
 
-    It 'shows all twelve combinations with median rather than mean timings' {
+    It 'shows all sixteen combinations with median rather than mean timings' {
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '(?m)^\| (ubuntu|windows)-latest \|').Count | Should -Be 12
+        [regex]::Matches($text, '(?m)^\| (ubuntu|windows)-latest \|').Count | Should -Be 16
         foreach ($os in 'ubuntu-latest', 'windows-latest') {
             foreach ($workload in 'powershell', 'semver') {
-                foreach ($source in 'upstream', 'fork', 'perf') {
+                foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
                     $text | Should -Match ([regex]::Escape("| $os | $workload | $source | 2.000 | 1.000 | Verified |"))
                 }
             }
@@ -219,15 +287,15 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         Remove-Item -LiteralPath $comparisonPath
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 3
-        [regex]::Matches($text, '\| Verified \|').Count | Should -Be 9
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 4
+        [regex]::Matches($text, '\| Verified \|').Count | Should -Be 12
     }
 
     It 'still produces the full table when no comparisons are available' {
         Remove-Item -LiteralPath (Join-Path $TestDrive 'comparisons') -Recurse
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 12
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 16
     }
 
     It 'marks invalid comparisons and retried samples' {
@@ -237,7 +305,7 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $comparisonPath
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, 'INVALID: diagnostics differ').Count | Should -Be 3
+        [regex]::Matches($text, 'INVALID: diagnostics differ').Count | Should -Be 4
         $text | Should -Match 'upstream \| 2.000 \| 1.000 \| INVALID: diagnostics differ; ⚠️ retried samples'
     }
 }
