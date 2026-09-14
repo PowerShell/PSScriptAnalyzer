@@ -885,6 +885,18 @@
   <data name="UseCompatibleTypesTypeAcceleratorError" xml:space="preserve">
     <value>The type accelerator '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
   </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesName" xml:space="preserve">
+    <value>AvoidDynamicallyCreatingVariableNames</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesCommonName" xml:space="preserve">
+    <value>Avoid dynamically creating variable names</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesDescription" xml:space="preserve">
+    <value>Do not create variables with a dynamic name, as this might introduce conflicts with other variables and is difficult to maintain.</value>
+  </data>
+  <data name="AvoidDynamicallyCreatingVariableNamesError" xml:space="preserve">
+    <value>'{0}' is a dynamic variable name. Please avoid creating variables with a dynamic name</value>
+  </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functions and aliases</value>
   </data>
@@ -956,6 +968,18 @@
   </data>
   <data name="AvoidSemicolonsAsLineTerminatorsError" xml:space="preserve">
     <value>Line ends with a semicolon</value>
+  </data>
+  <data name="AvoidUsingArrayListCommonName" xml:space="preserve">
+    <value>Avoid using the ArrayList class</value>
+  </data>
+  <data name="AvoidUsingArrayListDescription" xml:space="preserve">
+      <value>Avoid using the ArrayList class in PowerShell scripts. Consider using generic collections or fixed arrays instead.</value>
+  </data>
+  <data name="AvoidUsingArrayListName" xml:space="preserve">
+      <value>AvoidUsingArrayList</value>
+  </data>
+  <data name="AvoidUsingArrayListError" xml:space="preserve">
+      <value>The ArrayList class is used in '{0}'. Consider using a generic collection or a fixed array instead.</value>
   </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
@@ -1244,6 +1268,21 @@
   </data>
   <data name="AvoidUsingAllowUnencryptedAuthenticationError" xml:space="preserve">
     <value>The insecure AllowUnencryptedAuthentication switch was used. This should be avoided except for compatibility with legacy systems.</value>
+  </data>
+  <data name="InvalidMultiDotValueCommonName" xml:space="preserve">
+    <value>Invalid Multi-Dot Value</value>
+  </data>
+  <data name="InvalidMultiDotValueDescription" xml:space="preserve">
+    <value>PowerShell does not support an implicit value with multiple dots. Any unquoted value with 2 or more dots will result in `$null`.</value>
+  </data>
+  <data name="InvalidMultiDotValueName" xml:space="preserve">
+    <value>InvalidMultiDotValue</value>
+  </data>
+  <data name="InvalidMultiDotValueError" xml:space="preserve">
+    <value>The unquoted '{0}' expression is not a valid syntax. Types with multiple dots need to be constructed from either a quoted string or individual components.</value>
+  </data>
+  <data name="InvalidMultiDotValueCorrectionDescription" xml:space="preserve">
+    <value>Quote the value that contains multiple dots</value>
   </data>
   <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
     <value>AvoidUsingAllowUnencryptedAuthentication</value>
