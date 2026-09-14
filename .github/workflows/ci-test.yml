@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, macos-latest, ubuntu-latest ]
+        disable-engine-retries: [ false, true ]
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_NOLOGO: true
@@ -32,7 +33,7 @@ jobs:
         shell: pwsh
 
       - name: Build
-        run: ./build.ps1 -Configuration Release -All -Verbose
+        run: ./build.ps1 -Configuration Release -All -Verbose -DisableEngineRetries:$${{ matrix.disable-engine-retries }}
         shell: pwsh
 
       - name: Package
@@ -73,12 +74,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PSScriptAnalyzer-package-${{ matrix.os }}
+          name: PSScriptAnalyzer-package-${{ matrix.os }}-disable-retries-${{ matrix.disable-engine-retries }}
           path: out/**/*.nupkg
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PSScriptAnalyzer-tests-${{ matrix.os }}
+          name: PSScriptAnalyzer-tests-${{ matrix.os }}-disable-retries-${{ matrix.disable-engine-retries }}
           path: testResults.xml

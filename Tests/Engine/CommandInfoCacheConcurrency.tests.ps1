@@ -7,6 +7,8 @@ Describe "Concurrent command lookups" {
         # Helper.Instance before that would install a helper without a command invocation context,
         # which breaks every later analysis in this process.
         $null = Invoke-ScriptAnalyzer -ScriptDefinition 'Get-Item -Path .'
+        $telemetry = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper].Assembly.GetType(
+            'Microsoft.Windows.PowerShell.ScriptAnalyzer.PerformanceTelemetry')
 
         # The concurrency driver is written in C# so that the lookups really do run on separate
         # threads. Invoking a PowerShell script block on a thread pool thread would introduce
@@ -36,7 +38,10 @@ public static class ConcurrentCommandLookup
             {
                 for (int j = 0; j < 100; j++)
                 {
-                    helper.GetCommandInfo("Get-Command", bypassCache: true);
+                    if (helper.GetCommandInfo("Get-Command", bypassCache: true)?.Name != "Get-Command")
+                    {
+                        throw new System.InvalidOperationException("Get-Command was not resolved.");
+                    }
                     var parameters = helper.GetCommandParameters("Get-Item");
                     if (!parameters.ContainsKey("Path") || helper.GetCommandParameterSets("Get-Item").Count == 0)
                     {
@@ -82,6 +87,18 @@ public static class ConcurrentCommandLookup
 '@
     }
 
+    BeforeEach {
+        $telemetry.GetMethod('Reset').Invoke($null, @())
+        $telemetry.GetProperty('Enabled').SetValue($null, $true)
+    }
+
+    AfterEach {
+        $telemetry.GetProperty('Enabled').SetValue($null, $false)
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupResolutionFailures'] | Should -Be 0
+        $stats['LookupRetries'] | Should -Be 0
+    }
+
     It "resolves commands from several threads without failing" {
         $commandNames = @(
             'Get-ChildItem', 'Where-Object', 'ForEach-Object', 'Get-Content', 'Write-Output',
@@ -101,5 +118,11 @@ public static class ConcurrentCommandLookup
 
     It "resolves exported functions while command lookups run concurrently" {
         [ConcurrentCommandLookup]::ResolveExports()
+        $telemetry.GetMethod('Snapshot').Invoke($null, @())['LookupBypasses'] | Should -Be 800
+    }
+
+    It "returns null for unknown commands without retrying" {
+        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetCommandInfo(
+            'Test-NonexistentCommandForRetryVerification', $null, $true) | Should -BeNullOrEmpty
     }
 }

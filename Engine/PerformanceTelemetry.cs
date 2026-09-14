@@ -14,6 +14,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public static bool Enabled { get => enabled; set => enabled = value; }
 
         internal static long LookupMisses, LookupBypasses, MetadataQueries, ManifestValidations;
+        internal static long LookupResolutionFailures, LookupRetries;
         private static long lockWaitTicks, lockHoldTicks;
 
         internal static void Increment(ref long counter)
@@ -29,6 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             Interlocked.Exchange(ref LookupMisses, 0);
             Interlocked.Exchange(ref LookupBypasses, 0);
+            Interlocked.Exchange(ref LookupResolutionFailures, 0);
+            Interlocked.Exchange(ref LookupRetries, 0);
             Interlocked.Exchange(ref MetadataQueries, 0);
             Interlocked.Exchange(ref ManifestValidations, 0);
             Interlocked.Exchange(ref lockWaitTicks, 0);
@@ -41,6 +44,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 { "LookupMisses", Interlocked.Read(ref LookupMisses) },
                 { "LookupBypasses", Interlocked.Read(ref LookupBypasses) },
+                { "LookupResolutionFailures", Interlocked.Read(ref LookupResolutionFailures) },
+                { "LookupRetries", Interlocked.Read(ref LookupRetries) },
                 { "MetadataQueries", Interlocked.Read(ref MetadataQueries) },
                 { "ManifestValidations", Interlocked.Read(ref ManifestValidations) },
                 { "LockWaitTicks", Interlocked.Read(ref lockWaitTicks) },

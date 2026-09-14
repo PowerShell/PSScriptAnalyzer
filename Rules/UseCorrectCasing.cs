@@ -125,6 +125,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         continue;
                     }
                     IReadOnlyDictionary<string, CommandParameterSnapshot> availableParameters;
+#if DISABLE_ENGINE_RETRIES
+                    availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
+#else
                     try
                     {
                         availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
@@ -138,6 +141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         availableParameters = GetParametersFromFreshCommandInfo(commandName);
                     }
+#endif
                     if (availableParameters is null)
                     {
                         // The parameters of this command cannot be determined reliably,
@@ -172,6 +176,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+#if !DISABLE_ENGINE_RETRIES
         /// <summary>
         /// Queries a fresh <see cref="CommandInfo"/> object to work around the runspace affinity problem
         /// of the PowerShell engine and returns its parameters, or null if they cannot be determined.
@@ -187,6 +192,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
         }
+#endif
 
         /// <summary>
         /// For a command like "gci -path c:", returns the extent of "gci" in the command

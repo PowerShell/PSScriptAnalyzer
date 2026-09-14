@@ -16,12 +16,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     internal class CommandInfoCache : IDisposable
     {
+#if !DISABLE_ENGINE_RETRIES
         /// <summary>
         /// Number of times a command lookup is attempted before giving up.
         /// Command lookups can fail transiently because the PowerShell engine is not thread safe,
         /// see https://github.com/PowerShell/PowerShell/issues/4003
         /// </summary>
         private const int MaxLookupAttempts = 3;
+#endif
         private const string GetCommandName = "Microsoft.PowerShell.Core\\Get-Command";
 
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
@@ -157,7 +159,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // For more details see https://github.com/PowerShell/PowerShell/issues/9308
             actualCmdName = WildcardPattern.Escape(actualCmdName);
 
+#if !DISABLE_ENGINE_RETRIES
             for (int attempt = 1; ; attempt++)
+#endif
             {
                 // Serialize all use of the PowerShell engine. Only cache misses reach this point;
                 // lookups that are already cached are served without taking the lock.
@@ -191,12 +195,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             var result = ps.Invoke<CommandInfo>();
                             if (ps.HadErrors && ps.Streams.Error.All(IsGetCommandResolutionError))
                             {
+#if DISABLE_ENGINE_RETRIES
+                                // Surface error-stream failures as well as terminating exceptions in verification builds.
+                                throw ps.Streams.Error[0].Exception;
+#else
+                                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupResolutionFailures);
                                 if (attempt >= MaxLookupAttempts)
                                 {
                                     return null;
                                 }
 
+                                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
                                 continue;
+#endif
                             }
 
                             return result.FirstOrDefault();
@@ -210,10 +221,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // safety net for hosts that drive the engine from other threads at the same time.
                         catch (RuntimeException exception) when (IsGetCommandResolutionException(exception))
                         {
+                            PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupResolutionFailures);
+#if DISABLE_ENGINE_RETRIES
+                            throw;
+#else
                             if (attempt >= MaxLookupAttempts)
                             {
                                 return null;
                             }
+                            PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
+#endif
                         }
 
                     }

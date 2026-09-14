@@ -4,4 +4,7 @@
     <ModuleVersion>1.25.0</ModuleVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(DisableEngineRetries)' == 'true'">
+    <DefineConstants>$(DefineConstants);DISABLE_ENGINE_RETRIES</DefineConstants>
+  </PropertyGroup>
 </Project>

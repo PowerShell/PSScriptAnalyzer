@@ -15,6 +15,11 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
+    # Compile without the PowerShell engine retry workarounds to detect first-attempt failures.
+    [Parameter(ParameterSetName="BuildOne")]
+    [Parameter(ParameterSetName="BuildAll")]
+    [switch]$DisableEngineRetries,
+
     # For building documentation only
     # or re-building it since docs gets built automatically only the first time
     [Parameter(ParameterSetName="BuildDocumentation")]
@@ -64,6 +69,7 @@ END {
             $buildArgs = @{
                 All = $true
                 Configuration = $Configuration
+                DisableEngineRetries = $DisableEngineRetries
                 Verbose = $verboseWanted
                 Catalog = $false
             }
@@ -79,6 +85,7 @@ END {
             $buildArgs = @{
                 PSVersion = $PSVersion
                 Configuration = $Configuration
+                DisableEngineRetries = $DisableEngineRetries
             }
             Start-ScriptAnalyzerBuild @buildArgs
         }
