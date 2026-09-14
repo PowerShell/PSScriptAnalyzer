@@ -111,7 +111,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             try
             {
-                return lazyCommandInfo.Value;
+                var commandInfo = lazyCommandInfo.Value;
+                if (commandInfo == null)
+                {
+                    RemoveLookup(key, lazyCommandInfo);
+                }
+                return commandInfo;
             }
             catch
             {
@@ -119,10 +124,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // command fail for the lifetime of the process. Evict the entry so that the next lookup
                 // can try again. Only remove the faulted instance so that a replacement that another
                 // thread may already have added is left alone.
-                ((ICollection<KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>>)_commandInfoCache)
-                    .Remove(new KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>(key, lazyCommandInfo));
+                RemoveLookup(key, lazyCommandInfo);
                 throw;
             }
+        }
+
+        private void RemoveLookup(CommandLookupKey key, Lazy<CommandInfo> lookup)
+        {
+            ((ICollection<KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>>)_commandInfoCache)
+                .Remove(new KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>(key, lookup));
         }
 
         private Lazy<CommandInfo> CreateLookup(string commandName, CommandTypes? commandTypes)
@@ -190,28 +200,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             ps.AddParameter("Module", moduleName);
                         }
 
+                        Collection<CommandInfo> result;
                         try
                         {
-                            var result = ps.Invoke<CommandInfo>();
-                            // SilentlyContinue can set HadErrors without populating the stream for an unknown name.
-                            if (ps.HadErrors && ps.Streams.Error.Count > 0 && ps.Streams.Error.All(IsGetCommandResolutionError))
-                            {
-#if DISABLE_ENGINE_RETRIES
-                                // Surface error-stream failures as well as terminating exceptions in verification builds.
-                                throw ps.Streams.Error[0].Exception;
-#else
-                                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupResolutionFailures);
-                                if (attempt >= MaxLookupAttempts)
-                                {
-                                    return null;
-                                }
-
-                                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
-                                continue;
-#endif
-                            }
-
-                            return result.FirstOrDefault();
+                            result = ps.Invoke<CommandInfo>();
                         }
                         // 'Get-Command' is invoked with 'SilentlyContinue', so a CommandNotFoundException can only
                         // mean that the engine failed to resolve 'Get-Command' itself in the runspace.
@@ -231,9 +223,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 return null;
                             }
                             PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
+                            continue;
 #endif
                         }
 
+                        // SilentlyContinue can set HadErrors without populating the stream for an unknown name.
+                        if (ps.HadErrors && ps.Streams.Error.Count > 0 && ps.Streams.Error.All(IsGetCommandResolutionError))
+                        {
+                            PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupResolutionFailures);
+#if DISABLE_ENGINE_RETRIES
+                            // Surface error-stream failures as well as terminating exceptions in verification builds.
+                            throw ps.Streams.Error[0].Exception;
+#else
+                            if (attempt >= MaxLookupAttempts)
+                            {
+                                return null;
+                            }
+                            PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupRetries);
+                            continue;
+#endif
+                        }
+                        return result.FirstOrDefault();
                     }
                 }
             }
@@ -250,17 +260,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
             string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
-            // Resolve the Lazy value before taking the lock: its factory may already be
-            // running on another thread that needs the same lock to finish the lookup.
-            var commandInfo = GetCommandInfo(commandName, commandTypes, bypassCache);
-            using (PerformanceTelemetry.EnterLock(_runspaceLock))
+            return GetCommandMetadata(commandName, commandTypes, bypassCache, (command, bypass) =>
             {
-                // Dynamic parameter getters execute PowerShell code and mutate runspace state,
-                // even though they look like ordinary property reads.
-                if (disposed || commandInfo == null) return null;
-                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
-                return commandInfo.Parameters;
-            }
+                using (PerformanceTelemetry.EnterLock(_runspaceLock))
+                {
+                    // Dynamic parameter getters execute PowerShell code and mutate runspace state,
+                    // even though they look like ordinary property reads.
+                    if (disposed) return null;
+                    PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                    return command.Parameters;
+                }
+            });
         }
 
         /// <summary>
@@ -268,13 +278,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName)
         {
-            var commandInfo = GetCommandInfo(commandName);
-            using (PerformanceTelemetry.EnterLock(_runspaceLock))
+            return GetCommandMetadata(commandName, null, false, (command, bypass) =>
             {
-                if (disposed || commandInfo == null) return null;
-                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
-                return commandInfo.ParameterSets;
+                using (PerformanceTelemetry.EnterLock(_runspaceLock))
+                {
+                    if (disposed) return null;
+                    PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                    return command.ParameterSets;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Contains PowerShell metadata failures in normal builds and exposes them in verification builds.
+        /// Only affinity failures warrant one fresh command lookup; other metadata errors return null.
+        /// Failed command objects are evicted, and unavailable metadata is never cached.
+        /// </summary>
+        private T GetCommandMetadata<T>(
+            string commandName, CommandTypes? commandTypes, bool bypassCache, Func<CommandInfo, bool, T> readMetadata)
+            where T : class
+        {
+#if !DISABLE_ENGINE_RETRIES
+            while (true)
+#endif
+            {
+                // Resolve Lazy values outside the runspace lock: another thread's factory may need it.
+                var command = GetCommandInfo(commandName, commandTypes, bypassCache);
+                if (disposed || command == null || command.CommandType == CommandTypes.Application) return null;
+                try
+                {
+                    return readMetadata(command, bypassCache);
+                }
+                catch (Exception exception) when (IsMetadataException(exception))
+                {
+                    PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataFailures);
+                    var key = new CommandLookupKey(commandName, commandTypes);
+                    if (_commandInfoCache.TryGetValue(key, out var lookup)
+                        && lookup.IsValueCreated && ReferenceEquals(lookup.Value, command))
+                    {
+                        RemoveLookup(key, lookup);
+                    }
+#if DISABLE_ENGINE_RETRIES
+                    throw;
+#else
+                    if (bypassCache || !IsRunspaceAffinityException(exception)) return null;
+                    PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataRetries);
+                    bypassCache = true;
+#endif
+                }
             }
+        }
+
+        private static bool IsRunspaceAffinityException(Exception exception)
+        {
+            // PowerShell objects can have runspace affinity, see PowerShell issue 4003 and PSSA issue 1708.
+            return exception is InvalidOperationException || exception is NullReferenceException;
+        }
+
+        private static bool IsMetadataException(Exception exception)
+        {
+            return IsRunspaceAffinityException(exception)
+                || exception is RuntimeException || exception is PSNotSupportedException;
         }
 
         private static CmdletInfo GetStaticCmdlet(CommandInfo command)
@@ -290,7 +354,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(
             string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
-            var command = GetCommandInfo(commandName, commandTypes, bypassCache);
+            return GetCommandMetadata(commandName, commandTypes, bypassCache, GetParameterSnapshot);
+        }
+
+        private IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(CommandInfo command, bool bypassCache)
+        {
             var staticCmdlet = bypassCache ? null : GetStaticCmdlet(command);
             if (disposed || command == null) return null;
             if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out var cached)) return cached;
@@ -311,8 +379,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         public IReadOnlyList<string> GetMandatoryParameterNames(string commandName)
         {
-            var command = GetCommandInfo(commandName);
-            var staticCmdlet = GetStaticCmdlet(command);
+            return GetCommandMetadata(commandName, null, false, GetMandatoryParameterNames);
+        }
+
+        private IReadOnlyList<string> GetMandatoryParameterNames(CommandInfo command, bool bypassCache)
+        {
+            var staticCmdlet = bypassCache ? null : GetStaticCmdlet(command);
             if (disposed || command == null) return null;
             if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out var cached)) return cached;
 
@@ -321,9 +393,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (disposed) return null;
                 if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out cached)) return cached;
                 PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
-                int setCount = command.ParameterSets.Count;
+                var parameterSets = command.ParameterSets;
+                var parameters = command.Parameters;
+                if (parameterSets == null || parameters == null) return null;
+                int setCount = parameterSets.Count;
                 var mandatory = new List<string>();
-                foreach (var parameter in command.Parameters.Values)
+                foreach (var parameter in parameters.Values)
                 {
                     if (parameter.Attributes.Count >= setCount
                         && parameter.Attributes.OfType<ParameterAttribute>().Count(a => a.Mandatory) >= setCount)

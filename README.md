@@ -142,13 +142,20 @@ To install **PSScriptAnalyzer** from source code:
   `.\build.ps1 -All -DisableEngineRetries`, then running `.\build.ps1 -Test` in a fresh
   PowerShell process. This defines `DISABLE_ENGINE_RETRIES` in both Engine and Rules;
   direct MSBuild builds can use `-p:DisableEngineRetries=true`. Lookup resolution failures
-  are surfaced immediately, and parameter casing checks do not retry with fresh metadata.
+  and metadata exceptions are surfaced immediately instead of retried or suppressed.
   Omit the switch to restore the default retry-enabled build, and test in another fresh
   process so previously loaded assemblies are not reused.
   CI tests both configurations. The concurrency tests assert zero `LookupResolutionFailures`
   and `LookupRetries` in the existing opt-in performance telemetry, while casing tests
-  assert no fallback cache bypasses. Passing these tests provides evidence for the exercised
+  assert no fallback cache bypasses or `MetadataFailures`/`MetadataRetries`.
+  Passing these tests provides evidence for the exercised
   workloads, not proof that retries are unnecessary in every host.
+
+  Command metadata recovery lives in `CommandInfoCache`, not individual rules. Its parameter,
+  parameter-set and snapshot APIs return null when metadata is unavailable in normal builds;
+  known affinity exceptions get at most one fresh lookup, while other PowerShell metadata
+  exceptions are not retried. Unexpected exceptions still propagate. Null command lookups and
+  command objects with failed metadata are evicted so subsequent calls can recover.
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
 built-in rules.

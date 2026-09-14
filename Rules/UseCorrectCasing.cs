@@ -124,24 +124,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         continue;
                     }
-                    IReadOnlyDictionary<string, CommandParameterSnapshot> availableParameters;
-#if DISABLE_ENGINE_RETRIES
-                    availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
-#else
-                    try
-                    {
-                        availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
-                    }
-                    // It's a known issue that objects from PowerShell can have a runspace affinity,
-                    // therefore if that happens, we query a fresh object instead of using the cache.
-                    // https://github.com/PowerShell/PowerShell/issues/4003
-                    // The affinity problem surfaces as an InvalidOperationException or as a
-                    // NullReferenceException, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1708
-                    catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
-                    {
-                        availableParameters = GetParametersFromFreshCommandInfo(commandName);
-                    }
-#endif
+                    var availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
                     if (availableParameters is null)
                     {
                         // The parameters of this command cannot be determined reliably,
@@ -175,24 +158,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
         }
-
-#if !DISABLE_ENGINE_RETRIES
-        /// <summary>
-        /// Queries a fresh <see cref="CommandInfo"/> object to work around the runspace affinity problem
-        /// of the PowerShell engine and returns its parameters, or null if they cannot be determined.
-        /// </summary>
-        private IReadOnlyDictionary<string, CommandParameterSnapshot> GetParametersFromFreshCommandInfo(string commandName)
-        {
-            try
-            {
-                return Helper.Instance.GetCommandParameterSnapshot(commandName, bypassCache: true);
-            }
-            catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
-            {
-                return null;
-            }
-        }
-#endif
 
         /// <summary>
         /// For a command like "gci -path c:", returns the extent of "gci" in the command

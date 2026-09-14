@@ -42,6 +42,8 @@ Describe "Analysis metadata work" {
         $stats['LookupBypasses'] | Should -Be 0
         $stats['LookupResolutionFailures'] | Should -Be 0
         $stats['LookupRetries'] | Should -Be 0
+        $stats['MetadataFailures'] | Should -Be 0
+        $stats['MetadataRetries'] | Should -Be 0
     }
 
     It "preserves recursive casing checks for parameters nested in script blocks" {

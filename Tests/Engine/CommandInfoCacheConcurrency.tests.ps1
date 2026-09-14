@@ -97,6 +97,8 @@ public static class ConcurrentCommandLookup
         $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
         $stats['LookupResolutionFailures'] | Should -Be 0
         $stats['LookupRetries'] | Should -Be 0
+        $stats['MetadataFailures'] | Should -Be 0
+        $stats['MetadataRetries'] | Should -Be 0
     }
 
     It "resolves commands from several threads without failing" {

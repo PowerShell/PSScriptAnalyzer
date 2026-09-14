@@ -145,16 +145,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
-            IReadOnlyList<string> mandatoryParameters;
-            try
-            {
-                mandatoryParameters = Helper.Instance.GetMandatoryParameterNames(cmdAst.GetCommandName());
-            }
-            catch (Exception)
-            {
-                // For cases like cmd.exe. Also for runtime exception
-                return true;
-            }
+            var mandatoryParameters = Helper.Instance.GetMandatoryParameterNames(cmdAst.GetCommandName());
 
             if (mandatoryParameters == null || mandatoryParameters.Count == 0)
             {
@@ -230,5 +221,4 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
 
