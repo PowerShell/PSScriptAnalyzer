@@ -96,3 +96,148 @@ Describe 'Performance benchmark diagnostic normalization' -Skip:($PSVersionTable
         $result.SuggestedCorrections.Count | Should -Be 0
     }
 }
+
+Describe 'Performance comparison metrics policy' -Skip:($PSVersionTable.PSVersion.Major -lt 7) {
+    BeforeAll {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/workflows/performance.yml') -Raw
+        $comparison = [regex]::Match($workflow, '(?ms)      - name: Validate and summarize\r?\n.*?        run: \|\r?\n(?<script>.*?)(?=      - name:)')
+        if (-not $comparison.Success) { throw 'Cannot find performance comparison script.' }
+        $comparisonScript = [scriptblock]::Create(
+            [regex]::Replace($comparison.Groups['script'].Value, '(?m)^          ', ''))
+    }
+
+    BeforeEach {
+        $savedWorkspace = $env:GITHUB_WORKSPACE
+        $savedRepetitions = $env:BENCHMARK_REPETITIONS
+        $savedSummary = $env:GITHUB_STEP_SUMMARY
+        $env:GITHUB_WORKSPACE = $TestDrive
+        $env:BENCHMARK_REPETITIONS = '1'
+        $env:GITHUB_STEP_SUMMARY = Join-Path $TestDrive 'summary.txt'
+        $resultDirectory = Join-Path $TestDrive 'results'
+        $null = New-Item -ItemType Directory -Path $resultDirectory -Force
+        foreach ($build in 'upstream', 'fork', 'perf') {
+            @{
+                Revision = $build
+                MetricsRequested = $false
+                MetricsAvailable = $build -eq 'perf'
+                ColdDiagnosticCount = 1
+                WarmDiagnosticCount = 1
+                ColdDiagnosticsSHA256 = 'identical'
+                WarmDiagnosticsSHA256 = 'identical'
+                ColdSeconds = 2.0
+                WarmSeconds = 1.0
+            } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $resultDirectory "$build-1.json")
+        }
+    }
+
+    AfterEach {
+        $env:GITHUB_WORKSPACE = $savedWorkspace
+        $env:BENCHMARK_REPETITIONS = $savedRepetitions
+        $env:GITHUB_STEP_SUMMARY = $savedSummary
+    }
+
+    It 'does not offer or enable metrics collection' {
+        $workflow | Should -Not -Match 'collect_metrics|BENCHMARK_METRICS|-CollectMetrics'
+    }
+
+    It 'compares uninstrumented samples even when only perf supports metrics' {
+        { & $comparisonScript } | Should -Not -Throw
+        $report = Get-Content -LiteralPath (Join-Path $resultDirectory 'comparison.json') -Raw | ConvertFrom-Json
+        $report.FindingsVerified | Should -BeTrue
+        $report.Measurements.Count | Should -Be 3
+    }
+
+    It 'rejects metrics-enabled <Source> samples' -ForEach @(
+        @{ Source = 'upstream' }
+        @{ Source = 'fork' }
+        @{ Source = 'perf' }
+    ) {
+        $path = Join-Path $resultDirectory "$Source-1.json"
+        $sample = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+        $sample.MetricsRequested = $true
+        $sample | ConvertTo-Json | Set-Content -LiteralPath $path
+        { & $comparisonScript } | Should -Throw '*Metrics must be disabled for performance comparisons.*'
+    }
+}
+
+Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Major -lt 7) {
+    BeforeAll {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/workflows/performance.yml') -Raw
+        $summary = [regex]::Match($workflow, '(?ms)      - name: Summarize all combinations\r?\n.*?        run: \|\r?\n(?<script>.*)\z')
+        if (-not $summary.Success) { throw 'Cannot find consolidated summary script.' }
+        $summaryScript = [scriptblock]::Create(
+            [regex]::Replace($summary.Groups['script'].Value, '(?m)^          ', ''))
+    }
+
+    BeforeEach {
+        $savedWorkspace = $env:GITHUB_WORKSPACE
+        $savedSummary = $env:GITHUB_STEP_SUMMARY
+        $env:GITHUB_WORKSPACE = $TestDrive
+        $env:GITHUB_STEP_SUMMARY = Join-Path $TestDrive 'summary.txt'
+        Set-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ''
+        foreach ($os in 'ubuntu-latest', 'windows-latest') {
+            foreach ($workload in 'powershell', 'semver') {
+                $directory = Join-Path $TestDrive "comparisons/scriptanalyzer-performance-$os-$workload-comparison"
+                $null = New-Item -ItemType Directory -Path $directory -Force
+                @{
+                    FindingsVerified = $true
+                    Measurements = @(foreach ($source in 'upstream', 'fork', 'perf') {
+                        foreach ($seconds in 9.0, 1.0, 2.0) {
+                            @{
+                                Source = $source
+                                ColdSeconds = $seconds
+                                WarmSeconds = $seconds / 2
+                                Inconsistent = $false
+                            }
+                        }
+                    })
+                } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $directory 'comparison.json')
+            }
+        }
+        $comparisonPath = Join-Path $TestDrive 'comparisons/scriptanalyzer-performance-ubuntu-latest-powershell-comparison/comparison.json'
+    }
+
+    AfterEach {
+        $env:GITHUB_WORKSPACE = $savedWorkspace
+        $env:GITHUB_STEP_SUMMARY = $savedSummary
+    }
+
+    It 'shows all twelve combinations with median rather than mean timings' {
+        & $summaryScript
+        $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
+        [regex]::Matches($text, '(?m)^\| (ubuntu|windows)-latest \|').Count | Should -Be 12
+        foreach ($os in 'ubuntu-latest', 'windows-latest') {
+            foreach ($workload in 'powershell', 'semver') {
+                foreach ($source in 'upstream', 'fork', 'perf') {
+                    $text | Should -Match ([regex]::Escape("| $os | $workload | $source | 2.000 | 1.000 | Verified |"))
+                }
+            }
+        }
+    }
+
+    It 'marks missing combinations without dropping the other results' {
+        Remove-Item -LiteralPath $comparisonPath
+        & $summaryScript
+        $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 3
+        [regex]::Matches($text, '\| Verified \|').Count | Should -Be 9
+    }
+
+    It 'still produces the full table when no comparisons are available' {
+        Remove-Item -LiteralPath (Join-Path $TestDrive 'comparisons') -Recurse
+        & $summaryScript
+        $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 12
+    }
+
+    It 'marks invalid comparisons and retried samples' {
+        $report = Get-Content -LiteralPath $comparisonPath -Raw | ConvertFrom-Json
+        $report.FindingsVerified = $false
+        $report.Measurements[0].Inconsistent = $true
+        $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $comparisonPath
+        & $summaryScript
+        $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
+        [regex]::Matches($text, 'INVALID: diagnostics differ').Count | Should -Be 3
+        $text | Should -Match 'upstream \| 2.000 \| 1.000 \| INVALID: diagnostics differ; ⚠️ retried samples'
+    }
+}

@@ -8,10 +8,6 @@ on:
         type: choice
         options: ['3', '5', '10']
         default: '3'
-      collect_metrics:
-        description: Collect optional lock/caching metrics (adds measurement overhead)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -125,7 +121,6 @@ jobs:
       WORKLOAD_REVISION: ${{ needs.workload.outputs[matrix.workload] }}
       ANALYZER_REVISION: ${{ needs.workload.outputs[matrix.source] }}
       BENCHMARK_REPETITIONS: ${{ inputs.repetitions }}
-      BENCHMARK_METRICS: ${{ inputs.collect_metrics }}
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -182,9 +177,6 @@ jobs:
           $manifests = @(Get-ChildItem -Path "$sourcePath/out/PSScriptAnalyzer" -Filter PSScriptAnalyzer.psd1 -Recurse)
           if ($manifests.Count -ne 1) {
               throw "Expected exactly one built manifest, found $($manifests.Count)."
-          }
-          if ($env:BENCHMARK_METRICS -eq 'true') {
-              $analysisArguments += '-CollectMetrics'
           }
           $revision = git -C $sourcePath rev-parse HEAD
           if ($LASTEXITCODE -ne 0 -or $revision -ne $env:ANALYZER_REVISION) {
@@ -277,6 +269,9 @@ jobs:
           $findingsMatch = $baseline.ColdDiagnosticCount -gt 0
           foreach ($source in 'upstream', 'fork', 'perf') {
               foreach ($candidate in $measurements[$source]) {
+                  if ($candidate.MetricsRequested) {
+                      throw 'Metrics must be disabled for performance comparisons.'
+                  }
                   foreach ($property in 'InputSHA256', 'InputFileCount', 'SettingsSHA256', 'Recurse',
                       'WorkloadRevision', 'PowerShellVersion', 'RunnerOS', 'Culture', 'UICulture', 'MetricsRequested') {
                       if ($baseline.$property -cne $candidate.$property) {
@@ -357,9 +352,9 @@ jobs:
               "Input SHA256: $($baseline.InputSHA256); PowerShell files: $($baseline.InputFileCount); recurse: $($baseline.Recurse)"
               "Settings SHA256 (empty for default rules): $($baseline.SettingsSHA256)"
               "PowerShell: $($baseline.PowerShellVersion)"
-              "Optional metrics requested: $($baseline.MetricsRequested). Instrumented runs include measurement overhead and should not be compared with uninstrumented runs."
+              'Optional lock/cache metrics are disabled for all builds to avoid collection overhead in timing comparisons.'
               ''
-              'Samples run on separate hosts per build, not a controlled statistical regression test. Raw artifacts retain each measurement, full normalized diagnostics, and available lock/cache counters.'
+              'Samples run on separate hosts per build, not a controlled statistical regression test. Raw artifacts retain each measurement and full normalized diagnostics.'
           )
           foreach ($source in 'upstream', 'fork', 'perf') {
               $sample = $measurements[$source][0]
@@ -384,3 +379,66 @@ jobs:
           name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-comparison
           path: results/comparison.json
           if-no-files-found: warn
+
+  summary:
+    name: All performance comparisons
+    needs: compare
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download comparisons
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: scriptanalyzer-performance-*-comparison
+          path: comparisons
+
+      - name: Summarize all combinations
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Get-Median($values) {
+              $sorted = @($values | Sort-Object)
+              $middle = [int][Math]::Floor($sorted.Count / 2)
+              if ($sorted.Count % 2) { return $sorted[$middle] }
+              return ($sorted[$middle - 1] + $sorted[$middle]) / 2
+          }
+          $summary = @(
+              '## Performance across all combinations'
+              ''
+              'Optional lock/cache metrics are disabled. Times are medians of fresh-process cold/warm samples; lower is better.'
+              ''
+              '| OS | Workload | Source | Cold median (s) | Warm median (s) | Status |'
+              '| --- | --- | --- | ---: | ---: | --- |'
+          )
+          foreach ($os in 'ubuntu-latest', 'windows-latest') {
+              foreach ($workload in 'powershell', 'semver') {
+                  $path = Join-Path $env:GITHUB_WORKSPACE "comparisons/scriptanalyzer-performance-$os-$workload-comparison/comparison.json"
+                  $report = if (Test-Path -LiteralPath $path) {
+                      Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+                  } else { $null }
+                  foreach ($source in 'upstream', 'fork', 'perf') {
+                      $samples = @($report.Measurements | Where-Object Source -EQ $source)
+                      if ($samples.Count -eq 0) {
+                          $summary += "| $os | $workload | $source | — | — | Missing results |"
+                          continue
+                      }
+                      $cold = (Get-Median $samples.ColdSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $warm = (Get-Median $samples.WarmSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $status = if ($report.FindingsVerified) { 'Verified' } else { 'INVALID: diagnostics differ' }
+                      if (@($samples | Where-Object Inconsistent).Count) {
+                          $status += '; ⚠️ retried samples'
+                      }
+                      $summary += "| $os | $workload | $source | $cold | $warm | $status |"
+                  }
+              }
+          }
+          $summary += @(
+              ''
+              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf.'
+              'Compare timings only within the same OS/workload. Invalid results must not be used for performance comparisons; retried samples may be biased.'
+              'Builds run on separate hosts, not a controlled statistical regression test. Per-combination summaries and artifacts retain revisions, ranges, diagnostics, and retry details.'
+          )
+          $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          $summary | Write-Output
