@@ -10,12 +10,25 @@ param(
     [string]$ScriptPath,
 
     [Parameter(Mandatory)]
-    [string]$ResultPath
+    [string]$ResultPath,
+
+    [switch]$Recurse,
+
+    [string]$SettingsPath
 )
 
 $ErrorActionPreference = 'Stop'
 $ModulePath = (Resolve-Path -LiteralPath $ModulePath).Path
 $ScriptPath = (Resolve-Path -LiteralPath $ScriptPath).Path
+$analyzerArguments = @{
+    Path = $ScriptPath
+    Recurse = $Recurse
+    ErrorAction = 'Stop'
+}
+if ($SettingsPath) {
+    $SettingsPath = (Resolve-Path -LiteralPath $SettingsPath).Path
+    $analyzerArguments.Settings = $SettingsPath
+}
 
 # Run this script in a new -NoProfile shell for each build. Import and shell
 # startup are excluded; cold means the first analysis in this process.
@@ -34,6 +47,24 @@ if ($module.Name -ne 'PSScriptAnalyzer' -or
     $command.ImplementingType.Assembly.Location -ne $expectedAssemblyPath) {
     throw "The loaded module or Invoke-ScriptAnalyzer assembly does not match the requested build at '$ModulePath'."
 }
+$inputItem = Get-Item -LiteralPath $ScriptPath
+if ($inputItem.PSIsContainer) {
+    $inputFiles = @(Get-ChildItem -LiteralPath $ScriptPath -File -Recurse:$Recurse |
+        Where-Object Extension -In '.ps1', '.psm1', '.psd1' |
+        Sort-Object FullName)
+    if ($inputFiles.Count -eq 0) {
+        throw "No PowerShell files found at '$ScriptPath'."
+    }
+    $fileHashes = foreach ($file in $inputFiles) {
+        $relativePath = [IO.Path]::GetRelativePath($ScriptPath, $file.FullName).Replace('\', '/')
+        "$relativePath`:$((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash)"
+    }
+    $inputHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Text.Encoding]::UTF8.GetBytes(($fileHashes -join "`n"))))
+} else {
+    $inputFiles = @($inputItem)
+    $inputHash = (Get-FileHash -LiteralPath $ScriptPath -Algorithm SHA256).Hash
+}
 $results = [ordered]@{
     PowerShellVersion = $PSVersionTable.PSVersion.ToString()
     ModuleVersion = $module.Version.ToString()
@@ -41,12 +72,16 @@ $results = [ordered]@{
     ModulePath = $module.Path
     AnalyzerAssemblyPath = $command.ImplementingType.Assembly.Location
     ScriptPath = $ScriptPath
-    ScriptSHA256 = (Get-FileHash -LiteralPath $ScriptPath -Algorithm SHA256).Hash
+    InputSHA256 = $inputHash
+    InputFileCount = $inputFiles.Count
+    Recurse = [bool]$Recurse
+    SettingsPath = $SettingsPath
+    SettingsSHA256 = if ($SettingsPath) { (Get-FileHash -LiteralPath $SettingsPath -Algorithm SHA256).Hash } else { $null }
 }
 
 foreach ($run in 'Cold', 'Warm') {
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $diagnostics = @(& $command -Path $ScriptPath -ErrorAction Stop)
+    $diagnostics = @(& $command @analyzerArguments)
     $stopwatch.Stop()
     $results["${run}Seconds"] = $stopwatch.Elapsed.TotalSeconds
     $results["${run}DiagnosticCount"] = $diagnostics.Count

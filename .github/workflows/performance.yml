@@ -8,11 +8,12 @@ permissions:
 
 jobs:
   workload:
-    name: Prepare shared benchmark input
+    name: Prepare shared benchmark inputs
     runs-on: windows-latest
     timeout-minutes: 10
     outputs:
-      revision: ${{ steps.revision.outputs.sha }}
+      powershell: ${{ steps.revision.outputs.sha }}
+      semver: ${{ steps.semver-revision.outputs.sha }}
     steps:
       - name: Checkout benchmark script once for both builds
         uses: actions/checkout@v4
@@ -35,18 +36,46 @@ jobs:
       - name: Share the exact input file
         uses: actions/upload-artifact@v4
         with:
-          name: performance-workload
+          name: performance-workload-powershell
           path: workload/build.psm1
           if-no-files-found: error
 
+      - name: Checkout actions-semver-checker
+        uses: actions/checkout@v4
+        with:
+          repository: jessehouwing/actions-semver-checker
+          ref: main
+          path: semver
+          persist-credentials: false
+
+      - name: Archive actions-semver-checker and record revision
+        id: semver-revision
+        shell: pwsh
+        run: |
+          $revision = git -C "$env:GITHUB_WORKSPACE/semver" rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve semver workload revision.' }
+          "sha=$revision" >> $env:GITHUB_OUTPUT
+          git -C "$env:GITHUB_WORKSPACE/semver" archive --format=zip --output="$env:GITHUB_WORKSPACE/semver.zip" HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot archive semver workload.' }
+
+      - name: Share the exact semver source tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-workload-semver
+          path: semver.zip
+          if-no-files-found: error
+
   benchmark:
-    name: Benchmark ${{ matrix.source }}
+    name: Benchmark ${{ matrix.source }} / ${{ matrix.workload }} / ${{ matrix.os }}
     needs: workload
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
+        workload: [powershell, semver]
+        source: [upstream, fork]
         include:
           - source: upstream
             repository: PowerShell/PSScriptAnalyzer
@@ -60,7 +89,8 @@ jobs:
       DOTNET_GENERATE_ASPNET_CERTIFICATE: false
       BENCHMARK_SOURCE: ${{ matrix.source }}
       BENCHMARK_REPOSITORY: ${{ matrix.repository }}
-      WORKLOAD_REVISION: ${{ needs.workload.outputs.revision }}
+      BENCHMARK_WORKLOAD: ${{ matrix.workload }}
+      WORKLOAD_REVISION: ${{ needs.workload.outputs[matrix.workload] }}
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -79,8 +109,12 @@ jobs:
       - name: Download shared input
         uses: actions/download-artifact@v4
         with:
-          name: performance-workload
+          name: performance-workload-${{ matrix.workload }}
           path: workload
+
+      - name: Extract semver source tree
+        if: matrix.workload == 'semver'
+        run: Expand-Archive -LiteralPath "$env:GITHUB_WORKSPACE/workload/semver.zip" -DestinationPath "$env:GITHUB_WORKSPACE/workload/source"
 
       - name: Install SDK
         uses: actions/setup-dotnet@v4
@@ -102,6 +136,13 @@ jobs:
           $null = New-Item -ItemType Directory -Path $resultDirectory -Force
           $pwsh = (Get-Process -Id $PID).Path
           $scriptPath = Join-Path $workspace 'workload/build.psm1'
+          $workloadRepository = 'PowerShell/PowerShell'
+          $analysisArguments = @()
+          if ($env:BENCHMARK_WORKLOAD -eq 'semver') {
+              $scriptPath = Join-Path $workspace 'workload/source'
+              $workloadRepository = 'jessehouwing/actions-semver-checker'
+              $analysisArguments = @('-Recurse', '-SettingsPath', (Join-Path $scriptPath 'PSScriptAnalyzerSettings.psd1'))
+          }
           $measureScript = Join-Path $workspace 'harness/tools/Measure-ScriptAnalyzerPerformance.ps1'
           $sourcePath = Join-Path $workspace 'analyzer'
           $manifests = @(Get-ChildItem -Path "$sourcePath/out/PSScriptAnalyzer" -Filter PSScriptAnalyzer.psd1 -Recurse)
@@ -110,7 +151,7 @@ jobs:
           }
           $resultPath = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE.json"
           & $pwsh -NoLogo -NoProfile -NonInteractive -File $measureScript `
-              -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath
+              -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath @analysisArguments
           if ($LASTEXITCODE -ne 0) {
               throw "Benchmark failed (exit code $LASTEXITCODE)."
           }
@@ -121,6 +162,8 @@ jobs:
               Source = $env:BENCHMARK_SOURCE
               Repository = $env:BENCHMARK_REPOSITORY
               Revision = $revision
+              Workload = $env:BENCHMARK_WORKLOAD
+              WorkloadRepository = $workloadRepository
               WorkloadRevision = $env:WORKLOAD_REVISION
               RunnerOS = $env:RUNNER_OS
               RunnerImage = $env:ImageOS
@@ -135,20 +178,26 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scriptanalyzer-performance-${{ matrix.source }}
+          name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-${{ matrix.source }}
           path: results/*.json
           if-no-files-found: warn
 
   compare:
-    name: Validate findings and report comparison
+    name: Compare ${{ matrix.workload }} / ${{ matrix.os }}
     needs: benchmark
-    runs-on: windows-latest
+    if: ${{ !cancelled() }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        workload: [powershell, semver]
     steps:
       - name: Download benchmark results
         uses: actions/download-artifact@v4
         with:
-          pattern: scriptanalyzer-performance-*
+          pattern: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-*
           path: results
           merge-multiple: true
 
@@ -159,17 +208,21 @@ jobs:
           $resultDirectory = Join-Path $env:GITHUB_WORKSPACE 'results'
           $baseline = Get-Content -LiteralPath "$resultDirectory/upstream.json" -Raw | ConvertFrom-Json
           $candidate = Get-Content -LiteralPath "$resultDirectory/fork.json" -Raw | ConvertFrom-Json
-          if ($baseline.ScriptSHA256 -ne $candidate.ScriptSHA256 -or
+          if ($baseline.InputSHA256 -ne $candidate.InputSHA256 -or
+              $baseline.InputFileCount -ne $candidate.InputFileCount -or
+              $baseline.SettingsSHA256 -ne $candidate.SettingsSHA256 -or
+              $baseline.Recurse -ne $candidate.Recurse -or
               $baseline.WorkloadRevision -ne $candidate.WorkloadRevision -or
-              $baseline.PowerShellVersion -ne $candidate.PowerShellVersion) {
-              throw 'The benchmark input or PowerShell versions differ; results are not comparable.'
+              $baseline.PowerShellVersion -ne $candidate.PowerShellVersion -or
+              $baseline.RunnerOS -ne $candidate.RunnerOS) {
+              throw 'The benchmark input, settings or runtime differ; results are not comparable.'
           }
           $findingsMatch = $baseline.ColdDiagnosticCount -gt 0 -and
               $baseline.ColdDiagnosticCount -eq $candidate.ColdDiagnosticCount -and
               $baseline.ColdDiagnosticCount -eq $baseline.WarmDiagnosticCount -and
               $baseline.ColdDiagnosticCount -eq $candidate.WarmDiagnosticCount
           $report = [ordered]@{
-              WorkloadRepository = 'PowerShell/PowerShell'
+              WorkloadRepository = $baseline.WorkloadRepository
               WorkloadRevision = $baseline.WorkloadRevision
               ExpectedDiagnosticCount = $baseline.ColdDiagnosticCount
               FindingsVerified = $findingsMatch
@@ -178,9 +231,10 @@ jobs:
           $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath "$resultDirectory/comparison.json" -Encoding utf8
 
           $summary = @(
-              '## Invoke-ScriptAnalyzer performance'
+              "## Invoke-ScriptAnalyzer performance: $($baseline.Workload) / $($baseline.RunnerOS)"
               ''
-              'Release builds run in separate Windows jobs with the same PowerShell version, default rules and identical input bytes. No analyzer modules or sessions are shared between jobs.'
+              'Release builds run in separate jobs with the same OS and PowerShell version and identical input bytes. No analyzer modules or sessions are shared between jobs.'
+              'The PowerShell workload analyzes only build.psm1 with default rules. The semver workload analyzes the repository recursively using its PSScriptAnalyzerSettings.psd1, without filtering findings.'
               'Each build gets a fresh pwsh -NoProfile process: cold is its first analysis, warm is the immediately following analysis in that process.'
               'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
               ''
@@ -199,8 +253,9 @@ jobs:
           }
           $summary += @(
               ''
-              "Input: PowerShell/PowerShell build.psm1 at $($baseline.WorkloadRevision)"
-              "Input SHA256: $($baseline.ScriptSHA256)"
+              "Input: $($baseline.WorkloadRepository) at $($baseline.WorkloadRevision)"
+              "Input SHA256: $($baseline.InputSHA256); PowerShell files: $($baseline.InputFileCount); recurse: $($baseline.Recurse)"
+              "Settings SHA256 (empty for default rules): $($baseline.SettingsSHA256)"
               "PowerShell: $($baseline.PowerShellVersion)"
               "Upstream runner: $($baseline.RunnerImage) $($baseline.RunnerImageVersion); logical processors: $($baseline.ProcessorCount)"
               "Fork runner: $($candidate.RunnerImage) $($candidate.RunnerImageVersion); logical processors: $($candidate.ProcessorCount)"
@@ -227,6 +282,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scriptanalyzer-performance-comparison
+          name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-comparison
           path: results/comparison.json
           if-no-files-found: warn
