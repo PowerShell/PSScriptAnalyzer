@@ -14,7 +14,9 @@ param(
 
     [switch]$Recurse,
 
-    [string]$SettingsPath
+    [string]$SettingsPath,
+
+    [switch]$CollectMetrics
 )
 
 $ErrorActionPreference = 'Stop'
@@ -48,6 +50,52 @@ if ($module.Name -ne 'PSScriptAnalyzer' -or
     throw "The loaded module or Invoke-ScriptAnalyzer assembly does not match the requested build at '$ModulePath'."
 }
 $inputItem = Get-Item -LiteralPath $ScriptPath
+$inputRoot = if ($inputItem.PSIsContainer) { $ScriptPath } else { Split-Path -Parent $ScriptPath }
+
+function ConvertTo-WorkloadPath([string]$Path) {
+    if ([string]::IsNullOrEmpty($Path)) { return $Path }
+    if ([IO.Path]::IsPathRooted($Path)) {
+        return [IO.Path]::GetRelativePath($inputRoot, $Path).Replace('\', '/')
+    }
+    return $Path.Replace('\', '/')
+}
+
+function ConvertTo-DiagnosticJson($Diagnostic) {
+    $corrections = @(foreach ($correction in $Diagnostic.SuggestedCorrections) {
+        [ordered]@{
+            File = ConvertTo-WorkloadPath $correction.File
+            StartLine = $correction.StartLineNumber
+            StartColumn = $correction.StartColumnNumber
+            EndLine = $correction.EndLineNumber
+            EndColumn = $correction.EndColumnNumber
+            Text = $correction.Text
+            Description = $correction.Description
+        }
+    })
+    [ordered]@{
+        RuleName = $Diagnostic.RuleName
+        Severity = $Diagnostic.Severity.ToString()
+        Message = $Diagnostic.Message.Replace($inputRoot, '<workload>')
+        ScriptName = $Diagnostic.ScriptName
+        ScriptPath = ConvertTo-WorkloadPath $Diagnostic.ScriptPath
+        RuleSuppressionID = $Diagnostic.RuleSuppressionID
+        IsSuppressed = $Diagnostic.IsSuppressed
+        Extent = if ($null -ne $Diagnostic.Extent) {
+            [ordered]@{
+                File = ConvertTo-WorkloadPath $Diagnostic.Extent.File
+                StartLine = $Diagnostic.Extent.StartLineNumber
+                StartColumn = $Diagnostic.Extent.StartColumnNumber
+                EndLine = $Diagnostic.Extent.EndLineNumber
+                EndColumn = $Diagnostic.Extent.EndColumnNumber
+                StartOffset = $Diagnostic.Extent.StartOffset
+                EndOffset = $Diagnostic.Extent.EndOffset
+                Text = $Diagnostic.Extent.Text
+            }
+        } else { $null }
+        SuggestedCorrections = $corrections
+    } | ConvertTo-Json -Depth 10 -Compress
+}
+
 if ($inputItem.PSIsContainer) {
     $inputFiles = @(Get-ChildItem -LiteralPath $ScriptPath -File -Recurse:$Recurse |
         Where-Object Extension -In '.ps1', '.psm1', '.psd1' |
@@ -65,6 +113,8 @@ if ($inputItem.PSIsContainer) {
     $inputFiles = @($inputItem)
     $inputHash = (Get-FileHash -LiteralPath $ScriptPath -Algorithm SHA256).Hash
 }
+$metricsType = $command.ImplementingType.Assembly.GetType('Microsoft.Windows.PowerShell.ScriptAnalyzer.PerformanceTelemetry')
+$metricsEnabled = $CollectMetrics -and $null -ne $metricsType
 $results = [ordered]@{
     PowerShellVersion = $PSVersionTable.PSVersion.ToString()
     ModuleVersion = $module.Version.ToString()
@@ -77,14 +127,41 @@ $results = [ordered]@{
     Recurse = [bool]$Recurse
     SettingsPath = $SettingsPath
     SettingsSHA256 = if ($SettingsPath) { (Get-FileHash -LiteralPath $SettingsPath -Algorithm SHA256).Hash } else { $null }
+    Culture = [Globalization.CultureInfo]::CurrentCulture.Name
+    UICulture = [Globalization.CultureInfo]::CurrentUICulture.Name
+    MetricsRequested = [bool]$CollectMetrics
+    MetricsAvailable = $null -ne $metricsType
+    StopwatchFrequency = [System.Diagnostics.Stopwatch]::Frequency
 }
 
-foreach ($run in 'Cold', 'Warm') {
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $diagnostics = @(& $command @analyzerArguments)
-    $stopwatch.Stop()
-    $results["${run}Seconds"] = $stopwatch.Elapsed.TotalSeconds
-    $results["${run}DiagnosticCount"] = $diagnostics.Count
+try {
+    if ($metricsEnabled) {
+        $metricsType.GetProperty('Enabled').SetValue($null, $true)
+    }
+    foreach ($run in 'Cold', 'Warm') {
+        if ($metricsEnabled) {
+            $metricsType.GetMethod('Reset').Invoke($null, $null)
+        }
+        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+        $diagnostics = @(& $command @analyzerArguments)
+        $stopwatch.Stop()
+        if ($metricsEnabled) {
+            $results["${run}Metrics"] = $metricsType.GetMethod('Snapshot').Invoke($null, $null)
+        }
+        $results["${run}Seconds"] = $stopwatch.Elapsed.TotalSeconds
+        $results["${run}DiagnosticCount"] = $diagnostics.Count
+        # Canonicalize outside the timed region, retaining duplicates but ignoring
+        # nondeterministic rule completion order and checkout-root differences.
+        [string[]]$diagnosticJson = @($diagnostics | ForEach-Object { ConvertTo-DiagnosticJson $_ })
+        [Array]::Sort($diagnosticJson, [StringComparer]::Ordinal)
+        $results["${run}DiagnosticsSHA256"] = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+            [Text.Encoding]::UTF8.GetBytes(($diagnosticJson -join "`n"))))
+        $results["${run}Diagnostics"] = @($diagnosticJson | ForEach-Object { ConvertFrom-Json -InputObject $_ })
+    }
+} finally {
+    if ($metricsEnabled) {
+        $metricsType.GetProperty('Enabled').SetValue($null, $false)
+    }
 }
 
-[pscustomobject]$results | ConvertTo-Json | Set-Content -LiteralPath $ResultPath -Encoding utf8
+[pscustomobject]$results | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResultPath -Encoding utf8

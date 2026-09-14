@@ -25,6 +25,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private const string GetCommandName = "Microsoft.PowerShell.Core\\Get-Command";
 
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
+        private readonly ConcurrentDictionary<CmdletInfo, IReadOnlyDictionary<string, CommandParameterSnapshot>> _parameterSnapshots
+            = new ConcurrentDictionary<CmdletInfo, IReadOnlyDictionary<string, CommandParameterSnapshot>>();
+        private readonly ConcurrentDictionary<CmdletInfo, IReadOnlyList<string>> _mandatoryParameters
+            = new ConcurrentDictionary<CmdletInfo, IReadOnlyList<string>>();
 
         /// <summary>
         /// Guards all access to <see cref="_runspace"/> so that only one thread at a time drives the
@@ -36,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly object _runspaceLock = new object();
 
         private readonly Runspace _runspace;
-        private bool disposed = false;
+        private volatile bool disposed = false;
 
         /// <summary>
         /// Create a fresh command info cache instance.
@@ -62,7 +66,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Always take the lock, also on the finalizer path, so that 'disposed' is never
             // published without the runspace being disposed along with it and so that the runspace
             // cannot be disposed while a lookup is in flight.
-            lock (_runspaceLock)
+            using (PerformanceTelemetry.EnterLock(_runspaceLock))
             {
                 if ( disposed )
                 {
@@ -95,10 +99,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var key = new CommandLookupKey(commandName, commandTypes);
             if (bypassCache)
             {
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupBypasses);
                 return GetCommandInfoInternal(commandName, commandTypes);
             }
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
-            var lazyCommandInfo = _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes)));
+            if (!_commandInfoCache.TryGetValue(key, out var lazyCommandInfo))
+            {
+                lazyCommandInfo = _commandInfoCache.GetOrAdd(key, CreateLookup(commandName, commandTypes));
+            }
             try
             {
                 return lazyCommandInfo.Value;
@@ -115,6 +123,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        private Lazy<CommandInfo> CreateLookup(string commandName, CommandTypes? commandTypes)
+        {
+            return new Lazy<CommandInfo>(() =>
+            {
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.LookupMisses);
+                return GetCommandInfoInternal(commandName, commandTypes);
+            });
+        }
 
         /// <summary>
         /// Get a CommandInfo object of the given command name
@@ -145,7 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 // Serialize all use of the PowerShell engine. Only cache misses reach this point;
                 // lookups that are already cached are served without taking the lock.
-                lock (_runspaceLock)
+                using (PerformanceTelemetry.EnterLock(_runspaceLock))
                 {
                     if (disposed)
                     {
@@ -219,11 +235,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Resolve the Lazy value before taking the lock: its factory may already be
             // running on another thread that needs the same lock to finish the lookup.
             var commandInfo = GetCommandInfo(commandName, commandTypes, bypassCache);
-            lock (_runspaceLock)
+            using (PerformanceTelemetry.EnterLock(_runspaceLock))
             {
                 // Dynamic parameter getters execute PowerShell code and mutate runspace state,
                 // even though they look like ordinary property reads.
-                return disposed ? null : commandInfo?.Parameters;
+                if (disposed || commandInfo == null) return null;
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                return commandInfo.Parameters;
             }
         }
 
@@ -233,9 +251,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName)
         {
             var commandInfo = GetCommandInfo(commandName);
-            lock (_runspaceLock)
+            using (PerformanceTelemetry.EnterLock(_runspaceLock))
             {
-                return disposed ? null : commandInfo?.ParameterSets;
+                if (disposed || commandInfo == null) return null;
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                return commandInfo.ParameterSets;
+            }
+        }
+
+        private static CmdletInfo GetStaticCmdlet(CommandInfo command)
+        {
+            // Aliases, functions, subclasses and provider/dynamic cmdlets retain the locked,
+            // uncached path. IDynamicParameters includes implementations inherited from base types.
+            if (command == null || command.GetType() != typeof(CmdletInfo)) return null;
+            var cmdlet = (CmdletInfo)command;
+            return cmdlet.ImplementingType != null
+                && !typeof(IDynamicParameters).IsAssignableFrom(cmdlet.ImplementingType) ? cmdlet : null;
+        }
+
+        public IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(
+            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+        {
+            var command = GetCommandInfo(commandName, commandTypes, bypassCache);
+            var staticCmdlet = bypassCache ? null : GetStaticCmdlet(command);
+            if (disposed || command == null) return null;
+            if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out var cached)) return cached;
+
+            using (PerformanceTelemetry.EnterLock(_runspaceLock))
+            {
+                if (disposed) return null;
+                if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out cached)) return cached;
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                var parameters = command.Parameters;
+                if (parameters == null) return null;
+                var snapshot = new ReadOnlyDictionary<string, CommandParameterSnapshot>(
+                    parameters.ToDictionary(p => p.Key, p => new CommandParameterSnapshot(p.Value), parameters.Comparer));
+                if (staticCmdlet != null) _parameterSnapshots[staticCmdlet] = snapshot;
+                return snapshot;
+            }
+        }
+
+        public IReadOnlyList<string> GetMandatoryParameterNames(string commandName)
+        {
+            var command = GetCommandInfo(commandName);
+            var staticCmdlet = GetStaticCmdlet(command);
+            if (disposed || command == null) return null;
+            if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out var cached)) return cached;
+
+            using (PerformanceTelemetry.EnterLock(_runspaceLock))
+            {
+                if (disposed) return null;
+                if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out cached)) return cached;
+                PerformanceTelemetry.Increment(ref PerformanceTelemetry.MetadataQueries);
+                int setCount = command.ParameterSets.Count;
+                var mandatory = new List<string>();
+                foreach (var parameter in command.Parameters.Values)
+                {
+                    if (parameter.Attributes.Count >= setCount
+                        && parameter.Attributes.OfType<ParameterAttribute>().Count(a => a.Mandatory) >= setCount)
+                    {
+                        mandatory.Add(parameter.Name);
+                    }
+                }
+                var snapshot = mandatory.AsReadOnly();
+                if (staticCmdlet != null) _mandatoryParameters[staticCmdlet] = snapshot;
+                return snapshot;
             }
         }
 
@@ -278,7 +358,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 unchecked
                 {
                     int hash = 17;
-                    hash = hash * 31 + Name.ToUpperInvariant().GetHashCode();
+                    hash = hash * 31 + StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
                     hash = hash * 31 + CommandTypes.GetHashCode();
                     return hash;
                 }

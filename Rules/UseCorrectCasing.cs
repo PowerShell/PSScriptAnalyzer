@@ -119,11 +119,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
 
                     var commandParameterAsts = commandAst.FindAll(
-                        testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>();
-                    Dictionary<string, ParameterMetadata> availableParameters;
+                        testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>().ToArray();
+                    if (commandParameterAsts.Length == 0)
+                    {
+                        continue;
+                    }
+                    IReadOnlyDictionary<string, CommandParameterSnapshot> availableParameters;
                     try
                     {
-                        availableParameters = Helper.Instance.GetCommandParameters(commandName);
+                        availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
                     }
                     // It's a known issue that objects from PowerShell can have a runspace affinity,
                     // therefore if that happens, we query a fresh object instead of using the cache.
@@ -143,7 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     foreach (var commandParameterAst in commandParameterAsts)
                     {
                         var parameterName = commandParameterAst.ParameterName;
-                        if (availableParameters.TryGetValue(parameterName, out ParameterMetadata parameterMetaData))
+                        if (availableParameters.TryGetValue(parameterName, out CommandParameterSnapshot parameterMetaData))
                         {
                             var correctlyCasedParameterName = parameterMetaData.Name;
                             if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
@@ -172,11 +176,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Queries a fresh <see cref="CommandInfo"/> object to work around the runspace affinity problem
         /// of the PowerShell engine and returns its parameters, or null if they cannot be determined.
         /// </summary>
-        private Dictionary<string, ParameterMetadata> GetParametersFromFreshCommandInfo(string commandName)
+        private IReadOnlyDictionary<string, CommandParameterSnapshot> GetParametersFromFreshCommandInfo(string commandName)
         {
             try
             {
-                return Helper.Instance.GetCommandParameters(commandName, bypassCache: true);
+                return Helper.Instance.GetCommandParameterSnapshot(commandName, bypassCache: true);
             }
             catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
             {

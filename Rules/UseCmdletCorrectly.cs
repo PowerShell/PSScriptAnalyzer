@@ -145,33 +145,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
-            var mandatoryParameters = new List<ParameterMetadata>();
+            IReadOnlyList<string> mandatoryParameters;
             try
             {
-                int noOfParamSets = Helper.Instance.GetCommandParameterSets(cmdAst.GetCommandName()).Count;
-                foreach (ParameterMetadata pm in Helper.Instance.GetCommandParameters(cmdAst.GetCommandName()).Values)
-                {
-                    int count = 0;
-
-                    if (pm.Attributes.Count < noOfParamSets)
-                    {
-                        continue;
-                    }
-
-                    foreach (Attribute attr in pm.Attributes)
-                    {
-                        if (!(attr is ParameterAttribute)) continue;
-                        if (((ParameterAttribute)attr).Mandatory)
-                        {
-                            count += 1;
-                        }
-                    }
-
-                    if (count >= noOfParamSets)
-                    {
-                        mandatoryParameters.Add(pm);
-                    }
-                }
+                mandatoryParameters = Helper.Instance.GetMandatoryParameterNames(cmdAst.GetCommandName());
             }
             catch (Exception)
             {
@@ -179,7 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            if (mandatoryParameters.Count == 0)
+            if (mandatoryParameters == null || mandatoryParameters.Count == 0)
             {
                 return true;
             }
@@ -188,8 +165,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (CommandElementAst commandElementAst in cmdAst.CommandElements.OfType<CommandParameterAst>())
             {
                 CommandParameterAst cpAst = (CommandParameterAst)commandElementAst;
-                if (mandatoryParameters.Count<ParameterMetadata>(item =>
-                    item.Name.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)) > 0)
+                if (mandatoryParameters.Any(item =>
+                    item.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return true;
                 }
@@ -253,6 +230,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
 
 
