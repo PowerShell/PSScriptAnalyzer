@@ -1,0 +1,232 @@
+name: Compare ScriptAnalyzer performance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workload:
+    name: Prepare shared benchmark input
+    runs-on: windows-latest
+    timeout-minutes: 10
+    outputs:
+      revision: ${{ steps.revision.outputs.sha }}
+    steps:
+      - name: Checkout benchmark script once for both builds
+        uses: actions/checkout@v4
+        with:
+          repository: PowerShell/PowerShell
+          ref: master
+          path: workload
+          sparse-checkout: build.psm1
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Record input revision
+        id: revision
+        shell: pwsh
+        run: |
+          $revision = git -C "$env:GITHUB_WORKSPACE/workload" rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve workload revision.' }
+          "sha=$revision" >> $env:GITHUB_OUTPUT
+
+      - name: Share the exact input file
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-workload
+          path: workload/build.psm1
+          if-no-files-found: error
+
+  benchmark:
+    name: Benchmark ${{ matrix.source }}
+    needs: workload
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - source: upstream
+            repository: PowerShell/PSScriptAnalyzer
+          - source: fork
+            repository: jessehouwing/PSScriptAnalyzer
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      BENCHMARK_SOURCE: ${{ matrix.source }}
+      BENCHMARK_REPOSITORY: ${{ matrix.repository }}
+      WORKLOAD_REVISION: ${{ needs.workload.outputs.revision }}
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          path: harness
+          persist-credentials: false
+
+      - name: Checkout analyzer main
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repository }}
+          ref: main
+          path: analyzer
+          persist-credentials: false
+
+      - name: Download shared input
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-workload
+          path: workload
+
+      - name: Install SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: analyzer/global.json
+
+      - name: Install build resources
+        run: '& "$env:GITHUB_WORKSPACE/harness/tools/installPSResources.ps1"'
+
+      - name: Build (Release, PowerShell 7)
+        working-directory: analyzer
+        run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose'
+
+      - name: Measure cold and warm analysis in a fresh shell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $workspace = $env:GITHUB_WORKSPACE
+          $resultDirectory = Join-Path $workspace 'results'
+          $null = New-Item -ItemType Directory -Path $resultDirectory -Force
+          $pwsh = (Get-Process -Id $PID).Path
+          $scriptPath = Join-Path $workspace 'workload/build.psm1'
+          $measureScript = Join-Path $workspace 'harness/tools/Measure-ScriptAnalyzerPerformance.ps1'
+          $sourcePath = Join-Path $workspace 'analyzer'
+          $manifests = @(Get-ChildItem -Path "$sourcePath/out/PSScriptAnalyzer" -Filter PSScriptAnalyzer.psd1 -Recurse)
+          if ($manifests.Count -ne 1) {
+              throw "Expected exactly one built manifest, found $($manifests.Count)."
+          }
+          $resultPath = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE.json"
+          & $pwsh -NoLogo -NoProfile -NonInteractive -File $measureScript `
+              -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath
+          if ($LASTEXITCODE -ne 0) {
+              throw "Benchmark failed (exit code $LASTEXITCODE)."
+          }
+          $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+          $revision = git -C $sourcePath rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve analyzer revision.' }
+          $metadata = @{
+              Source = $env:BENCHMARK_SOURCE
+              Repository = $env:BENCHMARK_REPOSITORY
+              Revision = $revision
+              WorkloadRevision = $env:WORKLOAD_REVISION
+              RunnerOS = $env:RUNNER_OS
+              RunnerImage = $env:ImageOS
+              RunnerImageVersion = $env:ImageVersion
+              ProcessorCount = [Environment]::ProcessorCount
+          }
+          $result | Add-Member -NotePropertyMembers $metadata
+          $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
+          $result | Format-List
+
+      - name: Upload raw benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scriptanalyzer-performance-${{ matrix.source }}
+          path: results/*.json
+          if-no-files-found: warn
+
+  compare:
+    name: Validate findings and report comparison
+    needs: benchmark
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: scriptanalyzer-performance-*
+          path: results
+          merge-multiple: true
+
+      - name: Validate and summarize
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $resultDirectory = Join-Path $env:GITHUB_WORKSPACE 'results'
+          $baseline = Get-Content -LiteralPath "$resultDirectory/upstream.json" -Raw | ConvertFrom-Json
+          $candidate = Get-Content -LiteralPath "$resultDirectory/fork.json" -Raw | ConvertFrom-Json
+          if ($baseline.ScriptSHA256 -ne $candidate.ScriptSHA256 -or
+              $baseline.WorkloadRevision -ne $candidate.WorkloadRevision -or
+              $baseline.PowerShellVersion -ne $candidate.PowerShellVersion) {
+              throw 'The benchmark input or PowerShell versions differ; results are not comparable.'
+          }
+          $findingsMatch = $baseline.ColdDiagnosticCount -gt 0 -and
+              $baseline.ColdDiagnosticCount -eq $candidate.ColdDiagnosticCount -and
+              $baseline.ColdDiagnosticCount -eq $baseline.WarmDiagnosticCount -and
+              $baseline.ColdDiagnosticCount -eq $candidate.WarmDiagnosticCount
+          $report = [ordered]@{
+              WorkloadRepository = 'PowerShell/PowerShell'
+              WorkloadRevision = $baseline.WorkloadRevision
+              ExpectedDiagnosticCount = $baseline.ColdDiagnosticCount
+              FindingsVerified = $findingsMatch
+              Measurements = @($baseline, $candidate)
+          }
+          $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath "$resultDirectory/comparison.json" -Encoding utf8
+
+          $summary = @(
+              '## Invoke-ScriptAnalyzer performance'
+              ''
+              'Release builds run in separate Windows jobs with the same PowerShell version, default rules and identical input bytes. No analyzer modules or sessions are shared between jobs.'
+              'Each build gets a fresh pwsh -NoProfile process: cold is its first analysis, warm is the immediately following analysis in that process.'
+              'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
+              ''
+              "| Source | Commit | Cold (s) | Warm (s) | Diagnostics (cold / warm) |"
+              "| --- | --- | ---: | ---: | ---: |"
+              "| PowerShell/PSScriptAnalyzer main | $($baseline.Revision) | $($baseline.ColdSeconds.ToString('F3')) | $($baseline.WarmSeconds.ToString('F3')) | $($baseline.ColdDiagnosticCount) / $($baseline.WarmDiagnosticCount) |"
+              "| jessehouwing/PSScriptAnalyzer main | $($candidate.Revision) | $($candidate.ColdSeconds.ToString('F3')) | $($candidate.WarmSeconds.ToString('F3')) | $($candidate.ColdDiagnosticCount) / $($candidate.WarmDiagnosticCount) |"
+              ''
+          )
+          foreach ($run in 'Cold', 'Warm') {
+              $property = "${run}Seconds"
+              if ($baseline.$property -gt 0) {
+                  $change = 100 * ($candidate.$property / $baseline.$property - 1)
+                  $summary += "$run time change (fork vs upstream): $($change.ToString('F2'))% (positive is slower)."
+              }
+          }
+          $summary += @(
+              ''
+              "Input: PowerShell/PowerShell build.psm1 at $($baseline.WorkloadRevision)"
+              "Input SHA256: $($baseline.ScriptSHA256)"
+              "PowerShell: $($baseline.PowerShellVersion)"
+              "Upstream runner: $($baseline.RunnerImage) $($baseline.RunnerImageVersion); logical processors: $($baseline.ProcessorCount)"
+              "Fork runner: $($candidate.RunnerImage) $($candidate.RunnerImageVersion); logical processors: $($candidate.ProcessorCount)"
+              ''
+              "Verified upstream module: $($baseline.ModuleManifest) (version $($baseline.ModuleVersion))"
+              "Verified upstream cmdlet assembly: $($baseline.AnalyzerAssemblyPath)"
+              "Verified fork module: $($candidate.ModuleManifest) (version $($candidate.ModuleVersion))"
+              "Verified fork cmdlet assembly: $($candidate.AnalyzerAssemblyPath)"
+              ''
+              'These are single cold/warm samples on separate hosts, not a statistical regression test. Rerun the workflow to assess runner and hardware noise.'
+          )
+          if (-not $findingsMatch) {
+              $summary += '**FAILED:** Expected a nonzero upstream cold finding count and the same count in all four runs. Timing results must not be treated as a valid comparison.'
+          } else {
+              $summary += "Finding count verified: all four runs returned $($baseline.ColdDiagnosticCount) findings, matching the upstream cold reference."
+          }
+          $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          $summary | Write-Output
+          if (-not $findingsMatch) {
+              throw 'Finding count validation failed. See the job summary and raw benchmark results.'
+          }
+
+      - name: Upload comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scriptanalyzer-performance-comparison
+          path: results/comparison.json
+          if-no-files-found: warn
