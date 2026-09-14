@@ -2,6 +2,16 @@ name: Compare ScriptAnalyzer performance
 
 on:
   workflow_dispatch:
+    inputs:
+      repetitions:
+        description: Number of fresh-process cold/warm pairs per build
+        type: choice
+        options: ['3', '5', '10']
+        default: '3'
+      collect_metrics:
+        description: Collect optional lock/caching metrics (adds measurement overhead)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,7 +24,27 @@ jobs:
     outputs:
       powershell: ${{ steps.revision.outputs.sha }}
       semver: ${{ steps.semver-revision.outputs.sha }}
+      upstream: ${{ steps.analyzer-revisions.outputs.upstream }}
+      fork: ${{ steps.analyzer-revisions.outputs.fork }}
+      perf: ${{ steps.analyzer-revisions.outputs.perf }}
     steps:
+      - name: Pin all analyzer revisions once
+        id: analyzer-revisions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($source in @(
+              @{ Name = 'upstream'; Repository = 'PowerShell/PSScriptAnalyzer'; Ref = 'main' },
+              @{ Name = 'fork'; Repository = 'jessehouwing/PSScriptAnalyzer'; Ref = 'main' },
+              @{ Name = 'perf'; Repository = 'jessehouwing/PSScriptAnalyzer'; Ref = 'perf' }
+          )) {
+              $revision = git ls-remote "https://github.com/$($source.Repository).git" "refs/heads/$($source.Ref)"
+              if ($LASTEXITCODE -ne 0 -or $revision -notmatch '^([0-9a-f]{40})\s') {
+                  throw "Cannot resolve $($source.Repository)@$($source.Ref)."
+              }
+              "$($source.Name)=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Checkout PowerShell source tree once for both builds
         uses: actions/checkout@v4
         with:
@@ -75,11 +105,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         workload: [powershell, semver]
-        source: [upstream, fork]
+        source: [upstream, fork, perf]
         include:
           - source: upstream
             repository: PowerShell/PSScriptAnalyzer
           - source: fork
+            repository: jessehouwing/PSScriptAnalyzer
+          - source: perf
             repository: jessehouwing/PSScriptAnalyzer
     defaults:
       run:
@@ -91,6 +123,9 @@ jobs:
       BENCHMARK_REPOSITORY: ${{ matrix.repository }}
       BENCHMARK_WORKLOAD: ${{ matrix.workload }}
       WORKLOAD_REVISION: ${{ needs.workload.outputs[matrix.workload] }}
+      ANALYZER_REVISION: ${{ needs.workload.outputs[matrix.source] }}
+      BENCHMARK_REPETITIONS: ${{ inputs.repetitions }}
+      BENCHMARK_METRICS: ${{ inputs.collect_metrics }}
     steps:
       - name: Checkout benchmark harness
         uses: actions/checkout@v4
@@ -98,11 +133,11 @@ jobs:
           path: harness
           persist-credentials: false
 
-      - name: Checkout analyzer main
+      - name: Checkout pinned analyzer revision
         uses: actions/checkout@v4
         with:
           repository: ${{ matrix.repository }}
-          ref: main
+          ref: ${{ needs.workload.outputs[matrix.source] }}
           path: analyzer
           persist-credentials: false
 
@@ -127,7 +162,7 @@ jobs:
         working-directory: analyzer
         run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose'
 
-      - name: Measure cold and warm analysis in a fresh shell
+      - name: Measure repeated cold and warm analysis in fresh shells
         run: |
           $ErrorActionPreference = 'Stop'
           $workspace = $env:GITHUB_WORKSPACE
@@ -148,15 +183,13 @@ jobs:
           if ($manifests.Count -ne 1) {
               throw "Expected exactly one built manifest, found $($manifests.Count)."
           }
-          $resultPath = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE.json"
-          & $pwsh -NoLogo -NoProfile -NonInteractive -File $measureScript `
-              -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath @analysisArguments
-          if ($LASTEXITCODE -ne 0) {
-              throw "Benchmark failed (exit code $LASTEXITCODE)."
+          if ($env:BENCHMARK_METRICS -eq 'true') {
+              $analysisArguments += '-CollectMetrics'
           }
-          $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
           $revision = git -C $sourcePath rev-parse HEAD
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve analyzer revision.' }
+          if ($LASTEXITCODE -ne 0 -or $revision -ne $env:ANALYZER_REVISION) {
+              throw 'Analyzer checkout does not match the pinned revision.'
+          }
           $metadata = @{
               Source = $env:BENCHMARK_SOURCE
               Repository = $env:BENCHMARK_REPOSITORY
@@ -169,9 +202,19 @@ jobs:
               RunnerImageVersion = $env:ImageVersion
               ProcessorCount = [Environment]::ProcessorCount
           }
-          $result | Add-Member -NotePropertyMembers $metadata
-          $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding utf8
-          $result | Format-List
+          for ($sample = 1; $sample -le [int]$env:BENCHMARK_REPETITIONS; $sample++) {
+              $resultPath = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE-$sample.json"
+              & $pwsh -NoLogo -NoProfile -NonInteractive -File $measureScript `
+                  -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath @analysisArguments
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Benchmark sample $sample failed (exit code $LASTEXITCODE)."
+              }
+              $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+              $result | Add-Member -NotePropertyMembers $metadata
+              $result | Add-Member -NotePropertyName Sample -NotePropertyValue $sample
+              $result | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $resultPath -Encoding utf8
+              $result | Format-List
+          }
 
       - name: Upload raw benchmark results
         if: always()
