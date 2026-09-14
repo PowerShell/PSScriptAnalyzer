@@ -126,6 +126,21 @@ Configuration C1 {
 
     Context 'When Hashtable checking is enabled' {
 
+        It 'Should set correction file and description when analyzing a file' {
+            $path = Join-Path -Path $TestDrive -ChildPath 'unaligned.ps1'
+            Set-Content -LiteralPath $path -Value '@{"Key"    = "Value"}'
+
+            $settings = New-AlignAssignmentSettings -CheckHashtable $true
+
+            $violations = Invoke-ScriptAnalyzer -Path $path -Settings $settings |
+                Get-NonParseDiagnostics
+
+            $violations | Should -HaveCount 1
+            $correction = $violations[0].SuggestedCorrections[0]
+            $correction.File | Should -Be ([IO.Path]::GetFullPath($path))
+            $correction.Description | Should -Be 'Assignment statements are not aligned'
+        }
+
         It 'Should not find violations in empty single-line hashtable' {
             $def = '@{}'
 
