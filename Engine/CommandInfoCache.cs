@@ -21,6 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// see https://github.com/PowerShell/PowerShell/issues/4003
         /// </summary>
         private const int MaxLookupAttempts = 3;
+        private const string GetCommandName = "Microsoft.PowerShell.Core\\Get-Command";
 
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
 
@@ -154,7 +155,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         ps.Runspace = _runspace;
 
-                        ps.AddCommand("Get-Command")
+                        ps.AddCommand(GetCommandName)
                             .AddParameter("Name", actualCmdName)
                             .AddParameter("ErrorAction", "SilentlyContinue");
 
@@ -170,8 +171,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         try
                         {
-                            return ps.Invoke<CommandInfo>()
-                                .FirstOrDefault();
+                            var result = ps.Invoke<CommandInfo>();
+                            if (ps.HadErrors && ps.Streams.Error.All(IsGetCommandResolutionError))
+                            {
+                                if (attempt >= MaxLookupAttempts)
+                                {
+                                    return null;
+                                }
+
+                                continue;
+                            }
+
+                            return result.FirstOrDefault();
                         }
                         // 'Get-Command' is invoked with 'SilentlyContinue', so a CommandNotFoundException can only
                         // mean that the engine failed to resolve 'Get-Command' itself in the runspace.
@@ -180,16 +191,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // https://github.com/PowerShell/PSScriptAnalyzer/issues/2205
                         // Lookups are serialized now, so this should no longer occur, but the retry is kept as a
                         // safety net for hosts that drive the engine from other threads at the same time.
-                        catch (CommandNotFoundException)
+                        catch (RuntimeException exception) when (IsGetCommandResolutionException(exception))
                         {
                             if (attempt >= MaxLookupAttempts)
                             {
                                 return null;
                             }
                         }
+
                     }
                 }
             }
+        }
+
+        private static bool IsGetCommandResolutionError(ErrorRecord errorRecord)
+        {
+            return IsGetCommandResolutionException(errorRecord?.Exception);
+        }
+
+        private static bool IsGetCommandResolutionException(Exception exception)
+        {
+            if (exception is CommandNotFoundException)
+            {
+                return true;
+            }
+
+            if (exception is ParentContainsErrorRecordException parentContainsErrorRecordException)
+            {
+                return IsGetCommandResolutionException(parentContainsErrorRecordException.InnerException);
+            }
+
+            return false;
         }
 
         private struct CommandLookupKey : IEquatable<CommandLookupKey>
