@@ -330,6 +330,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return psModuleInfo;
         }
 
+        /// <summary>Shares validation between built-in rules during one syntax-tree analysis only.</summary>
+        public PSModuleInfo GetModuleManifestForAnalysis(string filePath, out IEnumerable<ErrorRecord> errorRecords)
+        {
+            var cache = ModuleManifestAnalysisCache.Current;
+            return cache == null
+                ? GetModuleManifest(filePath, out errorRecords)
+                : cache.Get(this, filePath, out errorRecords);
+        }
+
         /// <summary>
         /// Checks if the error record is MissingMemberException
         /// </summary>
@@ -399,18 +408,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             List<string> exportFunctionsCmdlet = Helper.Instance.CmdletNameAndAliases("export-modulemember");
 
             // find functions exported
-            IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
-                && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
+            var cmdAsts = ast.FindAll(item => item is CommandAst
+                && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true).ToArray();
+            if (cmdAsts.Length == 0)
+            {
+                return exportedFunctions;
+            }
 
             // Export-ModuleMember has no dynamic parameters. Resolve names from its static
             // metadata instead of ResolveParameter(), which re-enters the cached command's
             // runspace and races with command lookups and metadata queries on other rule threads.
-            var parameters = GetCommandParameters("export-modulemember", CommandTypes.Cmdlet);
+            var parameters = GetCommandParameterSnapshot("export-modulemember", CommandTypes.Cmdlet);
             if (parameters == null)
             {
                 return exportedFunctions;
             }
-            IEnumerable<ParameterMetadata> switchParams = parameters.Values.Where(pm => pm.SwitchParameter);
+            var switchParams = parameters.Values.Where(pm => pm.SwitchParameter);
 
             foreach (CommandAst cmdAst in cmdAsts)
             {
@@ -429,7 +442,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     if (ceAst is CommandParameterAst)
                     {
                         var paramAst = ceAst as CommandParameterAst;
-                        ParameterMetadata param;
+                        CommandParameterSnapshot param;
                         if (!parameters.TryGetValue(paramAst.ParameterName, out param))
                         {
                             param = parameters.Values.FirstOrDefault(pm =>
@@ -685,7 +698,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Retrieves command parameters while serializing access to the cached command's runspace.
+        /// Retrieves command parameters with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
             string name, CommandTypes? commandType = null, bool bypassCache = false)
@@ -694,11 +707,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Retrieves command parameter sets while serializing access to the cached command's runspace.
+        /// Retrieves command parameter sets with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
         public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string name)
         {
             return CommandInfoCache.GetCommandParameterSets(name);
+        }
+
+        /// <summary>Gets detached parameter facts or null when unavailable; only static cmdlet metadata is cached.</summary>
+        public IReadOnlyDictionary<string, CommandParameterSnapshot> GetCommandParameterSnapshot(
+            string name, CommandTypes? commandType = null, bool bypassCache = false)
+        {
+            return CommandInfoCache.GetParameterSnapshot(name, commandType, bypassCache);
+        }
+
+        /// <summary>Gets the mandatory parameter summary under a single runspace lock, or null when unavailable.</summary>
+        public IReadOnlyList<string> GetMandatoryParameterNames(string name)
+        {
+            return CommandInfoCache.GetMandatoryParameterNames(name);
         }
 
         /// <summary>

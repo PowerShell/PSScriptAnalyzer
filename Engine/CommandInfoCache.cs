@@ -16,15 +16,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     internal class CommandInfoCache : IDisposable
     {
-        /// <summary>
-        /// Number of times a command lookup is attempted before giving up.
-        /// Command lookups can fail transiently because the PowerShell engine is not thread safe,
-        /// see https://github.com/PowerShell/PowerShell/issues/4003
-        /// </summary>
-        private const int MaxLookupAttempts = 3;
         private const string GetCommandName = "Microsoft.PowerShell.Core\\Get-Command";
 
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
+        private readonly ConcurrentDictionary<CmdletInfo, IReadOnlyDictionary<string, CommandParameterSnapshot>> _parameterSnapshots
+            = new ConcurrentDictionary<CmdletInfo, IReadOnlyDictionary<string, CommandParameterSnapshot>>();
+        private readonly ConcurrentDictionary<CmdletInfo, IReadOnlyList<string>> _mandatoryParameters
+            = new ConcurrentDictionary<CmdletInfo, IReadOnlyList<string>>();
 
         /// <summary>
         /// Guards all access to <see cref="_runspace"/> so that only one thread at a time drives the
@@ -36,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly object _runspaceLock = new object();
 
         private readonly Runspace _runspace;
-        private bool disposed = false;
+        private volatile bool disposed = false;
 
         /// <summary>
         /// Create a fresh command info cache instance.
@@ -87,6 +85,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
+            try
+            {
+                return GetCachedCommandInfo(commandName, commandTypes, bypassCache);
+            }
+            catch (Exception exception) when (IsGetCommandResolutionException(exception))
+            {
+                // Failed Lazy lookups have already been evicted; never cache a lookup failure as a miss.
+                return null;
+            }
+        }
+
+        private CommandInfo GetCachedCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache)
+        {
             if (string.IsNullOrWhiteSpace(commandName))
             {
                 return null;
@@ -98,7 +109,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return GetCommandInfoInternal(commandName, commandTypes);
             }
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
-            var lazyCommandInfo = _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes)));
+            if (!_commandInfoCache.TryGetValue(key, out var lazyCommandInfo))
+            {
+                lazyCommandInfo = _commandInfoCache.GetOrAdd(key, CreateLookup(commandName, commandTypes));
+            }
             try
             {
                 return lazyCommandInfo.Value;
@@ -109,12 +123,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // command fail for the lifetime of the process. Evict the entry so that the next lookup
                 // can try again. Only remove the faulted instance so that a replacement that another
                 // thread may already have added is left alone.
-                ((ICollection<KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>>)_commandInfoCache)
-                    .Remove(new KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>(key, lazyCommandInfo));
+                RemoveLookup(key, lazyCommandInfo);
                 throw;
             }
         }
 
+        private void RemoveLookup(CommandLookupKey key, Lazy<CommandInfo> lookup)
+        {
+            ((ICollection<KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>>)_commandInfoCache)
+                .Remove(new KeyValuePair<CommandLookupKey, Lazy<CommandInfo>>(key, lookup));
+        }
+
+        private Lazy<CommandInfo> CreateLookup(string commandName, CommandTypes? commandTypes)
+        {
+            return new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes));
+        }
 
         /// <summary>
         /// Get a CommandInfo object of the given command name
@@ -141,66 +164,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // For more details see https://github.com/PowerShell/PowerShell/issues/9308
             actualCmdName = WildcardPattern.Escape(actualCmdName);
 
-            for (int attempt = 1; ; attempt++)
+            // Serialize all use of the PowerShell engine. Only cache misses reach this point;
+            // lookups that are already cached are served without taking the lock.
+            lock (_runspaceLock)
             {
-                // Serialize all use of the PowerShell engine. Only cache misses reach this point;
-                // lookups that are already cached are served without taking the lock.
-                lock (_runspaceLock)
+                if (disposed)
                 {
-                    if (disposed)
+                    return null;
+                }
+
+                using (var ps = System.Management.Automation.PowerShell.Create())
+                {
+                    ps.Runspace = _runspace;
+
+                    ps.AddCommand(GetCommandName)
+                        .AddParameter("Name", actualCmdName)
+                        .AddParameter("ErrorAction", "SilentlyContinue");
+
+                    if (commandType != null)
                     {
-                        return null;
+                        ps.AddParameter("CommandType", commandType);
                     }
 
-                    using (var ps = System.Management.Automation.PowerShell.Create())
+                    if (!string.IsNullOrEmpty(moduleName))
                     {
-                        ps.Runspace = _runspace;
-
-                        ps.AddCommand(GetCommandName)
-                            .AddParameter("Name", actualCmdName)
-                            .AddParameter("ErrorAction", "SilentlyContinue");
-
-                        if (commandType != null)
-                        {
-                            ps.AddParameter("CommandType", commandType);
-                        }
-
-                        if (!string.IsNullOrEmpty(moduleName))
-                        {
-                            ps.AddParameter("Module", moduleName);
-                        }
-
-                        try
-                        {
-                            var result = ps.Invoke<CommandInfo>();
-                            if (ps.HadErrors && ps.Streams.Error.All(IsGetCommandResolutionError))
-                            {
-                                if (attempt >= MaxLookupAttempts)
-                                {
-                                    return null;
-                                }
-
-                                continue;
-                            }
-
-                            return result.FirstOrDefault();
-                        }
-                        // 'Get-Command' is invoked with 'SilentlyContinue', so a CommandNotFoundException can only
-                        // mean that the engine failed to resolve 'Get-Command' itself in the runspace.
-                        // That happened intermittently when lookups ran concurrently because the PowerShell engine
-                        // is not thread safe, see https://github.com/PowerShell/PowerShell/issues/4003 and
-                        // https://github.com/PowerShell/PSScriptAnalyzer/issues/2205
-                        // Lookups are serialized now, so this should no longer occur, but the retry is kept as a
-                        // safety net for hosts that drive the engine from other threads at the same time.
-                        catch (RuntimeException exception) when (IsGetCommandResolutionException(exception))
-                        {
-                            if (attempt >= MaxLookupAttempts)
-                            {
-                                return null;
-                            }
-                        }
-
+                        ps.AddParameter("Module", moduleName);
                     }
+
+                    Collection<CommandInfo> result = ps.Invoke<CommandInfo>();
+
+                    // 'Get-Command' is invoked with 'SilentlyContinue', so a resolution error can only
+                    // mean that the engine failed to resolve 'Get-Command' itself in the runspace.
+                    // That happened intermittently when lookups ran concurrently because the PowerShell engine
+                    // is not thread safe, see https://github.com/PowerShell/PowerShell/issues/4003 and
+                    // https://github.com/PowerShell/PSScriptAnalyzer/issues/2205
+                    // Lookups are serialized now, so this should no longer occur; if it does, the cache
+                    // entry is evicted and the lookup surfaces as a null command info.
+                    // SilentlyContinue can set HadErrors without populating the stream for an unknown name.
+                    if (ps.HadErrors && ps.Streams.Error.Count > 0 && ps.Streams.Error.All(IsGetCommandResolutionError))
+                    {
+                        throw ps.Streams.Error[0].Exception;
+                    }
+                    return result.FirstOrDefault();
                 }
             }
         }
@@ -216,15 +221,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
             string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
-            // Resolve the Lazy value before taking the lock: its factory may already be
-            // running on another thread that needs the same lock to finish the lookup.
-            var commandInfo = GetCommandInfo(commandName, commandTypes, bypassCache);
-            lock (_runspaceLock)
+            return GetCommandMetadata(commandName, commandTypes, bypassCache, command =>
             {
-                // Dynamic parameter getters execute PowerShell code and mutate runspace state,
-                // even though they look like ordinary property reads.
-                return disposed ? null : commandInfo?.Parameters;
-            }
+                lock (_runspaceLock)
+                {
+                    // Dynamic parameter getters execute PowerShell code and mutate runspace state,
+                    // even though they look like ordinary property reads.
+                    if (disposed) return null;
+                    return command.Parameters;
+                }
+            });
         }
 
         /// <summary>
@@ -232,10 +238,124 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName)
         {
-            var commandInfo = GetCommandInfo(commandName);
+            return GetCommandMetadata(commandName, null, false, command =>
+            {
+                lock (_runspaceLock)
+                {
+                    if (disposed) return null;
+                    return command.ParameterSets;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Contains PowerShell metadata failures: the failed command object is evicted so subsequent
+        /// calls can recover, and null is returned. Unavailable metadata is never cached.
+        /// Unexpected exceptions still propagate.
+        /// </summary>
+        private T GetCommandMetadata<T>(
+            string commandName, CommandTypes? commandTypes, bool bypassCache, Func<CommandInfo, T> readMetadata)
+            where T : class
+        {
+            // Resolve Lazy values outside the runspace lock: another thread's factory may need it.
+            var command = GetCommandInfo(commandName, commandTypes, bypassCache);
+            if (disposed || command == null || command.CommandType == CommandTypes.Application) return null;
+            try
+            {
+                return readMetadata(command);
+            }
+            catch (Exception exception) when (IsMetadataException(exception))
+            {
+                var key = new CommandLookupKey(commandName, commandTypes);
+                if (_commandInfoCache.TryGetValue(key, out var lookup)
+                    && lookup.IsValueCreated && ReferenceEquals(lookup.Value, command))
+                {
+                    RemoveLookup(key, lookup);
+                }
+                return null;
+            }
+        }
+
+        private static bool IsRunspaceAffinityException(Exception exception)
+        {
+            // PowerShell objects can have runspace affinity, see PowerShell issue 4003 and PSSA issue 1708.
+            return exception is InvalidOperationException || exception is NullReferenceException;
+        }
+
+        private static bool IsMetadataException(Exception exception)
+        {
+            return IsRunspaceAffinityException(exception)
+                || exception is RuntimeException || exception is PSNotSupportedException;
+        }
+
+        private static CmdletInfo GetStaticCmdlet(CommandInfo command)
+        {
+            // Aliases, functions, subclasses and provider/dynamic cmdlets retain the locked,
+            // uncached path. IDynamicParameters includes implementations inherited from base types.
+            if (command == null || command.GetType() != typeof(CmdletInfo)) return null;
+            var cmdlet = (CmdletInfo)command;
+            return cmdlet.ImplementingType != null
+                && !typeof(IDynamicParameters).IsAssignableFrom(cmdlet.ImplementingType) ? cmdlet : null;
+        }
+
+        public IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(
+            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+        {
+            return GetCommandMetadata(commandName, commandTypes, bypassCache,
+                command => GetParameterSnapshot(command, bypassCache));
+        }
+
+        private IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(CommandInfo command, bool bypassCache)
+        {
+            var staticCmdlet = bypassCache ? null : GetStaticCmdlet(command);
+            if (disposed || command == null) return null;
+            if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out var cached)) return cached;
+
             lock (_runspaceLock)
             {
-                return disposed ? null : commandInfo?.ParameterSets;
+                if (disposed) return null;
+                if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out cached)) return cached;
+                var parameters = command.Parameters;
+                if (parameters == null) return null;
+                var snapshot = new ReadOnlyDictionary<string, CommandParameterSnapshot>(
+                    parameters.ToDictionary(p => p.Key, p => new CommandParameterSnapshot(p.Value), parameters.Comparer));
+                if (staticCmdlet != null) _parameterSnapshots[staticCmdlet] = snapshot;
+                return snapshot;
+            }
+        }
+
+        public IReadOnlyList<string> GetMandatoryParameterNames(string commandName)
+        {
+            return GetCommandMetadata(commandName, null, false,
+                command => GetMandatoryParameterNames(command, bypassCache: false));
+        }
+
+        private IReadOnlyList<string> GetMandatoryParameterNames(CommandInfo command, bool bypassCache)
+        {
+            var staticCmdlet = bypassCache ? null : GetStaticCmdlet(command);
+            if (disposed || command == null) return null;
+            if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out var cached)) return cached;
+
+            lock (_runspaceLock)
+            {
+                if (disposed) return null;
+                if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out cached)) return cached;
+                var parameterSets = command.ParameterSets;
+                var parameters = command.Parameters;
+                if (parameterSets == null || parameters == null) return null;
+                int setCount = parameterSets.Count;
+                var mandatory = new List<string>();
+                foreach (var parameter in parameters.Values)
+                {
+                    if (parameter.Attributes.Count >= setCount
+                        && parameter.Attributes.OfType<ParameterAttribute>().Count(a => a.Mandatory) >= setCount)
+                    {
+                        mandatory.Add(parameter.Name);
+                    }
+                }
+                var snapshot = mandatory.AsReadOnly();
+                if (staticCmdlet != null) _mandatoryParameters[staticCmdlet] = snapshot;
+                return snapshot;
             }
         }
 
@@ -278,7 +398,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 unchecked
                 {
                     int hash = 17;
-                    hash = hash * 31 + Name.ToUpperInvariant().GetHashCode();
+                    hash = hash * 31 + StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
                     hash = hash * 31 + CommandTypes.GetHashCode();
                     return hash;
                 }

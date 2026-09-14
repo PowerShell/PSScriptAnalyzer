@@ -36,7 +36,10 @@ public static class ConcurrentCommandLookup
             {
                 for (int j = 0; j < 100; j++)
                 {
-                    helper.GetCommandInfo("Get-Command", bypassCache: true);
+                    if (helper.GetCommandInfo("Get-Command", bypassCache: true)?.Name != "Get-Command")
+                    {
+                        throw new System.InvalidOperationException("Get-Command was not resolved.");
+                    }
                     var parameters = helper.GetCommandParameters("Get-Item");
                     if (!parameters.ContainsKey("Path") || helper.GetCommandParameterSets("Get-Item").Count == 0)
                     {
@@ -101,5 +104,10 @@ public static class ConcurrentCommandLookup
 
     It "resolves exported functions while command lookups run concurrently" {
         [ConcurrentCommandLookup]::ResolveExports()
+    }
+
+    It "returns null for unknown commands" {
+        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetCommandInfo(
+            'Test-NonexistentCommandForRetryVerification', $null, $true) | Should -BeNullOrEmpty
     }
 }

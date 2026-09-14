@@ -119,21 +119,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
 
                     var commandParameterAsts = commandAst.FindAll(
-                        testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>();
-                    Dictionary<string, ParameterMetadata> availableParameters;
-                    try
+                        testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>().ToArray();
+                    if (commandParameterAsts.Length == 0)
                     {
-                        availableParameters = Helper.Instance.GetCommandParameters(commandName);
+                        continue;
                     }
-                    // It's a known issue that objects from PowerShell can have a runspace affinity,
-                    // therefore if that happens, we query a fresh object instead of using the cache.
-                    // https://github.com/PowerShell/PowerShell/issues/4003
-                    // The affinity problem surfaces as an InvalidOperationException or as a
-                    // NullReferenceException, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1708
-                    catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
-                    {
-                        availableParameters = GetParametersFromFreshCommandInfo(commandName);
-                    }
+                    var availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
                     if (availableParameters is null)
                     {
                         // The parameters of this command cannot be determined reliably,
@@ -143,7 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     foreach (var commandParameterAst in commandParameterAsts)
                     {
                         var parameterName = commandParameterAst.ParameterName;
-                        if (availableParameters.TryGetValue(parameterName, out ParameterMetadata parameterMetaData))
+                        if (availableParameters.TryGetValue(parameterName, out CommandParameterSnapshot parameterMetaData))
                         {
                             var correctlyCasedParameterName = parameterMetaData.Name;
                             if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
@@ -165,22 +156,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Queries a fresh <see cref="CommandInfo"/> object to work around the runspace affinity problem
-        /// of the PowerShell engine and returns its parameters, or null if they cannot be determined.
-        /// </summary>
-        private Dictionary<string, ParameterMetadata> GetParametersFromFreshCommandInfo(string commandName)
-        {
-            try
-            {
-                return Helper.Instance.GetCommandParameters(commandName, bypassCache: true);
-            }
-            catch (Exception exception) when (exception is InvalidOperationException || exception is NullReferenceException)
-            {
-                return null;
             }
         }
 
