@@ -94,8 +94,6 @@ function Start-ScriptAnalyzerBuild
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
-        [switch]$DisableEngineRetries,
-
         [switch]$Documentation,
 
         [switch]$Catalog
@@ -128,7 +126,7 @@ function Start-ScriptAnalyzerBuild
             # Build all the versions of the analyzer
             foreach ($psVersion in 5, 7) {
                 Write-Verbose -Verbose -Message "Configuration: $Configuration PSVersion: $psVersion"
-                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -DisableEngineRetries:$DisableEngineRetries -Verbose:$verboseWanted
+                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
             }
             if ( $Catalog ) {
                 New-Catalog -Location $script:destinationDir
@@ -205,8 +203,7 @@ function Start-ScriptAnalyzerBuild
                 "--framework",
                 $framework,
                 "--configuration",
-                "$buildConfiguration",
-                "-p:DisableEngineRetries=$($DisableEngineRetries.IsPresent)"
+                "$buildConfiguration"
             if ( $env:TF_BUILD ) {
                 $dotnetArgs += "--output"
                 $dotnetArgs += "${PSScriptRoot}\bin\${buildConfiguration}\${framework}"

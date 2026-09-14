@@ -294,7 +294,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
             // Test-ModuleManifest is not thread safe
-            using (PerformanceTelemetry.EnterLock(_testModuleManifestLock))
+            lock (_testModuleManifestLock)
             {
                 using (var ps = System.Management.Automation.PowerShell.Create())
                 {
@@ -303,7 +303,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                       .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                     try
                     {
-                        PerformanceTelemetry.Increment(ref PerformanceTelemetry.ManifestValidations);
                         psObj = ps.Invoke();
                     }
                     catch (CmdletInvocationException e)

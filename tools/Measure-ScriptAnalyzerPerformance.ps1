@@ -14,9 +14,7 @@ param(
 
     [switch]$Recurse,
 
-    [string]$SettingsPath,
-
-    [switch]$CollectMetrics
+    [string]$SettingsPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -113,8 +111,6 @@ if ($inputItem.PSIsContainer) {
     $inputFiles = @($inputItem)
     $inputHash = (Get-FileHash -LiteralPath $ScriptPath -Algorithm SHA256).Hash
 }
-$metricsType = $command.ImplementingType.Assembly.GetType('Microsoft.Windows.PowerShell.ScriptAnalyzer.PerformanceTelemetry')
-$metricsEnabled = $CollectMetrics -and $null -ne $metricsType
 $results = [ordered]@{
     PowerShellVersion = $PSVersionTable.PSVersion.ToString()
     ModuleVersion = $module.Version.ToString()
@@ -129,39 +125,22 @@ $results = [ordered]@{
     SettingsSHA256 = if ($SettingsPath) { (Get-FileHash -LiteralPath $SettingsPath -Algorithm SHA256).Hash } else { $null }
     Culture = [Globalization.CultureInfo]::CurrentCulture.Name
     UICulture = [Globalization.CultureInfo]::CurrentUICulture.Name
-    MetricsRequested = [bool]$CollectMetrics
-    MetricsAvailable = $null -ne $metricsType
     StopwatchFrequency = [System.Diagnostics.Stopwatch]::Frequency
 }
 
-try {
-    if ($metricsEnabled) {
-        $metricsType.GetProperty('Enabled').SetValue($null, $true)
-    }
-    foreach ($run in 'Cold', 'Warm') {
-        if ($metricsEnabled) {
-            $metricsType.GetMethod('Reset').Invoke($null, $null)
-        }
-        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $diagnostics = @(& $command @analyzerArguments)
-        $stopwatch.Stop()
-        if ($metricsEnabled) {
-            $results["${run}Metrics"] = $metricsType.GetMethod('Snapshot').Invoke($null, $null)
-        }
-        $results["${run}Seconds"] = $stopwatch.Elapsed.TotalSeconds
-        $results["${run}DiagnosticCount"] = $diagnostics.Count
-        # Canonicalize outside the timed region, retaining duplicates but ignoring
-        # nondeterministic rule completion order and checkout-root differences.
-        [string[]]$diagnosticJson = @($diagnostics | ForEach-Object { ConvertTo-DiagnosticJson $_ })
-        [Array]::Sort($diagnosticJson, [StringComparer]::Ordinal)
-        $results["${run}DiagnosticsSHA256"] = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
-            [Text.Encoding]::UTF8.GetBytes(($diagnosticJson -join "`n"))))
-        $results["${run}Diagnostics"] = @($diagnosticJson | ForEach-Object { ConvertFrom-Json -InputObject $_ })
-    }
-} finally {
-    if ($metricsEnabled) {
-        $metricsType.GetProperty('Enabled').SetValue($null, $false)
-    }
+foreach ($run in 'Cold', 'Warm') {
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $diagnostics = @(& $command @analyzerArguments)
+    $stopwatch.Stop()
+    $results["${run}Seconds"] = $stopwatch.Elapsed.TotalSeconds
+    $results["${run}DiagnosticCount"] = $diagnostics.Count
+    # Canonicalize outside the timed region, retaining duplicates but ignoring
+    # nondeterministic rule completion order and checkout-root differences.
+    [string[]]$diagnosticJson = @($diagnostics | ForEach-Object { ConvertTo-DiagnosticJson $_ })
+    [Array]::Sort($diagnosticJson, [StringComparer]::Ordinal)
+    $results["${run}DiagnosticsSHA256"] = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Text.Encoding]::UTF8.GetBytes(($diagnosticJson -join "`n"))))
+    $results["${run}Diagnostics"] = @($diagnosticJson | ForEach-Object { ConvertFrom-Json -InputObject $_ })
 }
 
 [pscustomobject]$results | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResultPath -Encoding utf8

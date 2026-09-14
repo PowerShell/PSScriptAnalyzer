@@ -101,24 +101,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         workload: [powershell, semver]
-        benchmark-source: [upstream, fork, perf, perf-no-retry]
         include:
           - source: upstream
             benchmark-source: upstream
             repository: PowerShell/PSScriptAnalyzer
-            disable-engine-retries: false
           - source: fork
             benchmark-source: fork
             repository: jessehouwing/PSScriptAnalyzer
-            disable-engine-retries: false
           - source: perf
             benchmark-source: perf
             repository: jessehouwing/PSScriptAnalyzer
-            disable-engine-retries: false
-          - source: perf
-            benchmark-source: perf-no-retry
-            repository: jessehouwing/PSScriptAnalyzer
-            disable-engine-retries: true
     defaults:
       run:
         shell: pwsh
@@ -164,14 +156,8 @@ jobs:
         run: '& "$env:GITHUB_WORKSPACE/harness/tools/installPSResources.ps1"'
 
       - name: Build (Release, PowerShell 7)
-        if: matrix.source != 'perf'
         working-directory: analyzer
         run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose'
-
-      - name: Build perf (Release, PowerShell 7, DisableEngineRetries=${{ matrix.disable-engine-retries }})
-        if: matrix.source == 'perf'
-        working-directory: analyzer
-        run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose -DisableEngineRetries:$${{ matrix.disable-engine-retries }}'
 
       - name: Measure repeated cold and warm analysis in fresh shells
         run: |
@@ -202,7 +188,6 @@ jobs:
               Source = $env:BENCHMARK_SOURCE
               Repository = $env:BENCHMARK_REPOSITORY
               Revision = $revision
-              DisableEngineRetries = $${{ matrix.disable-engine-retries }}
               Workload = $env:BENCHMARK_WORKLOAD
               WorkloadRepository = $workloadRepository
               WorkloadRevision = $env:WORKLOAD_REVISION
@@ -277,20 +262,17 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $resultDirectory = Join-Path $env:GITHUB_WORKSPACE 'results'
           $measurements = @{}
-          foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+          foreach ($source in 'upstream', 'fork', 'perf') {
               $measurements[$source] = @(for ($sample = 1; $sample -le [int]$env:BENCHMARK_REPETITIONS; $sample++) {
                   Get-Content -LiteralPath "$resultDirectory/$source-$sample.json" -Raw | ConvertFrom-Json
               })
           }
           $baseline = $measurements.upstream[0]
           $findingsMatch = $baseline.ColdDiagnosticCount -gt 0
-          foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+          foreach ($source in 'upstream', 'fork', 'perf') {
               foreach ($candidate in $measurements[$source]) {
-                  if ($candidate.MetricsRequested) {
-                      throw 'Metrics must be disabled for performance comparisons.'
-                  }
                   foreach ($property in 'InputSHA256', 'InputFileCount', 'SettingsSHA256', 'Recurse',
-                      'WorkloadRevision', 'PowerShellVersion', 'RunnerOS', 'Culture', 'UICulture', 'MetricsRequested') {
+                      'WorkloadRevision', 'PowerShellVersion', 'RunnerOS', 'Culture', 'UICulture') {
                       if ($baseline.$property -cne $candidate.$property) {
                           throw "Benchmark property '$property' differs; results are not comparable."
                       }
@@ -312,7 +294,7 @@ jobs:
               ExpectedDiagnosticCount = $baseline.ColdDiagnosticCount
               FindingsVerified = $findingsMatch
               UpstreamInconsistent = @($measurements.upstream | Where-Object Inconsistent).Count -gt 0
-              Measurements = @($measurements.upstream) + @($measurements.fork) + @($measurements.perf) + @($measurements.'perf-no-retry')
+              Measurements = @($measurements.upstream) + @($measurements.fork) + @($measurements.perf)
           }
           $report | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath "$resultDirectory/comparison.json" -Encoding utf8
 
@@ -323,7 +305,7 @@ jobs:
               return ($sorted[$middle - 1] + $sorted[$middle]) / 2
           }
           $medians = @{}
-          foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+          foreach ($source in 'upstream', 'fork', 'perf') {
               $medians[$source] = @{
                   Cold = Get-Median $measurements[$source].ColdSeconds
                   Warm = Get-Median $measurements[$source].WarmSeconds
@@ -338,16 +320,16 @@ jobs:
               "Each build gets $env:BENCHMARK_REPETITIONS fresh pwsh -NoProfile processes: cold is the first analysis, warm is the immediately following analysis in each process."
               'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
               ''
-              "| Source | Commit | DisableEngineRetries | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"
-              "| --- | --- | --- | ---: | ---: | --- | --- |"
+              "| Source | Commit | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"
+              "| --- | --- | ---: | ---: | --- | --- |"
           )
-          foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+          foreach ($source in 'upstream', 'fork', 'perf') {
               $samples = $measurements[$source]
               $reference = if ($source -like 'perf*') { 'perf' } else { 'main' }
               $cold = $samples.ColdSeconds | Measure-Object -Minimum -Maximum
               $warm = $samples.WarmSeconds | Measure-Object -Minimum -Maximum
               $marker = if (@($samples | Where-Object Inconsistent).Count) { ' ⚠️' } else { '' }
-              $summary += "| $source ($($samples[0].Repository)@$reference)$marker | $($samples[0].Revision) | $($samples[0].DisableEngineRetries) | $($medians[$source].Cold.ToString('F3')) | $($medians[$source].Warm.ToString('F3')) | $($cold.Minimum.ToString('F3'))–$($cold.Maximum.ToString('F3')) | $($warm.Minimum.ToString('F3'))–$($warm.Maximum.ToString('F3')) |"
+              $summary += "| $($samples[0].Repository)@$reference$marker | $($samples[0].Revision) | $($medians[$source].Cold.ToString('F3')) | $($medians[$source].Warm.ToString('F3')) | $($cold.Minimum.ToString('F3'))–$($cold.Maximum.ToString('F3')) | $($warm.Minimum.ToString('F3'))–$($warm.Maximum.ToString('F3')) |"
           }
           $summary += ''
           if ($report.UpstreamInconsistent) {
@@ -356,7 +338,7 @@ jobs:
               $summary += ''
           }
           foreach ($run in 'Cold', 'Warm') {
-              foreach ($pair in @(@('fork', 'upstream'), @('perf', 'upstream'), @('perf', 'fork'), @('perf-no-retry', 'upstream'), @('perf-no-retry', 'fork'), @('perf-no-retry', 'perf'))) {
+              foreach ($pair in @(@('fork', 'upstream'), @('perf', 'upstream'), @('perf', 'fork'))) {
                   if ($medians[$pair[1]][$run] -gt 0) {
                       $change = 100 * ($medians[$pair[0]][$run] / $medians[$pair[1]][$run] - 1)
                       $summary += "$run median time change ($($pair[0]) vs $($pair[1])): $($change.ToString('F2'))% (positive is slower)."
@@ -369,13 +351,12 @@ jobs:
               "Input SHA256: $($baseline.InputSHA256); PowerShell files: $($baseline.InputFileCount); recurse: $($baseline.Recurse)"
               "Settings SHA256 (empty for default rules): $($baseline.SettingsSHA256)"
               "PowerShell: $($baseline.PowerShellVersion)"
-              'Optional lock/cache metrics are disabled for all builds to avoid collection overhead in timing comparisons.'
               ''
               'Samples run on separate hosts per build, not a controlled statistical regression test. Raw artifacts retain each measurement and full normalized diagnostics.'
           )
-          foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+          foreach ($source in 'upstream', 'fork', 'perf') {
               $sample = $measurements[$source][0]
-              $summary += "$source runner: $($sample.RunnerImage) $($sample.RunnerImageVersion); logical processors: $($sample.ProcessorCount); metrics available: $($sample.MetricsAvailable)"
+              $summary += "$source runner: $($sample.RunnerImage) $($sample.RunnerImageVersion); logical processors: $($sample.ProcessorCount)"
               $summary += "Verified $source module: $($sample.ModuleManifest); assembly: $($sample.AnalyzerAssemblyPath)"
           }
           if (-not $findingsMatch) {
@@ -435,7 +416,7 @@ jobs:
                   $report = if (Test-Path -LiteralPath $path) {
                       Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
                   } else { $null }
-                  foreach ($source in 'upstream', 'fork', 'perf', 'perf-no-retry') {
+                  foreach ($source in 'upstream', 'fork', 'perf') {
                       $samples = @($report.Measurements | Where-Object Source -EQ $source)
                       if ($samples.Count -eq 0) {
                           $summary += "| $os | $workload | $source | — | — | Missing results |"
@@ -453,7 +434,7 @@ jobs:
           }
           $summary += @(
               ''
-              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf built with -DisableEngineRetries:$false (retries ON); perf-no-retry = the same perf revision built with -DisableEngineRetries:$true (retries OFF).'
+              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf.'
               'Compare timings only within the same OS/workload. Invalid results must not be used for performance comparisons; retried samples may be biased.'
               'Builds run on separate hosts, not a controlled statistical regression test. Per-combination summaries and artifacts retain revisions, ranges, diagnostics, and retry details.'
           )
