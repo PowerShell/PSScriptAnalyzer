@@ -1,6 +1,6 @@
 ---
 description: Align assignment statement
-ms.date: 03/20/2026
+ms.date: 07/21/2026
 ms.topic: reference
 title: AlignAssignmentStatement
 ---
@@ -8,15 +8,24 @@ title: AlignAssignmentStatement
 
 **Severity Level: Warning**
 
+**Default state: Disabled**
+
 ## Description
 
-Consecutive assignment statements are more readable when they're aligned. Assignments are considered
-aligned when their `equals` signs line up vertically.
+This rule detects misaligned assignment operators in hashtables and enum definitions. Consecutive
+assignment statements are easier to read and maintain when their assignment operators align
+vertically.
 
-This rule looks at the key-value pairs in hashtables (including DSC configurations) as well as enum
+This rule checks key-value pairs in hashtables and enum member definitions to ensure that the `=`
+signs line up. Use this rule to enforce consistent formatting in multiline hashtables and enum
 definitions.
 
-Consider the following example with a hashtable and enum that isn't aligned.
+The rule ignores assignments within hashtables and enums that appear on the same line as other
+assignments. For example, the rule ignores `$h = @{ a = 1; b = 2 }`.
+
+## Example
+
+### Noncompliant
 
 ```powershell
 $hashtable = @{
@@ -30,7 +39,7 @@ enum Enum {
 }
 ```
 
-Alignment in this case would look like the following.
+### Compliant
 
 ```powershell
 $hashtable = @{
@@ -44,10 +53,7 @@ enum Enum {
 }
 ```
 
-The rule ignores any assignments within hashtables and enums which are on the same line as others.
-For example, the rule ignores `$h = @{a = 1; b = 2}`.
-
-## Configuration
+## Configure rule
 
 ```powershell
 Rules = @{
@@ -62,22 +68,24 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-#### Enable: bool (Default value is `$false`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.
 
-#### CheckHashtable: bool (Default value is `$true`)
+### CheckHashtable
 
-Enforce alignment of assignment statements in a hashtable and in a DSC Configuration. There is only
-one setting for hashtable and DSC configuration because the property value pairs in a DSC
-configuration are parsed as key-value pairs of a hashtable.
+This parameter controls whether ScriptAnalyzer checks assignment alignment in hashtables and Desired
+State Configuration (DSC) configurations. It accepts a boolean value. To disable this check, set
+this parameter to `$false`. The default value is `$true`.
 
-#### AlignHashtableKvpWithInterveningComment: bool (Default value is `$true`)
+### AlignHashtableKvpWithInterveningComment
 
-Include key-value pairs in the alignment that have an intervening comment - that is to say a comment
-between the key name and the equals sign.
+This parameter controls whether ScriptAnalyzer includes hashtable key-value pairs that contain an
+intervening comment when determining alignment. It accepts a boolean value. To exclude these lines,
+set this parameter to `$false`. The default value is `$true`.
 
 Consider the following:
 
@@ -89,7 +97,8 @@ $hashtable = @{
 }
 ```
 
-With this setting disabled, the line with the comment is ignored, and it would be aligned like so:
+With this setting disabled, the line with the comment is ignored. The equal signs are aligned for
+the remaining lines:
 
 ```powershell
 $hashtable = @{
@@ -99,7 +108,7 @@ $hashtable = @{
 }
 ```
 
-With it enabled, the comment line is included in alignment:
+With this setting enabled, the equal signs are aligned for all lines:
 
 ```powershell
 $hashtable = @{
@@ -109,49 +118,23 @@ $hashtable = @{
 }
 ```
 
-#### CheckEnum: bool (Default value is `$true`)
+### CheckEnum
 
-Enforce alignment of assignment statements of an Enum definition.
+This parameter controls whether ScriptAnalyzer checks assignment alignment in enum member
+definitions. It accepts a boolean value. To disable this check, set this parameter to `$false`. The
+default value is `$true`.
 
-#### AlignEnumMemberWithInterveningComment: bool (Default value is `$true`)
+### AlignEnumMemberWithInterveningComment
 
-Include enum members in the alignment that have an intervening comment - that is to say a comment
-between the member name and the equals sign.
+This parameter controls whether ScriptAnalyzer includes enum members that contain an intervening
+comment when determining alignment. It accepts a boolean value. To exclude these lines, set this
+parameter to `$false`. The default value is `$true`.
 
-Consider the following:
+### IncludeValuelessEnumMembers
 
-```powershell
-enum Enum {
-    member = 1
-    anotherMember <#A Comment#> = 2
-    anotherDifferentMember = 3
-}
-```
-
-With this setting disabled, the line with the comment is ignored, and it would be aligned like so:
-
-```powershell
-enum Enum {
-    member                 = 1
-    anotherMember <#A Comment#> = 2
-    anotherDifferentMember = 3
-}
-```
-
-With it enabled, the comment line is included in alignment:
-
-```powershell
-enum Enum {
-    member                      = 1
-    anotherMember <#A Comment#> = 2
-    anotherDifferentMember      = 3
-}
-```
-
-#### IncludeValuelessEnumMembers: bool (Default value is `$true`)
-
-Include enum members in the alignment that don't have an explicitly assigned value. Enums don't
-need to be given a value when they're defined.
+This parameter controls whether ScriptAnalyzer includes enum members without explicitly assigned
+values when determining alignment. It accepts a boolean value. To exclude valueless members, set
+this parameter to `$false`. The default value is `$true`.
 
 Consider the following:
 
@@ -164,7 +147,7 @@ enum Enum {
 ```
 
 With this setting disabled, the third line, which has no value, isn't considered when choosing where
-to align assignments. It would be aligned like so:
+to align assignments.
 
 ```powershell
 enum Enum {

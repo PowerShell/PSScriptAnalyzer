@@ -1,6 +1,6 @@
 ---
 description: Avoid exclaim operator
-ms.date: 03/26/2024
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidExclaimOperator
 ---
@@ -8,30 +8,31 @@ title: AvoidExclaimOperator
 
 **Severity Level: Warning**
 
+**Default state: Disabled**
+
 ## Description
 
-Avoid using the negation operator (`!`). Use `-not` for improved readability.
+This rule detects the use of the negation operator (an exclamation mark, `!`) and recommends using
+the `-not` operator instead for improved readability and consistency with PowerShell conventions.
 
-> [!NOTE]
-> This rule is not enabled by default. The user needs to enable it through settings.
-
-## How to Fix
+The `-not` operator is more explicit and aligns with PowerShell's verbose style, making code
+easier to understand at a glance.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 $MyVar = !$true
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 $MyVar = -not $true
 ```
 
-## Configuration
+## Configure rule
 
 ```powershell
 Rules = @{
@@ -41,8 +42,9 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-- `Enable`: **bool** (Default value is `$false`)
+### Enable
 
-  Enable or disable the rule during ScriptAnalyzer invocation.
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.

@@ -1,6 +1,6 @@
 ---
-description: Avoid using double quotes if the string is constant.
-ms.date: 06/28/2023
+description: Avoid using double quotes if the string is constant
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidUsingDoubleQuotesForConstantString
 ---
@@ -8,29 +8,51 @@ title: AvoidUsingDoubleQuotesForConstantString
 
 **Severity Level: Information**
 
+**Default state: Disabled**
+
 ## Description
 
-Single quotes should be used when the value of a string is constant. A constant string doesn't
-contain variables or expressions intended to insert values into the string, such as
-`"$PID-$(hostname)"`).
+This rule detects static strings enclosed with double quotes (`"<text>"`) with text that doesn't
+contain variables, expressions, or special characters that require escaping.
 
-This makes the intent clearer that the string is a constant and makes it easier to use some special
-characters such as `$` within that string expression without needing to escape them.
+Enclose text with single quotes (`'<text>'`) when the value of a string is constant. A constant
+string doesn't contain variables or expressions intended to insert values into the string, such as
+`"$PID-$(hostname)"`. Using single quotes makes the intent clearer that the string is constant and
+allows you to use special characters such as `$` without needing to escape them.
 
-There are exceptions to that when double quoted strings are more readable. For example, when the
-string value itself must contain a single quote or other special characters, such as newline
-(`` "`n" ``), are already being escaped. The rule does not warn in these cases.
+However, there are exceptions where this rule doesn't flag violations:
+
+- Double-quoted strings are preferred when the string contains single quotes
+- Embedded escape sequences like newline (``"`n"``)
+- Other special characters that require escaping
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 $constantValue = "I Love PowerShell"
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 $constantValue = 'I Love PowerShell'
 ```
+
+## Configure rule
+
+```powershell
+Rules = @{
+    PSAvoidUsingDoubleQuotesForConstantString  = @{
+        Enable = $true
+    }
+}
+```
+
+## Parameters
+
+### Enable
+
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To enable this rule, set this parameter to `$true`. The default value is `$false`.

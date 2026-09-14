@@ -1,6 +1,6 @@
 ---
-description: Equal sign is not an assignment operator. Did you mean the equality operator \'-eq\'?
-ms.date: 06/28/2023
+description: Use the PowerShell equality operator (-eq) instead of assignment (=) in conditional statements
+ms.date: 07/21/2026
 ms.topic: reference
 title: PossibleIncorrectUsageOfAssignmentOperator
 ---
@@ -8,19 +8,41 @@ title: PossibleIncorrectUsageOfAssignmentOperator
 
 **Severity Level: Information**
 
+**Default state: Always enabled**
+
 ## Description
 
-In many programming languages, the equality operator is denoted as `==` or `=`, but `PowerShell`
-uses `-eq`. Therefore, it can easily happen that the wrong operator is used unintentionally. This
-rule catches a few special cases where the likelihood of that is quite high.
+This rule detects when conditional statements use `=` or `==` instead of the PowerShell equality
+operator (`-eq`). The rule looks for usages of `==` and `=` operators inside `if`, `elseif`,
+`while`, and `do-while` statements. In PowerShell, `=` represents the [assignment operator][01] and
+`-eq` represents the [equality comparison operator][02].
 
-The rule looks for usages of `==` and `=` operators inside `if`, `else if`, `while` and `do-while`
-statements but it does not warn if any kind of command or expression is used at the right hand side
-as this is probably by design.
+In many programming languages, `==` represents the equality comparison operator. When you define
+`==` in a PowerShell expression, including conditional statements, PowerShell raises an error
+because `==` isn't valid PowerShell syntax. This rule _always_ flags uses of `==` in conditional
+statements. However, it doesn't flag uses of `=` when the right hand side of the conditional uses
+any commands or expressions.
+
+In these cases, it's likely that the use of the assignment operator is intentional. This
+construction is often used to concisely assign a value to the variable or property on the left hand
+side _and_ check whether the assigned value evaluates as true.
+
+### Implicit suppression using Clang style
+
+There are some rare cases where assigning a variable inside an `if` statement is intentional.
+Instead of suppressing the rule, you can signal that the assignment's intentional by wrapping the
+expression in extra parentheses. An exception applies when `$null` is used on the left-hand side
+because there's no use case for it. For example:
+
+```powershell
+if (($shortVariableName = $SuperLongVariableName['SpecialItem']['AnotherItem'])) {
+    ...
+}
+```
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 if ($a = $b)
@@ -36,7 +58,7 @@ if ($a == $b)
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 if ($a -eq $b) # Compare $a with $b
@@ -52,16 +74,17 @@ if ($a = Get-Something) # Only execute action if command returns something and a
 }
 ```
 
-## Implicit suppression using Clang style
+## Configure rule
 
-There are some rare cases where assignment of variable inside an `if` statement is by design.
-Instead of suppressing the rule, one can also signal that assignment was intentional by wrapping the
-expression in extra parenthesis. An exception for this is when `$null` is used on the LHS because
-there is no use case for this.
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
 
-```powershell
-if (($shortVariableName = $SuperLongVariableName['SpecialItem']['AnotherItem']))
-{
-    ...
-}
-```
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][03].
+
+<!-- link references -->
+[01]: /powershell/module/microsoft.powershell.core/about/about_assignment_operators
+[02]: /powershell/module/microsoft.powershell.core/about/about_comparison_operators#-eq-and--ne
+[03]: ../using-scriptanalyzer.md

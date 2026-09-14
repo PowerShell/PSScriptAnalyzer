@@ -1,25 +1,43 @@
 ---
-description: Avoid Using Positional Parameters
-ms.date: 02/13/2024
+description: Avoid using positional parameters
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidUsingPositionalParameters
 ---
 # AvoidUsingPositionalParameters
 
-** Severity Level: Information **
+**Severity Level: Information**
+
+**Default state: Enabled**
 
 ## Description
 
-Using positional parameters reduces the readability of code and can introduce errors. It is possible
-that a future version of the cmdlet could change in a way that would break existing scripts if calls
-to the cmdlet rely on the position of the parameters.
+This rule detects when commands are called with three or more positional parameters instead of using
+named parameters. Using positional parameters reduces code readability and can introduce errors.
+It's possible that a future version of the cmdlet could change in a way that'll break existing
+scripts if they rely on parameter position.
 
 For simple cmdlets with only a few positional parameters, the risk is much smaller. To prevent this
-rule from being too noisy, this rule gets only triggered when there are 3 or more parameters
-supplied. A simple example where the risk of using positional parameters is negligible, is
-`Test-Path $Path`.
+rule from being too noisy, don't supply three or more parameters. A simple example where the risk of
+using positional parameters is negligible is `Test-Path $Path`.
 
-## Configuration
+Use full parameter names when calling commands.
+
+## Example
+
+### Noncompliant
+
+```powershell
+Get-Command ChildItem Microsoft.PowerShell.Management
+```
+
+### Compliant
+
+```powershell
+Get-Command -Noun ChildItem -Module Microsoft.PowerShell.Management
+```
+
+## Configure rule
 
 ```powershell
 Rules = @{
@@ -30,30 +48,14 @@ Rules = @{
 }
 ```
 
-### Parameters
+## Parameters
 
-#### CommandAllowList: string[] (Default value is @()')
+### CommandAllowList
 
-Commands or scripts to be excluded from this rule.
+This parameter specifies commands or scripts to be excluded from this rule. It accepts a string
+array. The default value is `@()`.
 
-#### Enable: bool (Default value is `$true`)
+### Enable
 
-Enable or disable the rule during ScriptAnalyzer invocation.
-
-## How
-
-Use full parameter names when calling commands.
-
-## Example
-
-### Wrong
-
-```powershell
-Get-Command ChildItem Microsoft.PowerShell.Management
-```
-
-### Correct
-
-```powershell
-Get-Command -Noun ChildItem -Module Microsoft.PowerShell.Management
-```
+This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
+boolean value. To disable this rule, set this parameter to `$false`. The default value is `$true`.

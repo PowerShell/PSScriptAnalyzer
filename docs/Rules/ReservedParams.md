@@ -1,6 +1,6 @@
 ---
-description: Reserved Parameters
-ms.date: 03/06/2024
+description: Reserved parameters
+ms.date: 07/21/2026
 ms.topic: reference
 title: ReservedParams
 ---
@@ -8,19 +8,19 @@ title: ReservedParams
 
 **Severity Level: Error**
 
+**Default state: Always enabled**
+
 ## Description
 
-You can't redefine [common parameters][01] in an advanced function. Using the `CmdletBinding` or
-`Parameter` attributes creates an advanced function. The common parameters are are automatically
-available in advanced functions, so you can't redefine them.
-
-## How
-
-Change the name of the parameter.
+This rule detects when you attempt to redefine [common parameters][01] in an advanced function. When
+you use the `CmdletBinding` or `Parameter` attributes, you're creating an advanced function. Common
+parameters are automatically available in advanced functions, so you can't redefine them. If you're
+trying to use a parameter name that conflicts with a common parameter, you need to change the name
+of your parameter to something else.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Test
@@ -34,7 +34,7 @@ function Test
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Test
@@ -48,4 +48,16 @@ function Test
 }
 ```
 
-[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_commonparameters
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[01]: /powershell/module/microsoft.powershell.core/about/about_commonparameters
+[02]: ../using-scriptanalyzer.md

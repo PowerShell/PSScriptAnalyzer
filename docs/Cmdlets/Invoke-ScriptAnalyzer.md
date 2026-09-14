@@ -1,7 +1,7 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
-ms.date: 10/07/2021
+ms.date: 07/23/2026
 online version: https://learn.microsoft.com/powershell/module/psscriptanalyzer/invoke-scriptanalyzer?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
@@ -107,7 +107,12 @@ This example runs all rules except for **PSAvoidUsingCmdletAliases** and
 subdirectories.
 
 ```powershell
-Invoke-ScriptAnalyzer -Path C:\ps-test\MyModule -Recurse -ExcludeRule PSAvoidUsingCmdletAliases, PSAvoidUsingInternalURLs
+$invokeScriptAnalyzerSplat = @{
+    Path = 'C:\ps-test\MyModule'
+    Recurse = $true
+    ExcludeRule = 'PSAvoidUsingCmdletAliases', 'PSAvoidUsingInternalURLs'
+}
+Invoke-ScriptAnalyzer @invokeScriptAnalyzerSplat
 ```
 
 ### EXAMPLE 5 - Run Script Analyzer with custom rules
@@ -116,13 +121,19 @@ This example runs Script Analyzer on `Test-Script.ps1` with the standard rules a
 `C:\CommunityAnalyzerRules` path.
 
 ```powershell
-Invoke-ScriptAnalyzer -Path D:\test_scripts\Test-Script.ps1 -CustomRulePath C:\CommunityAnalyzerRules -IncludeDefaultRules
+$invokeScriptAnalyzerSplat = @{
+    Path = 'D:\test_scripts\Test-Script.ps1'
+    CustomRulePath = 'C:\CommunityAnalyzerRules'
+    IncludeDefaultRules = $true
+}
+Invoke-ScriptAnalyzer @invokeScriptAnalyzerSplat
 ```
 
 ### EXAMPLE 6 - Run only the rules that are Error severity and have the PSDSC source name
 
 ```powershell
-$DSCError = Get-ScriptAnalyzerRule -Severity Error | Where SourceName -eq PSDSC
+$DSCError = Get-ScriptAnalyzerRule -Severity Error |
+    Where-Object SourceName -eq PSDSC
 $Path = "$home\Documents\WindowsPowerShell\Modules\MyDSCModule"
 Invoke-ScriptAnalyzerRule -Path $Path -IncludeRule $DSCError -Recurse
 ```
@@ -145,10 +156,11 @@ function Get-Widgets
 {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", "", Justification="Resolution in progress.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", "",
+        Justification="Resolution in progress.")]
     Param()
 
-    dir $pshome
+    dir $PSHOME
     ...
 }
 
@@ -156,10 +168,9 @@ Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1
 ```
 
 ```Output
-RuleName                            Severity     FileName   Line  Message
---------                            --------     --------   ----  -------
-PSProvideCommentHelp                Information  ManageProf 14    The cmdlet 'Get-Widget' does not have a help comment.
-                                                 iles.psm1
+RuleName                  Severity     FileName            Line  Message
+--------                  --------     --------            ----  -------
+PSProvideCommentHelp      Information  ManageProfiles.psm1 14    The cmdlet 'Get-Widget' does not have a help comment.
 ```
 
 ```powershell
@@ -167,12 +178,10 @@ Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1 -SuppressedOnly
 ```
 
 ```Output
-Rule Name                           Severity     File Name  Line  Justification
----------                           --------     ---------  ----  -------------
-PSAvoidUsingCmdletAliases           Warning      ManageProf 21    Resolution in progress.
-                                                 iles.psm1
-PSUseSingularNouns                  Warning      ManageProf 14
-                                                 iles.psm1
+Rule Name                   Severity  File Name           Line  Justification
+---------                   --------  ---------           ----  -------------
+PSAvoidUsingCmdletAliases   Warning   ManageProfiles.psm1 21    Resolution in progress.
+PSUseSingularNouns          Warning   ManageProfiles.psm1 14
 ```
 
 The second command uses the **SuppressedOnly** parameter to report violations of the rules that are
@@ -192,7 +201,7 @@ value of the **Profile** parameter is the path to the Script Analyzer profile.
     ExcludeRules = '*WriteHost'
 }
 
-Invoke-ScriptAnalyzer -Path $pshome\Modules\BitLocker -Settings .\ScriptAnalyzerProfile.txt
+Invoke-ScriptAnalyzer -Path $PSHOME\Modules\BitLocker -Settings .\ScriptAnalyzerProfile.txt
 ```
 
 If you include a conflicting parameter in the `Invoke-ScriptAnalyzer` command, such as
@@ -208,15 +217,16 @@ Invoke-ScriptAnalyzer -ScriptDefinition "function Get-Widgets {Write-Host 'Hello
 ```
 
 ```Output
-RuleName                            Severity     FileName   Line  Message
---------                            --------     --------   ----  -------
-PSAvoidUsingWriteHost               Warning                 1     Script
-                                                                  because
-                                                                  there i
-                                                                  suppres
-                                                                  Write-O
-PSUseSingularNouns                  Warning                 1     The cmd
-                                                                  noun sh
+RuleName               Severity     FileName   Line  Message
+--------               --------     --------   ----  -------
+PSAvoidUsingWriteHost  Warning                 1     Script definition uses Write-Host. Avoid using
+                                                     Write-Host because it might not work in all hosts,
+                                                     does not work when there is no host, and (prior
+                                                     to PS 5.0) cannot be suppressed, captured, or
+                                                     redirected. Instead, use Write-Output, Write-Verbose,
+                                                     or Write-Information.
+PSUseSingularNouns     Warning                 1     The cmdlet 'Get-Widgets' uses a plural noun. A
+                                                     singular noun should be used instead.
 ```
 
 When you use the **ScriptDefinition** parameter, the **FileName** property of the
@@ -513,7 +523,7 @@ following keys:
 
 The keys and values in the profile are interpreted as if they were standard parameters and values of
 `Invoke-ScriptAnalyzer`, similar to splatting. For more information, see
-[about_Splatting](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_splatting).
+[about_Splatting](/powershell/module/microsoft.powershell.core/about/about_splatting).
 
 ```yaml
 Type: Object
@@ -536,15 +546,14 @@ Valid values are:
 
 - Error
 - Warning
-- Information.
+- Information
+- ParseError
 
-You can specify one ore more severity values.
+You can specify one or more severity values.
 
-The parameter filters the rules violations only after running all rules. To filter rules
-efficiently, use `Get-ScriptAnalyzerRule` to select the rules you want to run.
-
-The **Severity** parameter takes precedence over **IncludeRule**. For example, if **Severity** is
-`Error`, you cannot use **IncludeRule** to include a `Warning` rule.
+The parameter filters the rule violation output only after running all rules. It doesn't filter
+which rules are run. To filter rules efficiently, use `Get-ScriptAnalyzerRule` to select the rules
+you want to run.
 
 ```yaml
 Type: String[]

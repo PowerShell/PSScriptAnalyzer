@@ -9,6 +9,7 @@ schema: 2.0.0
 # Invoke-Formatter
 
 ## SYNOPSIS
+
 Formats a script text based on the input settings or default settings.
 
 ## SYNTAX
@@ -76,7 +77,7 @@ function foo
 }
 ```
 
-### EXAMPLE 3 - Format the input script text using the settings defined a `.psd1` file
+### EXAMPLE 3 - Format the input script text using the settings defined in a `.psd1` file
 
 ```powershell
 Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
