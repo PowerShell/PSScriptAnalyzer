@@ -404,13 +404,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
 
-            // switch parameters
-            IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
-
             if (exportMM == null)
             {
                 return exportedFunctions;
             }
+
+            // Export-ModuleMember has no dynamic parameters. Resolve names from its static
+            // metadata instead of ResolveParameter(), which re-enters the cached command's
+            // runspace and races with command lookups and metadata queries on other rule threads.
+            var parameters = exportMM.Parameters;
+            IEnumerable<ParameterMetadata> switchParams = parameters.Values.Where(pm => pm.SwitchParameter);
 
             foreach (CommandAst cmdAst in cmdAsts)
             {
@@ -429,7 +432,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     if (ceAst is CommandParameterAst)
                     {
                         var paramAst = ceAst as CommandParameterAst;
-                        var param = exportMM.ResolveParameter(paramAst.ParameterName);
+                        ParameterMetadata param;
+                        if (!parameters.TryGetValue(paramAst.ParameterName, out param))
+                        {
+                            param = parameters.Values.FirstOrDefault(pm =>
+                                pm.Aliases.Contains(paramAst.ParameterName, StringComparer.OrdinalIgnoreCase));
+                            if (param == null)
+                            {
+                                var matches = parameters.Values.Where(pm =>
+                                    pm.Name.StartsWith(paramAst.ParameterName, StringComparison.OrdinalIgnoreCase)
+                                    || pm.Aliases.Any(alias => alias.StartsWith(paramAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
+                                    .Take(2).ToArray();
+                                param = matches.Length == 1 ? matches[0] : null;
+                            }
+                        }
 
                         if (param == null)
                         {

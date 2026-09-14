@@ -12,12 +12,44 @@ Describe "Concurrent command lookups" {
         # threads. Invoking a PowerShell script block on a thread pool thread would introduce
         # runspace affinity problems of its own and would not test the command info cache.
         $analyzerAssembly = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper].Assembly.Location
-        Add-Type -IgnoreWarnings -WarningAction SilentlyContinue -ReferencedAssemblies $analyzerAssembly, ([System.Management.Automation.PSObject].Assembly.Location) -TypeDefinition @'
+        $references = @($analyzerAssembly, ([System.Management.Automation.PSObject].Assembly.Location))
+        if ($PSVersionTable.PSEdition -eq 'Core') {
+            $references += Join-Path $PSHOME 'ref/System.Collections.dll'
+        }
+        Add-Type -IgnoreWarnings -WarningAction SilentlyContinue -ReferencedAssemblies $references -TypeDefinition @'
 using System.Threading.Tasks;
+using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 
 public static class ConcurrentCommandLookup
 {
+    public static void ResolveExports()
+    {
+        Token[] tokens;
+        ParseError[] errors;
+        var ast = Parser.ParseInput("Export-ModuleMember -Function Test-Example", out tokens, out errors);
+        var helper = Helper.Instance;
+        var tasks = new Task[8];
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = Task.Run(() =>
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    helper.GetCommandInfo("Get-Command", bypassCache: true);
+                    var parameters = helper.GetCommandInfo("Get-Item").Parameters;
+                    var exports = helper.GetExportedFunction(ast);
+                    if (!exports.SetEquals(new[] { "Test-Example" }))
+                    {
+                        throw new System.InvalidOperationException("Exported function was not resolved.");
+                    }
+                }
+            });
+        }
+
+        Task.WaitAll(tasks);
+    }
+
     public static string[] Lookup(string[] commandNames)
     {
         var helper = Helper.Instance;
@@ -60,5 +92,10 @@ public static class ConcurrentCommandLookup
         for ($i = 0; $i -lt $commandNames.Count; $i++) {
             $results[$i] | Should -BeExactly $commandNames[$i]
         }
+
+    }
+
+    It "resolves exported functions while command lookups run concurrently" {
+        [ConcurrentCommandLookup]::ResolveExports()
     }
 }
