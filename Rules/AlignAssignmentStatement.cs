@@ -481,7 +481,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Next we need to find the location of the equals sign for this
                 // member. We know the line it should be on. We can
                 // search all of the equals signs on that line.
-                // 
+                //
                 // Unlike hashtables, we don't have an extent for the LHS and
                 // RHS of the member. We have the extent of the entire
                 // member, the name of the member, and the extent of the
@@ -636,13 +636,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IScriptExtent lhsExtent,
             IScriptExtent equalsExtent,
             int targetColumn
-        )
-        {
+        ) =>
             // We generate a correction extent which replaces the text between
             // the end of the lhs and the start of the equals sign with the
             // appropriate number of spaces to align the equals sign to the
             // target column.
-            return new List<CorrectionExtent>
+            new List<CorrectionExtent>
             {
                 new CorrectionExtent(
                     lhsExtent.EndLineNumber,
@@ -653,58 +652,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementError)
                 )
             };
-        }
 
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AlignAssignmentStatementName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
     }
 }

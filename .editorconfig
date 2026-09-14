@@ -1,0 +1,2 @@
+[**Rules/**.cs]
+csharp_style_expression_bodied_methods = true:error

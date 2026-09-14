@@ -30,11 +30,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-                        
+
             // Expected TargetResource functions in the DSC Resource module
             List<string> expectedTargetResourceFunctionNames = new List<string>(new string[]  { "Get-TargetResource", "Set-TargetResource", "Test-TargetResource" });
 
-            // Retrieve a list of Asts where the function name contains TargetResource            
+            // Retrieve a list of Asts where the function name contains TargetResource
             IEnumerable<Ast> functionDefinitionAsts = (ast.FindAll(dscAst => dscAst is FunctionDefinitionAst && ((dscAst as FunctionDefinitionAst).Name.IndexOf("targetResource", StringComparison.OrdinalIgnoreCase) != -1), true));
 
             List<string> targetResourceFunctionNamesInAst = new List<string>();
@@ -42,17 +42,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 targetResourceFunctionNamesInAst.Add(functionDefinitionAst.Name);
             }
-            
+
             foreach (string expectedTargetResourceFunctionName in expectedTargetResourceFunctionNames)
             {
                 // If the Ast does not contain the expected functions, provide a Rule violation message
                 if (!targetResourceFunctionNamesInAst.Contains(expectedTargetResourceFunctionName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceError, expectedTargetResourceFunctionName),
-                        ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);      
+                        ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
-        }        
+        }
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes dsc classes and the file and check that they have get, set and test
@@ -84,59 +84,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
-        }        
+        }
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {            
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseStandardDSCFunctionsInResourceName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseStandardDSCFunctionsInResourceName);
 
         /// <summary>
         /// GetCommonName: Retrieves the Common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture,Strings.DSCSourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
     }
 
 }

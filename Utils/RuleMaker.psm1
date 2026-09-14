@@ -162,10 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
-        {{
-            return SourceType.Builtin;
-        }}
+        public SourceType GetSourceType() => SourceType.Builtin;
     }}
 }}
 '@

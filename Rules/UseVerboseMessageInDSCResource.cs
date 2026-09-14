@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null)
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
-            }            
+            }
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
@@ -56,68 +56,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             }
         }
-        
+
         /// <summary>
         /// AnalyzeDSCClass: This function returns nothing in the case of dsc class.
         /// </summary>
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
-        {
-            return Enumerable.Empty<DiagnosticRecord>();
-        }
+        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName) => Enumerable.Empty<DiagnosticRecord>();
 
         /// <summary>
         /// Method: Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseVerboseMessageInDSCResourceName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseVerboseMessageInDSCResourceName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseVerboseMessageInDSCResourceCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseVerboseMessageInDSCResourceCommonName);
 
         /// <summary>
         /// Method: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseVerboseMessageInDSCResourceDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseVerboseMessageInDSCResourceDescription);
 
         /// <summary>
         /// Method: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
     }
 }
 

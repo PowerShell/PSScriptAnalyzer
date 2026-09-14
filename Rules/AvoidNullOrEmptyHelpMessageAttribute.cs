@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 [Export(typeof(IScriptRule))]
 #endif
     public class AvoidNullOrEmptyHelpMessageAttribute : IScriptRule
-    {               
+    {
         /// <summary>
         /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                                           
+
                 foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
                 {
                     if (paramAst == null)
@@ -57,19 +57,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             continue;
                         }
-                                               
+
                         foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
                             if (namedArgument == null || !(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
                             {
                                 continue;
                             }
-                            
+
                             string errCondition;
                             if (namedArgument.ExpressionOmitted || HasEmptyStringInExpression(namedArgument.Argument))
                             {
                                 errCondition = "empty";
-                            }                                                        
+                            }
                             else if (HasNullInExpression(namedArgument.Argument))
                             {
                                 errCondition = "null";
@@ -84,16 +84,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                                                 Strings.AvoidNullOrEmptyHelpMessageAttributeError,
                                                                 paramAst.Name.VariablePath.UserPath);
                                 yield return new DiagnosticRecord(message,
-                                                                    paramAst.Extent, 
-                                                                    GetName(), 
-                                                                    DiagnosticSeverity.Warning, 
-                                                                    fileName, 
+                                                                    paramAst.Extent,
+                                                                    GetName(),
+                                                                    DiagnosticSeverity.Warning,
+                                                                    fileName,
                                                                     paramAst.Name.VariablePath.UserPath);
-                            }                            
-                        }                                                
+                            }
+                        }
                     }
                 }
-                
+
             }
         }
 
@@ -125,53 +125,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidNullOrEmptyHelpMessageAttributeName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidNullOrEmptyHelpMessageAttributeName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidNullOrEmptyHelpMessageAttributeCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidNullOrEmptyHelpMessageAttributeCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidNullOrEmptyHelpMessageAttributeDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidNullOrEmptyHelpMessageAttributeDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule, builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }
 

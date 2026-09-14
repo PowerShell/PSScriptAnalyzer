@@ -52,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         This because one would then have to escape this single quote, which would make the string less readable.
                         If an interpolated string contains a backtick character, then do not warn as well.
                         This is because we'd have to replace the backtick in some cases like `$ and in others like `a it would not be possible at all.
-                        Therefore to keep it simple, all interpolated strings with a backtick are being excluded. 
+                        Therefore to keep it simple, all interpolated strings with a backtick are being excluded.
                     */
                     case StringConstantType.DoubleQuoted:
                         if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.Extent.Text.Contains("`"))
@@ -79,9 +79,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         private DiagnosticRecord GetDiagnosticRecord(StringConstantExpressionAst stringConstantExpressionAst,
-            string suggestedCorrection)
-        {
-            return new DiagnosticRecord(
+            string suggestedCorrection) => new DiagnosticRecord(
                 Strings.AvoidUsingDoubleQuotesForConstantStringError,
                 stringConstantExpressionAst.Extent,
                 GetName(),
@@ -95,67 +93,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     )
                 }
             );
-        }
 
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDoubleQuotesForConstantStringCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDoubleQuotesForConstantStringCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDoubleQuotesForConstantStringDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDoubleQuotesForConstantStringDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AvoidUsingDoubleQuotesForConstantStringName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Information;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Information;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
     }
 }
