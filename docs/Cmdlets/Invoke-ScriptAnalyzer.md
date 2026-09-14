@@ -536,9 +536,10 @@ Valid values are:
 
 - Error
 - Warning
-- Information.
+- Information
+- ParseError
 
-You can specify one ore more severity values.
+You can specify one or more severity values.
 
 The parameter filters the rules violations only after running all rules. To filter rules
 efficiently, use `Get-ScriptAnalyzerRule` to select the rules you want to run.
