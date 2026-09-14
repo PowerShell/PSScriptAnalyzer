@@ -379,3 +379,66 @@ jobs:
           name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-comparison
           path: results/comparison.json
           if-no-files-found: warn
+
+  summary:
+    name: All performance comparisons
+    needs: compare
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download comparisons
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: scriptanalyzer-performance-*-comparison
+          path: comparisons
+
+      - name: Summarize all combinations
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Get-Median($values) {
+              $sorted = @($values | Sort-Object)
+              $middle = [int][Math]::Floor($sorted.Count / 2)
+              if ($sorted.Count % 2) { return $sorted[$middle] }
+              return ($sorted[$middle - 1] + $sorted[$middle]) / 2
+          }
+          $summary = @(
+              '## Performance across all combinations'
+              ''
+              'Optional lock/cache metrics are disabled. Times are medians of fresh-process cold/warm samples; lower is better.'
+              ''
+              '| OS | Workload | Source | Cold median (s) | Warm median (s) | Status |'
+              '| --- | --- | --- | ---: | ---: | --- |'
+          )
+          foreach ($os in 'ubuntu-latest', 'windows-latest') {
+              foreach ($workload in 'powershell', 'semver') {
+                  $path = Join-Path $env:GITHUB_WORKSPACE "comparisons/scriptanalyzer-performance-$os-$workload-comparison/comparison.json"
+                  $report = if (Test-Path -LiteralPath $path) {
+                      Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+                  } else { $null }
+                  foreach ($source in 'upstream', 'fork', 'perf') {
+                      $samples = @($report.Measurements | Where-Object Source -EQ $source)
+                      if ($samples.Count -eq 0) {
+                          $summary += "| $os | $workload | $source | — | — | Missing results |"
+                          continue
+                      }
+                      $cold = (Get-Median $samples.ColdSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $warm = (Get-Median $samples.WarmSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $status = if ($report.FindingsVerified) { 'Verified' } else { 'INVALID: diagnostics differ' }
+                      if (@($samples | Where-Object Inconsistent).Count) {
+                          $status += '; ⚠️ retried samples'
+                      }
+                      $summary += "| $os | $workload | $source | $cold | $warm | $status |"
+                  }
+              }
+          }
+          $summary += @(
+              ''
+              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main; perf = jessehouwing/PSScriptAnalyzer@perf.'
+              'Compare timings only within the same OS/workload. Invalid results must not be used for performance comparisons; retried samples may be biased.'
+              'Builds run on separate hosts, not a controlled statistical regression test. Per-combination summaries and artifacts retain revisions, ranges, diagnostics, and retry details.'
+          )
+          $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          $summary | Write-Output
