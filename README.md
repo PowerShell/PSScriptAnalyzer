@@ -138,6 +138,18 @@ To install **PSScriptAnalyzer** from source code:
   Import-Module .\out\PSScriptAnalyzer\[version]\PSScriptAnalyzer.psd1
   ```
 
+- Verify the PowerShell engine retry workarounds by building with
+  `.\build.ps1 -All -DisableEngineRetries`, then running `.\build.ps1 -Test` in a fresh
+  PowerShell process. This defines `DISABLE_ENGINE_RETRIES` in both Engine and Rules;
+  direct MSBuild builds can use `-p:DisableEngineRetries=true`. Lookup resolution failures
+  are surfaced immediately, and parameter casing checks do not retry with fresh metadata.
+  Omit the switch to restore the default retry-enabled build, and test in another fresh
+  process so previously loaded assemblies are not reused.
+  CI tests both configurations. The concurrency tests assert zero `LookupResolutionFailures`
+  and `LookupRetries` in the existing opt-in performance telemetry, while casing tests
+  assert no fallback cache bypasses. Passing these tests provides evidence for the exercised
+  workloads, not proof that retries are unnecessary in every host.
+
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
 built-in rules.
 

@@ -193,7 +193,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         try
                         {
                             var result = ps.Invoke<CommandInfo>();
-                            if (ps.HadErrors && ps.Streams.Error.All(IsGetCommandResolutionError))
+                            // SilentlyContinue can set HadErrors without populating the stream for an unknown name.
+                            if (ps.HadErrors && ps.Streams.Error.Count > 0 && ps.Streams.Error.All(IsGetCommandResolutionError))
                             {
 #if DISABLE_ENGINE_RETRIES
                                 // Surface error-stream failures as well as terminating exceptions in verification builds.

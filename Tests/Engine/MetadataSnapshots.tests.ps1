@@ -173,4 +173,35 @@ public static class MetadataSnapshotTests
         [MetadataSnapshotTests]::Parameters($cache, 'Write-Output') | Should -BeNullOrEmpty
         [MetadataSnapshotTests]::Mandatory($cache, 'Write-Output') | Should -BeNullOrEmpty
     }
+
+    It "counts injected resolution failures and honors the compiled retry mode" {
+        [MetadataSnapshotTests]::Configure($cache, @'
+New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
+    function Get-Command {
+        [CmdletBinding()]
+        param($Name)
+        Write-Error -Exception ([System.Management.Automation.CommandNotFoundException]::new(
+            'Injected command resolution failure')) -ErrorAction Continue
+    }
+    Export-ModuleMember -Function Get-Command
+} | Import-Module -Force
+'@)
+        $cacheType = $cache.GetType()
+        $lookup = $cacheType.GetMethod('GetCommandInfo')
+        $retryLimit = $cacheType.GetField('MaxLookupAttempts', [System.Reflection.BindingFlags]'NonPublic, Static')
+        if ($null -eq $retryLimit) {
+            { $lookup.Invoke($cache, @('Write-Output', $null, $false)) } |
+                Should -Throw '*Injected command resolution failure*'
+            $expectedFailures = 1
+            $expectedRetries = 0
+        }
+        else {
+            $lookup.Invoke($cache, @('Write-Output', $null, $false)) | Should -BeNullOrEmpty
+            $expectedFailures = $retryLimit.GetRawConstantValue()
+            $expectedRetries = $expectedFailures - 1
+        }
+        $stats = $telemetry.GetMethod('Snapshot').Invoke($null, @())
+        $stats['LookupResolutionFailures'] | Should -Be $expectedFailures
+        $stats['LookupRetries'] | Should -Be $expectedRetries
+    }
 }
