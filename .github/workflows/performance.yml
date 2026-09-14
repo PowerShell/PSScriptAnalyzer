@@ -15,29 +15,29 @@ jobs:
       powershell: ${{ steps.revision.outputs.sha }}
       semver: ${{ steps.semver-revision.outputs.sha }}
     steps:
-      - name: Checkout benchmark script once for both builds
+      - name: Checkout PowerShell source tree once for both builds
         uses: actions/checkout@v4
         with:
           repository: PowerShell/PowerShell
           ref: master
           path: workload
-          sparse-checkout: build.psm1
-          sparse-checkout-cone-mode: false
           persist-credentials: false
 
-      - name: Record input revision
+      - name: Archive PowerShell source tree and record revision
         id: revision
         shell: pwsh
         run: |
           $revision = git -C "$env:GITHUB_WORKSPACE/workload" rev-parse HEAD
           if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve workload revision.' }
           "sha=$revision" >> $env:GITHUB_OUTPUT
+          git -C "$env:GITHUB_WORKSPACE/workload" archive --format=zip --output="$env:GITHUB_WORKSPACE/powershell.zip" HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot archive PowerShell workload.' }
 
-      - name: Share the exact input file
+      - name: Share the exact PowerShell source tree
         uses: actions/upload-artifact@v4
         with:
           name: performance-workload-powershell
-          path: workload/build.psm1
+          path: powershell.zip
           if-no-files-found: error
 
       - name: Checkout actions-semver-checker
@@ -112,9 +112,8 @@ jobs:
           name: performance-workload-${{ matrix.workload }}
           path: workload
 
-      - name: Extract semver source tree
-        if: matrix.workload == 'semver'
-        run: Expand-Archive -LiteralPath "$env:GITHUB_WORKSPACE/workload/semver.zip" -DestinationPath "$env:GITHUB_WORKSPACE/workload/source"
+      - name: Extract workload source tree
+        run: Expand-Archive -LiteralPath "$env:GITHUB_WORKSPACE/workload/$env:BENCHMARK_WORKLOAD.zip" -DestinationPath "$env:GITHUB_WORKSPACE/workload/source"
 
       - name: Install SDK
         uses: actions/setup-dotnet@v4
@@ -135,7 +134,7 @@ jobs:
           $resultDirectory = Join-Path $workspace 'results'
           $null = New-Item -ItemType Directory -Path $resultDirectory -Force
           $pwsh = (Get-Process -Id $PID).Path
-          $scriptPath = Join-Path $workspace 'workload/build.psm1'
+          $scriptPath = Join-Path $workspace 'workload/source/build.psm1'
           $workloadRepository = 'PowerShell/PowerShell'
           $analysisArguments = @()
           if ($env:BENCHMARK_WORKLOAD -eq 'semver') {
