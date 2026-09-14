@@ -115,7 +115,7 @@ Describe 'Performance comparison validation' -Skip:($PSVersionTable.PSVersion.Ma
         $env:GITHUB_STEP_SUMMARY = Join-Path $TestDrive 'summary.txt'
         $resultDirectory = Join-Path $TestDrive 'results'
         $null = New-Item -ItemType Directory -Path $resultDirectory -Force
-        foreach ($build in 'upstream', 'fork', 'perf') {
+        foreach ($build in 'upstream', 'fork') {
             @{
                 Revision = $build
                 ColdDiagnosticCount = 1
@@ -142,7 +142,7 @@ Describe 'Performance comparison validation' -Skip:($PSVersionTable.PSVersion.Ma
         { & $comparisonScript } | Should -Not -Throw
         $report = Get-Content -LiteralPath (Join-Path $resultDirectory 'comparison.json') -Raw | ConvertFrom-Json
         $report.FindingsVerified | Should -BeTrue
-        $report.Measurements.Count | Should -Be 3
+        $report.Measurements.Count | Should -Be 2
     }
 }
 
@@ -167,7 +167,7 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
                 $null = New-Item -ItemType Directory -Path $directory -Force
                 @{
                     FindingsVerified = $true
-                    Measurements = @(foreach ($source in 'upstream', 'fork', 'perf') {
+                    Measurements = @(foreach ($source in 'upstream', 'fork') {
                         foreach ($seconds in 9.0, 1.0, 2.0) {
                             @{
                                 Source = $source
@@ -188,13 +188,13 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         $env:GITHUB_STEP_SUMMARY = $savedSummary
     }
 
-    It 'shows all twelve combinations with median rather than mean timings' {
+    It 'shows all eight combinations with median rather than mean timings' {
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '(?m)^\| (ubuntu|windows)-latest \|').Count | Should -Be 12
+        [regex]::Matches($text, '(?m)^\| (ubuntu|windows)-latest \|').Count | Should -Be 8
         foreach ($os in 'ubuntu-latest', 'windows-latest') {
             foreach ($workload in 'powershell', 'semver') {
-                foreach ($source in 'upstream', 'fork', 'perf') {
+                foreach ($source in 'upstream', 'fork') {
                     $text | Should -Match ([regex]::Escape("| $os | $workload | $source | 2.000 | 1.000 | Verified |"))
                 }
             }
@@ -205,15 +205,15 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         Remove-Item -LiteralPath $comparisonPath
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 3
-        [regex]::Matches($text, '\| Verified \|').Count | Should -Be 9
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 2
+        [regex]::Matches($text, '\| Verified \|').Count | Should -Be 6
     }
 
     It 'still produces the full table when no comparisons are available' {
         Remove-Item -LiteralPath (Join-Path $TestDrive 'comparisons') -Recurse
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 12
+        [regex]::Matches($text, '\| Missing results \|').Count | Should -Be 8
     }
 
     It 'marks invalid comparisons and retried samples' {
@@ -223,7 +223,7 @@ Describe 'Consolidated performance summary' -Skip:($PSVersionTable.PSVersion.Maj
         $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $comparisonPath
         & $summaryScript
         $text = Get-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Raw
-        [regex]::Matches($text, 'INVALID: diagnostics differ').Count | Should -Be 3
+        [regex]::Matches($text, 'INVALID: diagnostics differ').Count | Should -Be 2
         $text | Should -Match 'upstream \| 2.000 \| 1.000 \| INVALID: diagnostics differ; ⚠️ retried samples'
     }
 }
