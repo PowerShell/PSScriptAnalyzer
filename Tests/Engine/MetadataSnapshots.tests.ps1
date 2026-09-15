@@ -62,7 +62,12 @@ public static class MetadataSnapshotTests
     private static readonly Type CacheType = typeof(Helper).Assembly.GetType(
         "Microsoft.Windows.PowerShell.ScriptAnalyzer.CommandInfoCache");
 
-    public static IDisposable Create() => (IDisposable)Activator.CreateInstance(CacheType);
+    // Block bodies instead of expression-bodied members: Windows PowerShell 5.1 compiles
+    // Add-Type definitions with the C# 5 compiler.
+    public static IDisposable Create()
+    {
+        return (IDisposable)Activator.CreateInstance(CacheType);
+    }
 
     public static IReadOnlyDictionary<string, CommandParameterSnapshot> Parameters(
         IDisposable cache, string name, bool bypass = false)
@@ -72,7 +77,9 @@ public static class MetadataSnapshotTests
     }
 
     public static object Mandatory(IDisposable cache, string name)
-        => CacheType.GetMethod("GetMandatoryParameterNames").Invoke(cache, new object[] { name });
+    {
+        return CacheType.GetMethod("GetMandatoryParameterNames").Invoke(cache, new object[] { name });
+    }
 
     public static object ReadMetadata(IDisposable cache, string name, string method, bool bypass = false)
     {

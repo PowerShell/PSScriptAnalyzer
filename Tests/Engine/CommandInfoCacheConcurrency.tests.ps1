@@ -36,7 +36,10 @@ public static class ConcurrentCommandLookup
             {
                 for (int j = 0; j < 100; j++)
                 {
-                    if (helper.GetCommandInfo("Get-Command", bypassCache: true)?.Name != "Get-Command")
+                    // No null-conditional operator here: Windows PowerShell 5.1 compiles
+                    // Add-Type definitions with the C# 5 compiler.
+                    var freshInfo = helper.GetCommandInfo("Get-Command", bypassCache: true);
+                    if (freshInfo == null || freshInfo.Name != "Get-Command")
                     {
                         throw new System.InvalidOperationException("Get-Command was not resolved.");
                     }
