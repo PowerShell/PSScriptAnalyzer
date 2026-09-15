@@ -38,6 +38,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Information |         No         |                 |
 | [AvoidUsingEmptyCatchBlock](./AvoidUsingEmptyCatchBlock.md)                                       | Warning     |        Yes         |                 |
 | [AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md)                                     | Warning     |        Yes         |                 |
+| [AvoidUsingNewObject](./AvoidUsingNewObject.md)                                                   | Warning     |         No         |       Yes       |
 | [AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md)                             | Warning     |        Yes         |                 |
 | [AvoidUsingPositionalParameters](./AvoidUsingPositionalParameters.md)                             | Warning     |        Yes         |                 |
 | [AvoidUsingUsernameAndPasswordParams](./AvoidUsingUsernameAndPasswordParams.md)                   | Error       |        Yes         |                 |

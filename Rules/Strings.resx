@@ -348,6 +348,21 @@
   <data name="AvoidUsingConsoleWriteError" xml:space="preserve">
     <value>File '{0}' uses Console.'{1}'. Using Console to write is not recommended because it may not work in all hosts or there may even be no hosts at all. Use Write-Output instead.</value>
   </data>
+  <data name="AvoidUsingNewObjectCommonName" xml:space="preserve">
+    <value>Avoid Using New-Object</value>
+  </data>
+  <data name="AvoidUsingNewObjectDescription" xml:space="preserve">
+    <value>Avoid using the 'New-Object' cmdlet to create objects as it might perform poorly.</value>
+  </data>
+  <data name="AvoidUsingNewObjectName" xml:space="preserve">
+    <value>AvoidUsingNewObject</value>
+  </data>
+  <data name="AvoidUsingNewObjectError" xml:space="preserve">
+    <value>Avoid using the 'New-Object' cmdlet to create objects of type '{0}' as it might perform poorly.</value>
+  </data>
+  <data name="AvoidUsingNewObjectCorrectionDescription" xml:space="preserve">
+    <value>Use the type initializer '[{0}]' to construct or cast the intended object.</value>
+  </data>
   <data name="AvoidUsingWriteHostDescription" xml:space="preserve">
     <value>Avoid using the Write-Host cmdlet. Instead, use Write-Output, Write-Verbose, or Write-Information. Because Write-Host is host-specific, its implementation might vary unpredictably. Also, prior to PowerShell 5.0, Write-Host did not write to a stream, so users cannot suppress it, capture its value, or redirect it.</value>
   </data>
