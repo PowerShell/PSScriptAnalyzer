@@ -2128,6 +2128,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
             if (this.ScriptRules != null)
             {
+                var manifestCache = new ModuleManifestAnalysisCache();
                 var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
                 if (allowedRules.Any())
                 {
@@ -2139,6 +2140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        using (manifestCache.Enter())
                         try
                         {
                             if (helpRule && helpFile)
