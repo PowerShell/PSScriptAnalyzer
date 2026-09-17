@@ -138,6 +138,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                // This check targets bare nouns such as 'process' standing in for 'Get-Process'. A name that
+                // already contains a hyphen is a Verb-Noun name, so 'Get-' + it never resolves, and resolving
+                // a name that does not exist costs a full module path scan.
+                if (commandName.IndexOf('-') >= 0)
+                {
+                    continue;
+                }
+
                 var commdNameWithGetPrefix = $"Get-{commandName}";
                 var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo(name: commdNameWithGetPrefix,
                     commandType: CommandTypes.Cmdlet | CommandTypes.Function | CommandTypes.Script);
