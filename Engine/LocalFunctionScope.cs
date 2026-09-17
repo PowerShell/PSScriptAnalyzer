@@ -20,7 +20,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private LocalFunctionScope(HashSet<string> names) => this.names = names;
 
-        internal static LocalFunctionScope FromAst(Ast ast)
+        internal static LocalFunctionScope FromAst(Ast ast) => FromAst(ast, null);
+
+        internal static LocalFunctionScope FromAst(Ast ast, IEnumerable<string> alsoInScope)
         {
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (ast != null)
@@ -32,6 +34,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         names.Add(function.Name);
                     }
                 }
+            }
+            if (alsoInScope != null)
+            {
+                names.UnionWith(alsoInScope);
             }
             return new LocalFunctionScope(names);
         }
