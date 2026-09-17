@@ -129,6 +129,12 @@ $results = [ordered]@{
 }
 
 foreach ($run in 'Cold', 'Warm') {
+    # Settle the allocations from module load and from canonicalizing the previous run, so that
+    # collecting them is not charged to whichever measurement happens to trigger it.
+    [System.GC]::Collect()
+    [System.GC]::WaitForPendingFinalizers()
+    [System.GC]::Collect()
+
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $diagnostics = @(& $command @analyzerArguments)
     $stopwatch.Stop()
