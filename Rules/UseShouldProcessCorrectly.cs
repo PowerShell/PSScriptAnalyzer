@@ -409,7 +409,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (funcDigraph.GetOutDegree(v) == 0)
                 {
-                    if (SupportsShouldProcess(v.Name))
+                    // Member vertices carry a method name, which PowerShell never resolves as a command.
+                    if (v.IsCommand && SupportsShouldProcess(v.Name))
                     {
                         commandsWithSupportShouldProcess.Add(v);
                     }
@@ -446,6 +447,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         public bool IsNestedFunctionDefinition {get {return isNestedFunctionDefinition;}}
+
+        /// <summary>True when the vertex was reached through an actual command invocation.</summary>
+        public bool IsCommand { get; set; }
 
         private string name;
         private Ast ast;
@@ -565,6 +569,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (v.Equals(vertex))
                 {
                     containsVertex = true;
+                    // Vertices are keyed on name alone, so a name used both as a command and as a
+                    // member must stay marked as a command however the two are ordered.
+                    v.IsCommand |= vertex.IsCommand;
                     if (vertex.Ast != null
                         && vertex.Ast is FunctionDefinitionAst)
                     {
@@ -627,7 +634,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            var vertex = new Vertex (cmdName, ast);
+            var vertex = new Vertex (cmdName, ast) { IsCommand = true };
             AddVertex(vertex);
             if (IsWithinFunctionDefinition())
             {

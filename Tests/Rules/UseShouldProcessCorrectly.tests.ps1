@@ -279,4 +279,73 @@ function Foo
             $violations[0].Extent.Text | Should -Be 'ShouldProcess'
         }
     }
+
+    Context "Method calls are not command calls" {
+        # 'mkdir' is one of the few hyphen-free commands that declares SupportsShouldProcess, so a
+        # member of the same name is the clearest way to tell a method call from a command call.
+        It "does not treat a method invocation as a call to the command of the same name" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($dir)
+    $dir.mkdir()
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess)
+            $violations.Count | Should -Be 1
+        }
+
+        It "still credits a real call to a command that supports ShouldProcess" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($dir)
+    mkdir $dir
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+
+        It "does not treat a static method invocation as a command call" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($path)
+    [System.IO.File]::WriteAllText($path, 'x')
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess)
+            $violations.Count | Should -Be 1
+        }
+
+        # Graph vertices are keyed on name alone, so a name used as both must not depend on visit order.
+        It "credits the command call when the method call comes first" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($dir)
+    $dir.mkdir()
+    mkdir $dir
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+
+        It "credits the command call when the command call comes first" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($dir)
+    mkdir $dir
+    $dir.mkdir()
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+    }
 }
