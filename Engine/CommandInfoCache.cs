@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Linq;
 using System.Management.Automation.Runspaces;
-using System.Threading;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -36,26 +35,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private readonly Runspace _runspace;
         private volatile bool disposed = false;
-
-        private long _getCommandInvocations;
-        private long _metadataEvaluations;
-        private long _runspaceLockAcquisitions;
-
-        /// <summary>Number of times `Get-Command` actually ran, i.e. command lookup cache misses.</summary>
-        public long GetCommandInvocations => Interlocked.Read(ref _getCommandInvocations);
-
-        /// <summary>Number of times `Parameters` or `ParameterSets` was read off a live command.</summary>
-        public long MetadataEvaluations => Interlocked.Read(ref _metadataEvaluations);
-
-        /// <summary>Number of times a lookup or metadata read had to serialize on the runspace lock.</summary>
-        public long RunspaceLockAcquisitions => Interlocked.Read(ref _runspaceLockAcquisitions);
-
-        public void ResetStatistics()
-        {
-            Interlocked.Exchange(ref _getCommandInvocations, 0);
-            Interlocked.Exchange(ref _metadataEvaluations, 0);
-            Interlocked.Exchange(ref _runspaceLockAcquisitions, 0);
-        }
 
         /// <summary>
         /// Create a fresh command info cache instance.
@@ -196,7 +175,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // lookups that are already cached are served without taking the lock.
             lock (_runspaceLock)
             {
-                Interlocked.Increment(ref _runspaceLockAcquisitions);
                 if (disposed)
                 {
                     return null;
@@ -221,7 +199,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
 
                     Collection<CommandInfo> result = ps.Invoke<CommandInfo>();
-                    Interlocked.Increment(ref _getCommandInvocations);
 
                     // 'Get-Command' is invoked with 'SilentlyContinue', so a resolution error can only
                     // mean that the engine failed to resolve 'Get-Command' itself in the runspace.
@@ -257,9 +234,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     // Dynamic parameter getters execute PowerShell code and mutate runspace state,
                     // even though they look like ordinary property reads.
-                    Interlocked.Increment(ref _runspaceLockAcquisitions);
                     if (disposed) return null;
-                    Interlocked.Increment(ref _metadataEvaluations);
                     return command.Parameters;
                 }
             });
@@ -274,9 +249,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 lock (_runspaceLock)
                 {
-                    Interlocked.Increment(ref _runspaceLockAcquisitions);
                     if (disposed) return null;
-                    Interlocked.Increment(ref _metadataEvaluations);
                     return command.ParameterSets;
                 }
             });
@@ -347,10 +320,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             lock (_runspaceLock)
             {
-                Interlocked.Increment(ref _runspaceLockAcquisitions);
                 if (disposed) return null;
                 if (staticCmdlet != null && _parameterSnapshots.TryGetValue(staticCmdlet, out cached)) return cached;
-                Interlocked.Increment(ref _metadataEvaluations);
                 var parameters = command.Parameters;
                 if (parameters == null) return null;
                 var snapshot = new ReadOnlyDictionary<string, CommandParameterSnapshot>(
@@ -374,10 +345,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             lock (_runspaceLock)
             {
-                Interlocked.Increment(ref _runspaceLockAcquisitions);
                 if (disposed) return null;
                 if (staticCmdlet != null && _mandatoryParameters.TryGetValue(staticCmdlet, out cached)) return cached;
-                Interlocked.Add(ref _metadataEvaluations, 2);
                 var parameterSets = command.ParameterSets;
                 var parameters = command.Parameters;
                 if (parameterSets == null || parameters == null) return null;
