@@ -20,15 +20,15 @@ This rule detects lines that exceed the configured maximum length, including lea
 ### Noncompliant
 
 ```
-In this example of sample text, the maximum line length is using the default setting of not exceeding more than 120
-characters.
+This deliberately long example contains more than one hundred and twenty characters on a single line so the default maximum line length check reports a violation.
 ```
 
 ### Compliant
 
 ```
-In this example of sample text, the maximum line length is set to not exceed
-more than 80 characters.
+This deliberately long example contains more than one hundred and twenty
+characters but is broken up to avoid exceeding the maximum line length of
+80 characters.
 ```
 
 ## Configure rule

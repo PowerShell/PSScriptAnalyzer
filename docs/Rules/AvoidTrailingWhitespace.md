@@ -28,22 +28,28 @@ To learn more, see [about_Parsing][01].
 
 ```powershell
 # The next line ends with a trailing space after the backtick.
-Get-Process `
-| Where-Object { $_.CPU -gt 100 }
+Get-Process -Id $PID ` 
+| Select-Object Name,CPU
 ```
+
+<!-- Editor's Note: Noncompliant example with trailing non-breaking whitespace -->
 
 When you run this script, PowerShell throws a parser error because the trailing space prevents line
 continuation. For example:
 
 ```output
-PS C:\WINDOWS\system32> Get-Process `
-| Where-Object { $_.CPU -gt 100 }
-At line:2 char:1
-+ | Where-Object { $_.CPU -gt 100 }
-+ ~
-An empty pipe element is not allowed.
-    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
-    + FullyQualifiedErrorId : EmptyPipeElement
+PS C:\WINDOWS\system32> Get-Process -Id $PID ` 
+
+ NPM(K)    PM(M)      WS(M)     CPU(s)      Id  SI ProcessName
+ ------    -----      -----     ------      --  -- -----------
+     80    45.73     125.59       4.98   37332   1 pwsh
+
+PS C:\WINDOWS\system32> | Select-Object Name,CPU
+ParserError:
+Line |
+   1 |  | Select-Object Name,CPU
+     |  ~
+     | An empty pipe element is not allowed.
 ```
 
 ### Compliant

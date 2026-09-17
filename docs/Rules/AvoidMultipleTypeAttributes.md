@@ -16,7 +16,7 @@ This rule detects parameters that have multiple type specifiers applied to them.
 shouldn't have multiple type specifiers. When you apply more than one type attribute to a parameter,
 it can lead to unexpected type coercion or runtime errors.
 
-Each parameter should have exactly one type specifier to ensure predictable behavior and type
+Each parameter should have at most one type specifier to ensure predictable behavior and type
 safety.
 
 ## Example

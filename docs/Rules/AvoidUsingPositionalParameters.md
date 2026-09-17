@@ -28,13 +28,13 @@ Use full parameter names when calling commands.
 ### Noncompliant
 
 ```powershell
-Get-Command ChildItem Microsoft.PowerShell.Management
+Join-Path 'C:\' 'Windows' 'System32'
 ```
 
 ### Compliant
 
 ```powershell
-Get-Command -Noun ChildItem -Module Microsoft.PowerShell.Management
+Join-Path -Path 'C:\' -ChildPath 'Windows' -AdditionalChildPath 'System32'
 ```
 
 ## Configure rule

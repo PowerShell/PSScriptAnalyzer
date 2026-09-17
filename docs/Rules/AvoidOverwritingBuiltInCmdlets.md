@@ -57,7 +57,7 @@ following lines in your settings file.
     Rules = @{
         PSAvoidOverwritingBuiltInCmdlets = @{
             Enable            = $true
-            PowerShellVersion = @('core-7.0.0-windows')
+            PowerShellVersion = @('core-6.1.0-windows')
         }
     }
 }
@@ -72,7 +72,7 @@ PSScriptAnalyzer. Set this value to the PowerShell version and platform you want
 against.
 
 > [!NOTE]
-> The default value for `PowerShellVersion` is `core-7.0.0-windows` if PowerShell 7 or later is
+> The default value for `PowerShellVersion` is `core-6.1.0-windows` if PowerShell 6.1 or later is
 > installed, and `desktop-5.1.17763.316-windows` if it's not.
 
 Patched PowerShell releases usually share the same cmdlet metadata, so the built-in allow lists are

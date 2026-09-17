@@ -12,7 +12,7 @@ title: MissingTryBlock
 
 ## Description
 
-This rule identifies instances where `catch` or `finally` blocks are present with out an associated
+This rule identifies instances where `catch` or `finally` blocks are present without an associated
 `try` block. Without a `try` block, the `catch` and `finally` are interpreted as commands and result
 in a runtime error, such as:
 

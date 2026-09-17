@@ -93,8 +93,14 @@ Describe "Validate rule documentation files" {
         $result | Should -Be $true
     }
 
-    It 'Every rule in the table must have the correct severity and default state' {
+     It 'Every defined rule must have a matching table entry with the correct severity and default state' {
         $result = $true
+        foreach ($rule in $ruleList.RuleName) {
+            if ($rule -notin $ruleTable.RuleName) {
+                Write-Host "Missing README table entry for rule: $rule"
+                $result = $false
+            }
+        }
         foreach ($ruleRow in $ruleTable) {
             $definedRule = $ruleList | Where-Object { $_.RuleName -eq $ruleRow.RuleName }
             if ($null -eq $definedRule) {
@@ -135,6 +141,7 @@ Describe "Validate rule documentation files" {
         $result = $true
         foreach ($ref in $linkDefs.Keys) {
             $target = $linkDefs[$ref]
+            $targetFile = ($target -split '#', 2)[0]
             $isRuleFile = $targetFile -match '\.md$' -and $targetFile -notmatch '/'
 
             if ($isRuleFile) {
@@ -152,11 +159,12 @@ Describe "Validate rule documentation files" {
         $result = $true
         foreach ($ref in $linkDefs.Keys) {
             $target = $linkDefs[$ref]
+            $targetFile = ($target -split '#', 2)[0]
             $isRuleFile = $targetFile -match '\.md$' -and $targetFile -notmatch '/'
 
             if ($isRuleFile) {
                 # A rule-page link definition with no matching table row.
-                if ($target -notin $ruleTable.FileName) {
+                if ($targetFile -notin $ruleTable.FileName) {
                     Write-Host "Orphan rule target: Link definition [$ref] -> '$target' has no matching rule file."
                     $result = $false
                 }

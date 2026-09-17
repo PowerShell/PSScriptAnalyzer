@@ -23,9 +23,11 @@ can make the code look valid but behave unexpectedly.
 
 ```powershell
 # The line in this example ends with a backtick and trailing whitespace
-Get-Process `
-| Where-Object CPU -gt 100
+Get-Process -Id $PID ` 
+| Select-Object Name,CPU
 ```
+
+<!-- Editor's Note: Noncompliant example with trailing non-breaking whitespace -->
 
 ### Compliant
 
@@ -42,7 +44,13 @@ this rule:
 - Create a custom rule configuration file to include only the rules you want or exclude the rules
   you don't want.
 - Add the appropriate rule suppression attributes to your code to suppress the rule for specific
-  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+  code blocks. For more information, see the _Suppressing rules_ section of
+  [Using PSScriptAnalyzer][02].
+
+## Further reading
+
+- [AvoidTrailingWhitespace][03]
 
 <!-- link references -->
 [02]: ../using-scriptanalyzer.md
+[03]: ../rules/avoidtrailingwhitespace.md

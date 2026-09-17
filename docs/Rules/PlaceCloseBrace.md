@@ -12,9 +12,8 @@ title: PlaceCloseBrace
 
 ## Description
 
-This rule detects closing braces (`}`) that aren't placed on a new line by themselves or that are
-followed by empty lines. Close brace placement should follow a consistent style. It should be on a
-new line by itself and shouldn't be followed by an empty line.
+This rule detects closing braces (`}`) that aren't placed on a new line by themselves. When
+`NoEmptyLineBefore` is enabled, it also detects empty lines immediately before closing braces.
 
 ## Example
 

@@ -17,7 +17,7 @@ declared with `Key` or `Required` attributes in a `.mof` file that aren't presen
 parameters in the corresponding functions. These properties must be declared as mandatory
 parameters in the `Get-TargetResource`, `Set-TargetResource`, and `Test-TargetResource` functions.
 
-All properties with `Key` and `Required` attributes should have matching mandatory
+All properties with either `Key` or `Required` attributes should have matching mandatory
 parameters in the **Get**, **Set**, and **Test** functions.
 
 ## Example
@@ -75,7 +75,7 @@ function Test-TargetResource
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $Message
+        $Message,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]

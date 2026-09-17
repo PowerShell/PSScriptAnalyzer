@@ -106,8 +106,7 @@ function Get-OsInfo {
 
 ```powershell
 function Get-OsInfo {
-    $os = Get-CimInstance -ClassName Win32_OperatingSystem
-    return $os.Caption
+    Get-Content -Path '/etc/os-release'
 }
 ```
 

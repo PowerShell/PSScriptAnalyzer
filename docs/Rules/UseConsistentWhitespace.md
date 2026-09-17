@@ -67,8 +67,8 @@ brace. For example, it prefers `if ($true) { foo }` over `if ($true) {bar}`. The
 ### CheckOpenBrace
 
 This parameter checks whether there's a space between a keyword and its corresponding opening brace.
-For example, it prefers `foo { }` over `foo{ }`. No space is required if an open brace precedes an
-open parenthesis. The default value is `$true`.
+For example, it prefers `foo { }` over `foo{ }`. No space is required if an opening brace is
+preceded by an opening parenthesis. The default value is `$true`.
 
 ### CheckOpenParen
 
