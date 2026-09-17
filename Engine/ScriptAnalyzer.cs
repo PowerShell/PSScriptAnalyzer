@@ -2129,6 +2129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (this.ScriptRules != null)
             {
                 var manifestCache = new ModuleManifestAnalysisCache();
+                var localFunctions = LocalFunctionScope.FromAst(scriptAst);
                 var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
                 if (allowedRules.Any())
                 {
@@ -2140,6 +2141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        using (localFunctions.Enter())
                         using (manifestCache.Enter())
                         try
                         {
