@@ -23,7 +23,6 @@ title: List of PSScriptAnalyzer rules
 | [AvoidAssignmentToAutomaticVariable][03]           | Warning     | Always enabled |              |
 | [AvoidDefaultValueForMandatoryParameter][04]       | Warning     | Always enabled |              |
 | [AvoidDefaultValueSwitchParameter][05]             | Warning     | Always enabled |              |
-| [AvoidDynamicallyCreatingVariableNames][06]        | Information |    Disabled    |     Yes      |
 | [AvoidExclaimOperator][07]                         | Warning     |    Disabled    |     Yes      |
 | [AvoidGlobalAliases][08]                           | Warning     | Always enabled |              |
 | [AvoidGlobalFunctions][09]                         | Warning     | Always enabled |              |
@@ -38,7 +37,6 @@ title: List of PSScriptAnalyzer rules
 | [AvoidShouldContinueWithoutForce][18]              | Warning     | Always enabled |              |
 | [AvoidTrailingWhitespace][19]                      | Information | Always enabled |              |
 | [AvoidUsingAllowUnencryptedAuthentication][20]     | Warning     | Always enabled |              |
-| [AvoidUsingArrayList][21]                          | Warning     |    Disabled    |     Yes      |
 | [AvoidUsingBrokenHashAlgorithms][22]               | Warning     | Always enabled |              |
 | [AvoidUsingCmdletAliases][23]                      | Warning     | Always enabled |     Yes      |
 | [AvoidUsingComputerNameHardcoded][24]              | Error       | Always enabled |              |
@@ -59,10 +57,8 @@ title: List of PSScriptAnalyzer rules
 | [DSCUseIdenticalMandatoryParametersForDSC][39]     | Error       | Always enabled |              |
 | [DSCUseIdenticalParametersForDSC][40]              | Error       | Always enabled |              |
 | [DSCUseVerboseMessageInDSCResource][41]            | Information | Always enabled |              |
-| [InvalidMultiDotValue][42]                         | Warning     |    Disabled    |     Yes      |
 | [MisleadingBacktick][43]                           | Warning     | Always enabled |              |
 | [MissingModuleManifestField][44]                   | Warning     | Always enabled |              |
-| [MissingTryBlock][45]                              | Warning     |    Disabled    |     Yes      |
 | [PlaceCloseBrace][46]                              | Warning     |    Disabled    |     Yes      |
 | [PlaceOpenBrace][47]                               | Warning     |    Disabled    |     Yes      |
 | [PossibleIncorrectComparisonWithNull][48]          | Warning     | Always enabled |              |
@@ -105,7 +101,6 @@ title: List of PSScriptAnalyzer rules
 [03]: AvoidAssignmentToAutomaticVariable.md
 [04]: AvoidDefaultValueForMandatoryParameter.md
 [05]: AvoidDefaultValueSwitchParameter.md
-[06]: AvoidDynamicallyCreatingVariableNames.md
 [07]: AvoidExclaimOperator.md
 [08]: AvoidGlobalAliases.md
 [09]: AvoidGlobalFunctions.md
@@ -120,7 +115,6 @@ title: List of PSScriptAnalyzer rules
 [18]: AvoidShouldContinueWithoutForce.md
 [19]: AvoidTrailingWhitespace.md
 [20]: AvoidUsingAllowUnencryptedAuthentication.md
-[21]: AvoidUsingArrayList.md
 [22]: AvoidUsingBrokenHashAlgorithms.md
 [23]: AvoidUsingCmdletAliases.md
 [24]: AvoidUsingComputerNameHardcoded.md
@@ -141,10 +135,8 @@ title: List of PSScriptAnalyzer rules
 [39]: DSCUseIdenticalMandatoryParametersForDSC.md
 [40]: DSCUseIdenticalParametersForDSC.md
 [41]: DSCUseVerboseMessageInDSCResource.md
-[42]: InvalidMultiDotValue.md
 [43]: MisleadingBacktick.md
 [44]: MissingModuleManifestField.md
-[45]: MissingTryBlock.md
 [46]: PlaceCloseBrace.md
 [47]: PlaceOpenBrace.md
 [48]: PossibleIncorrectComparisonWithNull.md

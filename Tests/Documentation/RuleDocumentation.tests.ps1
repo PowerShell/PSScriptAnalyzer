@@ -140,14 +140,13 @@ Describe "Validate rule documentation files" {
     It 'Every link definition that points to a rule must have a matching rule in the table' {
         $result = $true
         foreach ($ref in $linkDefs.Keys) {
-            $target = $linkDefs[$ref]
-            $targetFile = ($target -split '#', 2)[0]
+            $targetFile = $linkDefs[$ref]
             $isRuleFile = $targetFile -match '\.md$' -and $targetFile -notmatch '/'
 
             if ($isRuleFile) {
                 # A rule-page link definition with no matching table row.
                 if ($ref -notin $ruleTable.Ref) {
-                    Write-Host "Orphan rule target: Link definition [$ref] -> '$target' has no matching rule in the table (defined at line $($linkDefLine[$ref]))."
+                    Write-Host "Orphan rule target: Link definition [$ref] -> '$targetFile' has no matching rule in the table (defined at line $($linkDefLine[$ref]))."
                     $result = $false
                 }
             }
@@ -158,14 +157,14 @@ Describe "Validate rule documentation files" {
     It 'Every link definition target must have a valid file path' {
         $result = $true
         foreach ($ref in $linkDefs.Keys) {
-            $target = $linkDefs[$ref]
-            $targetFile = ($target -split '#', 2)[0]
+            $targetFile = $linkDefs[$ref]
             $isRuleFile = $targetFile -match '\.md$' -and $targetFile -notmatch '/'
+            $targetRule = $targetFile -replace '\.md$', ''
 
             if ($isRuleFile) {
                 # A rule-page link definition with no matching table row.
-                if ($targetFile -notin $ruleTable.FileName) {
-                    Write-Host "Orphan rule target: Link definition [$ref] -> '$target' has no matching rule file."
+                if ($targetRule -notin $ruleTable.RowName) {
+                    Write-Host "Orphan rule target: Link definition [$ref] -> '$targetFile' has no matching rule file."
                     $result = $false
                 }
             }
