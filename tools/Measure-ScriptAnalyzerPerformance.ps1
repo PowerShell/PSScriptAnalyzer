@@ -14,7 +14,12 @@ param(
 
     [switch]$Recurse,
 
-    [string]$SettingsPath
+    [string]$SettingsPath,
+
+    # Analyses to run, and discard, between the cold and warm measurements. Tiered compilation
+    # promotes hot methods over the first few iterations and there is no way to wait for that
+    # queue to drain, so the ramp has to be spent before the warm run rather than inside it.
+    [int]$WarmupCount = 4
 )
 
 $ErrorActionPreference = 'Stop'
@@ -126,9 +131,16 @@ $results = [ordered]@{
     Culture = [Globalization.CultureInfo]::CurrentCulture.Name
     UICulture = [Globalization.CultureInfo]::CurrentUICulture.Name
     StopwatchFrequency = [System.Diagnostics.Stopwatch]::Frequency
+    WarmupCount = $WarmupCount
 }
 
 foreach ($run in 'Cold', 'Warm') {
+    if ($run -eq 'Warm') {
+        for ($warmup = 0; $warmup -lt $WarmupCount; $warmup++) {
+            $null = & $command @analyzerArguments
+        }
+    }
+
     # Settle the allocations from module load and from canonicalizing the previous run, so that
     # collecting them is not charged to whichever measurement happens to trigger it.
     [System.GC]::Collect()
