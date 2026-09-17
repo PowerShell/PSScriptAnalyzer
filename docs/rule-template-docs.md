@@ -45,13 +45,12 @@ following articles.
 - [UseConsistentParameterSetName](Rules/UseConsistentParameterSetName.md)
 - [UseConstrainedLanguageMode](Rules/UseConstrainedLanguageMode.md)
 
-When the rule is configurable, include `### Parameter` for each setting after `## Configure rule`.
-Use an H3 heading for each setting and document what it controls, accepted values, and its default
-value.
+When the rule is configurable, include `## Parameters` section after `## Configure rule`. Use an H3
+heading for each setting and document what it controls, accepted values, and its default value.
 
-Include `## Suppression` after the `## Configure rule` section only when the rule needs specific
-suppression syntax or examples. Otherwise, link readers to the general _Suppressing rules_ guidance
-from **Configure rule**.
+After the `## Configure rule` and any parameter sections, include a `## Suppression` section only
+when the rule needs specific suppression syntax or examples. Otherwise, link readers to the general
+_Suppressing rules_ guidance from **Configure rule**.
 
 In the `## Further reading` section, provide links to additional resources that help readers
 understand the rule, its context, or related topics.
