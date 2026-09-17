@@ -21,9 +21,11 @@ practice.}}
 when the rule needs context before its examples. Remove this section when it doesn't
 apply.}}
 
-## Example
+## Examples
 
 ### Noncompliant
+
+{{Describe the scenario as necessary.}}
 
 ```powershell
 {{Code that produces the diagnostic}}
@@ -31,24 +33,10 @@ apply.}}
 
 ### Compliant
 
+{{Describe the scenario as necessary.}}
+
 ```powershell
 {{Equivalent code that doesn't produce the diagnostic}}
-```
-
-## Examples
-
-### {{Scenario name}}
-
-#### Noncompliant
-
-```powershell
-{{Code that produces the diagnostic for this scenario}}
-```
-
-#### Compliant
-
-```powershell
-{{Equivalent compliant code for this scenario}}
 ```
 
 ## Configure rule
