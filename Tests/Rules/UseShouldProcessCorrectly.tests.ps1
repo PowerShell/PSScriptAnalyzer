@@ -281,15 +281,15 @@ function Foo
     }
 
     Context "Method calls are not command calls" {
-        # 'mkdir' is one of the few hyphen-free commands that declares SupportsShouldProcess, so a
-        # member of the same name is the clearest way to tell a method call from a command call.
+        # A quoted member name may contain a hyphen, so Remove-Item serves as a member whose name also
+        # belongs to a cmdlet that declares SupportsShouldProcess on every platform.
         It "does not treat a method invocation as a call to the command of the same name" {
             $scriptDef = @'
 function Invoke-Thing
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param($dir)
-    $dir.mkdir()
+    param($o)
+    $o.'Remove-Item'()
 }
 '@
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess)
@@ -301,8 +301,8 @@ function Invoke-Thing
 function Invoke-Thing
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param($dir)
-    mkdir $dir
+    param($path)
+    Remove-Item $path
 }
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
@@ -327,9 +327,9 @@ function Invoke-Thing
 function Invoke-Thing
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param($dir)
-    $dir.mkdir()
-    mkdir $dir
+    param($o, $path)
+    $o.'Remove-Item'()
+    Remove-Item $path
 }
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
@@ -340,9 +340,9 @@ function Invoke-Thing
 function Invoke-Thing
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param($dir)
-    mkdir $dir
-    $dir.mkdir()
+    param($o, $path)
+    Remove-Item $path
+    $o.'Remove-Item'()
 }
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
