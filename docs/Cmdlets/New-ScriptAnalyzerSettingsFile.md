@@ -1,35 +1,34 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
-ms.date: 04/17/2026
+ms.date: 07/21/2026
 schema: 2.0.0
 ---
-
 # New-ScriptAnalyzerSettingsFile
 
 ## SYNOPSIS
+
 Creates a new PSScriptAnalyzer settings file.
 
 ## SYNTAX
 
 ```
-New-ScriptAnalyzerSettingsFile [[-Path] <string>] [-BaseOnPreset <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+New-ScriptAnalyzerSettingsFile [[-Path] <string>] [-BaseOnPreset <string>] [-Force]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
 The `New-ScriptAnalyzerSettingsFile` cmdlet creates a `PSScriptAnalyzerSettings.psd1` file in the
-specified directory.
+specified directory. By default, the generated file includes all current rules in the `IncludeRules`
+list and populates the `Rules` section with all configurable properties, set to their default
+values.
 
-When the **BaseOnPreset** parameter is provided, the generated file contains the rules and
-configuration defined by the given preset.
+When you provide the **BaseOnPreset**, the generated file contains the rules and configuration
+defined by the given preset file.
 
-When **BaseOnPreset** is not provided, the generated file includes all current rules in the
-`IncludeRules` list and populates the `Rules` section with all configurable properties, set to their
-default values.
-
-If a settings file already exists at the target path, the cmdlet emits a terminating error unless
-the **Force** parameter is specified - in which case it's overwritten.
+If a settings file already exists at the target path the command fails unless you use the **Force**
+parameter to overwrite the existing file.
 
 ## EXAMPLES
 
@@ -71,7 +70,8 @@ Shows what the cmdlet would do without actually writing the file.
 
 ### -Path
 
-The directory where the settings file will be created. Defaults to the current working directory when not specified.
+The directory where the settings file is created. Defaults to the current working directory when not
+specified.
 
 ```yaml
 Type: String
@@ -104,7 +104,7 @@ Accept wildcard characters: False
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs. The cmdlet is not run.
+Shows what would happen if the cmdlet runs. The cmdlet isn't run.
 
 ```yaml
 Type: SwitchParameter
@@ -172,7 +172,6 @@ The cmdlet returns a **FileInfo** object representing the created settings file.
 The output file is always named `PSScriptAnalyzerSettings.psd1` so that the automatic settings
 discovery in `Invoke-ScriptAnalyzer` picks it up when analysing scripts in the same directory.
 
-Note: Relative paths in `CustomRulePath` are resolved from the caller's current working directory,
 Relative paths in `CustomRulePath` are resolved from the caller's current working directory,
 not from the location of the settings file. This matches `Invoke-ScriptAnalyzer` behavior.
 

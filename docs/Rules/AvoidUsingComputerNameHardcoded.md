@@ -1,6 +1,6 @@
 ---
-description: Avoid Using ComputerName Hardcoded
-ms.date: 06/28/2023
+description: Avoid using hardcoded computer names
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidUsingComputerNameHardcoded
 ---
@@ -8,27 +8,30 @@ title: AvoidUsingComputerNameHardcoded
 
 **Severity Level: Error**
 
+**Default state: Always enabled**
+
 ## Description
 
-The names of computers should never be hard coded as this will expose sensitive information. The
-`ComputerName` parameter should never have a hard coded value.
+This rule detects hard-coded computer names in the `ComputerName` parameter of cmdlets. Hard-coded
+computer names can expose sensitive information and reduce script portability. The `ComputerName`
+parameter should always be parameterized or dynamically assigned to ensure scripts are flexible and
+secure.
 
-## How
+Use parameters, environment variables, or dynamic values instead of hard-coded computer
+names.
 
-Remove hard coded computer names.
+## Example
 
-## Example 1
-
-### Wrong
+### Noncompliant
 
 ```powershell
 Function Invoke-MyRemoteCommand ()
 {
-    Invoke-Command -Port 343 -ComputerName hardcoderemotehostname
+    Invoke-Command -Port 343 -ComputerName HardcodedRemoteHostname
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Function Invoke-MyCommand ($ComputerName)
@@ -37,22 +40,15 @@ Function Invoke-MyCommand ($ComputerName)
 }
 ```
 
-## Example 2
+## Configure rule
 
-### Wrong
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
 
-```powershell
-Function Invoke-MyLocalCommand ()
-{
-    Invoke-Command -Port 343 -ComputerName hardcodelocalhostname
-}
-```
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
 
-### Correct
-
-```powershell
-Function Invoke-MyLocalCommand ()
-{
-    Invoke-Command -Port 343 -ComputerName $env:COMPUTERNAME
-}
-```
+<!-- Link references -->
+[02]: ../using-scriptanalyzer.md

@@ -1,6 +1,6 @@
 ---
-description: Use Standard Get/Set/Test TargetResource functions in DSC Resource
-ms.date: 06/28/2023
+description: Use standard DSC Get, Set, and Test TargetResource functions in a resource
+ms.date: 07/21/2026
 ms.topic: reference
 title: DSCStandardDSCFunctionsInResource
 ---
@@ -8,29 +8,28 @@ title: DSCStandardDSCFunctionsInResource
 
 **Severity Level: Error**
 
+**Default state: Always enabled**
+
 ## Description
 
-All DSC resources are required to implement the correct functions.
+This rule detects if all Desired State Configuration (DSC) resources implement the correct
+functions. Add the missing functions to the resource.
 
 For non-class based resources:
 
+- `Get-TargetResource`
 - `Set-TargetResource`
 - `Test-TargetResource`
-- `Get-TargetResource`
 
 For class based resources:
 
+- `Get`
 - `Set`
 - `Test`
-- `Get`
 
-## How
+## Example
 
-Add the missing functions to the resource.
-
-## Example 1
-
-### Wrong
+### Noncompliant MOF-based resource
 
 ```powershell
 function Get-TargetResource
@@ -45,8 +44,9 @@ function Get-TargetResource
     ...
 }
 
-function Set-TargetResource
+function Test-TargetResource
 {
+    [OutputType([System.Boolean])]
     param
     (
         [parameter(Mandatory = $true)]
@@ -57,7 +57,7 @@ function Set-TargetResource
 }
 ```
 
-### Correct
+### Compliant MOF-based resource
 
 ```powershell
 function Get-TargetResource
@@ -96,9 +96,7 @@ function Test-TargetResource
 }
 ```
 
-## Example 2
-
-### Wrong
+### Noncompliant class-based resource
 
 ```powershell
 [DscResource()]
@@ -117,8 +115,9 @@ class MyDSCResource
         ...
     }
 }
+```
 
-### Correct
+### Compliant class-based resource
 
 ```powershell
 [DscResource()]
@@ -143,3 +142,16 @@ class MyDSCResource
     }
 }
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[02]: ../using-scriptanalyzer.md

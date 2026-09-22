@@ -1,6 +1,6 @@
 ---
 Download Help Link: https://aka.ms/ps-modules-help
-Help Version: 1.25.0
+Help Version: 1.26.0
 Locale: en-US
 Module Guid: d6245802-193d-4068-a631-8863a4342a18
 Module Name: PSScriptAnalyzer
@@ -31,3 +31,12 @@ Formats a script text based on the input settings or default settings.
 ### [Invoke-ScriptAnalyzer](Invoke-ScriptAnalyzer.md)
 
 Evaluates a script or module based on selected best practice rules
+
+### [New-ScriptAnalyzerSettingsFile](New-ScriptAnalyzerSettingsFile.md)
+
+Creates a new PSScriptAnalyzer settings file.
+
+### [Test-ScriptAnalyzerSettingsFile](Test-ScriptAnalyzerSettingsFile.md)
+
+Validates a PSScriptAnalyzer settings file as a self-contained unit.
+

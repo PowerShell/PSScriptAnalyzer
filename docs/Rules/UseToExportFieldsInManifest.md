@@ -1,6 +1,6 @@
 ---
-description: Use the *ToExport module manifest fields.
-ms.date: 06/28/2023
+description: Use the *ToExport module manifest fields
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseToExportFieldsInManifest
 ---
@@ -8,52 +8,46 @@ title: UseToExportFieldsInManifest
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-To improve the performance of module auto-discovery, module manifests should not use wildcards
-(`'*'`) or null (`$null`) in the following entries:
+This rule detects when module manifests use wildcards (`'*'`) or null (`$null`) in export fields. To
+improve module autodiscovery performance, module manifests shouldn't use wildcards or null in the
+following entries:
 
 - `AliasesToExport`
 - `CmdletsToExport`
 - `FunctionsToExport`
 - `VariablesToExport`
 
-Using wildcards or null has causes PowerShell to perform expensive work to analyze a module during
-module auto-discovery.
+When you use wildcards or null, PowerShell performs expensive analysis of your module during
+autodiscovery. Instead, use an explicit list of items to export. If you have no items to export, use
+an empty array (`@()`) instead of null or a wildcard.
 
-## How
+## Example
 
-Use an explicit list in the entries.
-
-## Example 1
-
-Suppose there are no functions in your module to export. Then,
-
-### Wrong
+### Noncompliant
 
 ```powershell
 FunctionsToExport = $null
 ```
 
-### Correct
+### Compliant
 
 ```powershell
-FunctionToExport = @()
+FunctionsToExport = @()
 ```
 
-## Example 2
+## Configure rule
 
-Suppose there are only two functions in your module, `Get-Foo` and `Set-Foo` that you want to
-export. Then,
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
 
-### Wrong
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
 
-```powershell
-FunctionsToExport = '*'
-```
-
-### Correct
-
-```powershell
-FunctionToExport = @(Get-Foo, Set-Foo)
-```
+<!-- link references -->
+[02]: ../using-scriptanalyzer.md
