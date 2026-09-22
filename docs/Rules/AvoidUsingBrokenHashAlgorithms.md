@@ -1,6 +1,6 @@
 ---
 description: Avoid using broken hash algorithms
-ms.date: 06/28/2023
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidUsingBrokenHashAlgorithms
 ---
@@ -8,40 +8,40 @@ title: AvoidUsingBrokenHashAlgorithms
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-Avoid using the broken algorithms MD5 or SHA-1.
+This rule detects the use of cryptographically broken hash algorithms `MD5` and `SHA-1`. Avoid using
+hash algorithms `MD5` and `SHA-1`. These algorithms are vulnerable to collision attacks and are no
+longer considered secure for cryptographic purposes.
 
-## How
+Replace `MD5` and `SHA-1` with secure alternatives such as `SHA256`, `SHA384`, or `SHA512`. Use
+broken algorithms only when strictly necessary for backwards compatibility with legacy systems.
 
-Replace broken algorithms with secure alternatives. MD5 and SHA-1 should be replaced with SHA256,
-SHA384, SHA512, or other safer algorithms when possible, with MD5 and SHA-1 only being utilized by
-necessity for backwards compatibility.
+## Example
 
-## Example 1
-
-### Wrong
+### Noncompliant
 
 ```powershell
 Get-FileHash foo.txt -Algorithm MD5
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 Get-FileHash foo.txt -Algorithm SHA256
 ```
 
-## Example 2
+## Configure rule
 
-### Wrong
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
 
-```powershell
-Get-FileHash foo.txt -Algorithm SHA1
-```
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
 
-### Correct
-
-```powershell
-Get-FileHash foo.txt
-```
+<!-- Link references -->
+[02]: ../using-scriptanalyzer.md

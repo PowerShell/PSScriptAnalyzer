@@ -1,6 +1,6 @@
 ---
 description: Avoid reserved words as function names
-ms.date: 08/31/2025
+ms.date: 07/21/2026
 ms.topic: reference
 title: AvoidReservedWordsAsFunctionNames
 ---
@@ -8,21 +8,19 @@ title: AvoidReservedWordsAsFunctionNames
 
 **Severity Level: Warning**
 
+**Default state: Always enabled**
+
 ## Description
 
-Avoid using reserved words as function names. Using reserved words as function names can cause
-errors or unexpected behavior in scripts.
-
-## How to Fix
-
-Avoid using any of the reserved words as function names. Choose a different name that's not a
-reserved word.
+This rule detects function names that use PowerShell reserved words. Using reserved words as
+function names causes errors or unexpected behavior in PowerShell scripts. Choose function names
+that don't conflict with any PowerShell reserved words.
 
 See [about_Reserved_Words][01] for a list of reserved words in PowerShell.
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 # Function is a reserved word
@@ -31,7 +29,7 @@ function function {
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 # myFunction is not a reserved word
@@ -40,5 +38,16 @@ function myFunction {
 }
 ```
 
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
 <!-- link references -->
-[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_reserved_words
+[01]: /powershell/module/microsoft.powershell.core/about/about_reserved_words
+[02]: ../using-scriptanalyzer.md

@@ -1,6 +1,6 @@
 ---
-description: Use OutputType Correctly
-ms.date: 06/28/2023
+description: Use the OutputType attribute correctly
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseOutputTypeCorrectly
 ---
@@ -8,20 +8,21 @@ title: UseOutputTypeCorrectly
 
 **Severity Level: Information**
 
+**Default state: Always enabled**
+
 ## Description
 
-A command should return the same type as declared in `OutputType`.
+This rule detects when a function or script returns a different type than what is declared in the
+`OutputType` attribute. A function should return values that match the types specified in its
+`OutputType` attribute.
 
-You can get more details by running `Get-Help about_Functions_OutputTypeAttribute` command in
-PowerShell.
-
-## How
-
-Specify that the OutputType attribute lists and the types returned in the cmdlet match.
+The `OutputType` attribute documents what type of output a function produces, and the actual return
+values should comply with this declaration. To learn more, see
+[about_Functions_OutputTypeAttribute][01].
 
 ## Example
 
-### Wrong
+### Noncompliant
 
 ```powershell
 function Get-Foo
@@ -34,7 +35,7 @@ function Get-Foo
 }
 ```
 
-### Correct
+### Compliant
 
 ```powershell
 function Get-Foo
@@ -47,3 +48,17 @@ function Get-Foo
         return 'four'
 }
 ```
+
+## Configure rule
+
+This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
+this rule:
+
+- Create a custom rule configuration file to include only the rules you want or exclude the rules
+  you don't want.
+- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+
+<!-- link references -->
+[01]: /powershell/module/microsoft.powershell.core/about/about_functions_outputtypeattribute
+[02]: ../using-scriptanalyzer.md
