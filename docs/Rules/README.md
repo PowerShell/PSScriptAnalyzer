@@ -87,17 +87,18 @@ title: List of PSScriptAnalyzer rules
 | [UseConstrainedLanguageMode][67]                   | Warning     |    Disabled    |     Yes      |
 | [UseCorrectCasing][68]                             | Information |    Disabled    |     Yes      |
 | [UseDeclaredVarsMoreThanAssignments][69]           | Warning     | Always enabled |              |
-| [UseLiteralInitializerForHashtable][70]            | Warning     | Always enabled |              |
-| [UseOutputTypeCorrectly][71]                       | Information | Always enabled |              |
-| [UseProcessBlockForPipelineCommand][72]            | Warning     | Always enabled |              |
-| [UsePSCredentialType][73]                          | Warning     | Always enabled |              |
-| [UseShouldProcessForStateChangingFunctions][74]    | Warning     | Always enabled |              |
-| [UseSingleValueFromPipelineParameter][75]          | Warning     |    Disabled    |     Yes      |
-| [UseSingularNouns][76]                             | Warning     |    Enabled     |     Yes      |
-| [UseSupportsShouldProcess][77]                     | Warning     | Always enabled |              |
-| [UseToExportFieldsInManifest][78]                  | Warning     | Always enabled |              |
-| [UseUsingScopeModifierInNewRunspaces][79]          | Warning     | Always enabled |              |
-| [UseUTF8EncodingForHelpFile][80]                   | Warning     | Always enabled |              |
+| [UseFullyQualifiedCmdletNames][70]                 | Warning     |    Disabled    |     Yes      |
+| [UseLiteralInitializerForHashtable][71]            | Warning     | Always enabled |              |
+| [UseOutputTypeCorrectly][72]                       | Information | Always enabled |              |
+| [UseProcessBlockForPipelineCommand][73]            | Warning     | Always enabled |              |
+| [UsePSCredentialType][74]                          | Warning     | Always enabled |              |
+| [UseShouldProcessForStateChangingFunctions][75]    | Warning     | Always enabled |              |
+| [UseSingleValueFromPipelineParameter][76]          | Warning     |    Disabled    |     Yes      |
+| [UseSingularNouns][77]                             | Warning     |    Enabled     |     Yes      |
+| [UseSupportsShouldProcess][78]                     | Warning     | Always enabled |              |
+| [UseToExportFieldsInManifest][79]                  | Warning     | Always enabled |              |
+| [UseUsingScopeModifierInNewRunspaces][80]          | Warning     | Always enabled |              |
+| [UseUTF8EncodingForHelpFile][81]                   | Warning     | Always enabled |              |
 
 <!-- link references -->
 [01]: ../using-scriptanalyzer.md#suppressing-rules
@@ -169,14 +170,15 @@ title: List of PSScriptAnalyzer rules
 [67]: UseConstrainedLanguageMode.md
 [68]: UseCorrectCasing.md
 [69]: UseDeclaredVarsMoreThanAssignments.md
-[70]: UseLiteralInitializerForHashtable.md
-[71]: UseOutputTypeCorrectly.md
-[72]: UseProcessBlockForPipelineCommand.md
-[73]: UsePSCredentialType.md
-[74]: UseShouldProcessForStateChangingFunctions.md
-[75]: UseSingleValueFromPipelineParameter.md
-[76]: UseSingularNouns.md
-[77]: UseSupportsShouldProcess.md
-[78]: UseToExportFieldsInManifest.md
-[79]: UseUsingScopeModifierInNewRunspaces.md
-[80]: UseUTF8EncodingForHelpFile.md
+[70]: UseFullyQualifiedCmdletNames.md
+[71]: UseLiteralInitializerForHashtable.md
+[72]: UseOutputTypeCorrectly.md
+[73]: UseProcessBlockForPipelineCommand.md
+[74]: UsePSCredentialType.md
+[75]: UseShouldProcessForStateChangingFunctions.md
+[76]: UseSingleValueFromPipelineParameter.md
+[77]: UseSingularNouns.md
+[78]: UseSupportsShouldProcess.md
+[79]: UseToExportFieldsInManifest.md
+[80]: UseUsingScopeModifierInNewRunspaces.md
+[81]: UseUTF8EncodingForHelpFile.md
