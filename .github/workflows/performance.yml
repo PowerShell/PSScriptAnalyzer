@@ -311,7 +311,7 @@ jobs:
               ''
               'Release builds run in separate jobs with the same OS and PowerShell version and identical input bytes. No analyzer modules or sessions are shared between jobs.'
               'The PowerShell workload analyzes only build.psm1 with default rules. The semver workload analyzes the repository recursively using its PSScriptAnalyzerSettings.psd1, without filtering findings.'
-              "Each build gets $env:BENCHMARK_REPETITIONS fresh pwsh -NoProfile processes: cold is the first analysis, warm is the immediately following analysis in each process."
+              "Each build gets $env:BENCHMARK_REPETITIONS fresh pwsh -NoProfile processes: cold is the first analysis; $($baseline.WarmupCount) discarded warm-up analyses are then run to spend the tiered-compilation ramp before the warm measurement."
               'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
               ''
               "| Source | Commit | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"

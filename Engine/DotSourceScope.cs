@@ -20,6 +20,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </remarks>
     internal sealed class DotSourceScope
     {
+        // Keys are canonicalized against the real filesystem in Normalize(), so ordinal comparison is
+        // correct on every platform and mount: it neither assumes Windows-style case-insensitivity nor
+        // guesses at macOS's default (case-insensitive but case-preserving, and sometimes configured
+        // case-sensitive) or Linux's (case-sensitive, but not always - e.g. mounted exFAT/NTFS volumes).
+        private static readonly StringComparer PathComparer = StringComparer.Ordinal;
+
         private readonly Dictionary<string, HashSet<string>> namesByFile;
         private readonly Dictionary<string, ParsedFile> parsedByFile;
 
@@ -54,9 +60,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         internal bool TryTakeParse(string filePath, out ScriptBlockAst ast, out Token[] tokens, out ParseError[] errors)
         {
-            if (filePath != null && parsedByFile.TryGetValue(Normalize(filePath), out var parsed))
+            string normalized = filePath != null ? Normalize(filePath) : null;
+            if (normalized != null && parsedByFile.TryGetValue(normalized, out var parsed))
             {
-                parsedByFile.Remove(Normalize(filePath));
+                parsedByFile.Remove(normalized);
                 ast = parsed.Ast;
                 tokens = parsed.Tokens;
                 errors = parsed.Errors;
@@ -75,15 +82,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </param>
         internal static DotSourceScope Build(IReadOnlyList<string> filePaths, bool retainParses = true)
         {
-            var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var known = new HashSet<string>(PathComparer);
             foreach (var path in filePaths)
             {
                 known.Add(Normalize(path));
             }
 
-            var definitions = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var parsed = new Dictionary<string, ParsedFile>(StringComparer.OrdinalIgnoreCase);
-            var dotSourced = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var definitions = new Dictionary<string, HashSet<string>>(PathComparer);
+            var parsed = new Dictionary<string, ParsedFile>(PathComparer);
+            var dotSourced = new Dictionary<string, List<string>>(PathComparer);
 
             foreach (var path in filePaths)
             {
@@ -140,7 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // state. So a file's scope is the union of the closures of the entry points that reach it.
             // Merging symmetrically instead would be coarser than the language: a test script that sources
             // one library would be credited with every other library that shares a root.
-            var namesByFile = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            var namesByFile = new Dictionary<string, HashSet<string>>(PathComparer);
             foreach (var file in definitions.Keys)
             {
                 namesByFile[file] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -176,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private static List<string> Closure(string start, Dictionary<string, List<string>> dotSourced)
         {
             var reached = new List<string> { start };
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { start };
+            var visited = new HashSet<string>(PathComparer) { start };
             var pending = new Stack<string>();
             pending.Push(start);
 
@@ -241,12 +248,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             try
             {
-                return Path.GetFullPath(path);
+                return CanonicalizeCase(Path.GetFullPath(path));
             }
             catch
             {
                 return path;
             }
+        }
+
+        /// <summary>
+        /// Resolves the file name segment of <paramref name="fullPath"/> to its actual on-disk casing,
+        /// so that dictionary keys reflect what the real filesystem considers "the same file" rather than
+        /// a guess about the platform's case sensitivity. An exact (ordinal) match against a directory
+        /// entry always wins, so two files that a case-sensitive filesystem treats as distinct (such as
+        /// 'Lib.ps1' and 'lib.ps1' both existing side by side) keep distinct keys. Only when the requested
+        /// name has no exact match - e.g. a dot-source target typed with different case than the file it
+        /// refers to - does this fall back to a case-insensitive match, folding it onto the real file's key.
+        /// This is correct on any platform or mount, including a case-sensitive volume on an otherwise
+        /// case-insensitive OS such as macOS, without assuming a single case-sensitivity rule per OS.
+        /// </summary>
+        private static string CanonicalizeCase(string fullPath)
+        {
+            string directory = Path.GetDirectoryName(fullPath);
+            string fileName = Path.GetFileName(fullPath);
+            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName) || !Directory.Exists(directory))
+            {
+                return fullPath;
+            }
+
+            string caseInsensitiveMatch = null;
+            try
+            {
+                foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
+                {
+                    string entryName = Path.GetFileName(entry);
+                    if (string.Equals(entryName, fileName, StringComparison.Ordinal))
+                    {
+                        return Path.Combine(directory, entryName);
+                    }
+                    if (caseInsensitiveMatch == null && string.Equals(entryName, fileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        caseInsensitiveMatch = entryName;
+                    }
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+            return caseInsensitiveMatch != null ? Path.Combine(directory, caseInsensitiveMatch) : fullPath;
         }
     }
 }

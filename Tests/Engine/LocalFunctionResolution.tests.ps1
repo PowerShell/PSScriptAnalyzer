@@ -33,6 +33,34 @@ function Outer {
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $casingSettings | Should -BeNullOrEmpty
         }
+
+        It "still validates a call outside the function that a nested definition shadows" {
+            # Regression test: a function nested inside Outer is only in scope for calls made from
+            # within Outer's body. A call at the top level must still resolve against the real cmdlet.
+            $scriptDefinition = @'
+function Outer {
+    function Get-ChildItem { param($PATH) }
+}
+Get-ChildItem -PATH 'x'
+'@
+            $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $casingSettings)
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'Path'
+        }
+
+        It "still validates a call in a sibling function that a nested definition shadows" {
+            $scriptDefinition = @'
+function Outer {
+    function Get-ChildItem { param($PATH) }
+}
+function Sibling {
+    Get-ChildItem -PATH 'x'
+}
+'@
+            $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $casingSettings)
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'Path'
+        }
     }
 
     Context "Command name casing" {

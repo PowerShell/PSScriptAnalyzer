@@ -90,7 +90,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         continue;
                     }
 
-                    var commandInfo = Helper.Instance.GetCommandInfo(commandName);
+                    var commandInfo = Helper.Instance.GetCommandInfo(commandName, callSite: commandAst);
                     if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript || commandInfo.CommandType == CommandTypes.Application)
                     {
                         continue;
@@ -124,7 +124,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         continue;
                     }
-                    var availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName);
+                    var availableParameters = Helper.Instance.GetCommandParameterSnapshot(commandName, callSite: commandAst);
                     if (availableParameters is null)
                     {
                         // The parameters of this command cannot be determined reliably,

@@ -73,18 +73,18 @@ public static class MetadataSnapshotTests
         IDisposable cache, string name, bool bypass = false)
     {
         return (IReadOnlyDictionary<string, CommandParameterSnapshot>)CacheType.GetMethod("GetParameterSnapshot")
-            .Invoke(cache, new object[] { name, null, bypass });
+            .Invoke(cache, new object[] { name, null, bypass, null });
     }
 
     public static object Mandatory(IDisposable cache, string name)
     {
-        return CacheType.GetMethod("GetMandatoryParameterNames").Invoke(cache, new object[] { name });
+        return CacheType.GetMethod("GetMandatoryParameterNames").Invoke(cache, new object[] { name, null });
     }
 
     public static object ReadMetadata(IDisposable cache, string name, string method, bool bypass = false)
     {
         var arguments = method == "GetCommandParameterSets" || method == "GetMandatoryParameterNames"
-            ? new object[] { name } : new object[] { name, null, bypass };
+            ? new object[] { name, null } : new object[] { name, null, bypass, null };
         return CacheType.GetMethod(method).Invoke(cache, arguments);
     }
 
@@ -107,7 +107,7 @@ public static class MetadataSnapshotTests
     {
         var snapshot = Parameters(cache, "Write-Output");
         var live = (Dictionary<string, ParameterMetadata>)CacheType.GetMethod("GetCommandParameters")
-            .Invoke(cache, new object[] { "Write-Output", null, false });
+            .Invoke(cache, new object[] { "Write-Output", null, false, null });
         live["InputObject"].Aliases.Add("SnapshotMustNotChange");
         if (snapshot["InputObject"].Aliases.Contains("SnapshotMustNotChange"))
             throw new InvalidOperationException("Snapshot retained live aliases.");
@@ -215,7 +215,7 @@ New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
 } | Import-Module -Force
 '@)
         $lookup = $cache.GetType().GetMethod('GetCommandInfo')
-        $lookup.Invoke($cache, @('Write-Output', $null, $false)) | Should -BeNullOrEmpty
+        $lookup.Invoke($cache, @('Write-Output', $null, $false, $null)) | Should -BeNullOrEmpty
     }
 
     It "does not cache a command resolution failure as a missing command" {
@@ -243,9 +243,9 @@ New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
 
     It "resolves module-qualified command names against the named module only" {
         $lookup = $cache.GetType().GetMethod('GetCommandInfo')
-        $lookup.Invoke($cache, @('Microsoft.PowerShell.Utility\Write-Output', $null, $false)).Name |
+        $lookup.Invoke($cache, @('Microsoft.PowerShell.Utility\Write-Output', $null, $false, $null)).Name |
             Should -BeExactly 'Write-Output'
-        $lookup.Invoke($cache, @('Microsoft.PowerShell.Management\Write-Output', $null, $false)) |
+        $lookup.Invoke($cache, @('Microsoft.PowerShell.Management\Write-Output', $null, $false, $null)) |
             Should -BeNullOrEmpty
     }
 

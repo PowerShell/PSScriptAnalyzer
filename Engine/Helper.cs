@@ -639,7 +639,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            commandInfo = GetCommandInfo(cmdAst.GetCommandName(), callSite: cmdAst);
             if (commandInfo == null)
             {
                 return false;
@@ -692,39 +692,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="commandType"></param>
         /// <param name="bypassCache"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null, bool bypassCache = false)
+        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null, bool bypassCache = false, Ast callSite = null)
         {
-            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType, bypassCache: bypassCache);
+            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType, bypassCache: bypassCache, callSite: callSite);
         }
 
         /// <summary>
         /// Retrieves command parameters with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
-            string name, CommandTypes? commandType = null, bool bypassCache = false)
+            string name, CommandTypes? commandType = null, bool bypassCache = false, Ast callSite = null)
         {
-            return CommandInfoCache.GetCommandParameters(name, commandType, bypassCache);
+            return CommandInfoCache.GetCommandParameters(name, commandType, bypassCache, callSite);
         }
 
         /// <summary>
         /// Retrieves command parameter sets with centralized recovery; returns null when metadata is unavailable.
         /// </summary>
-        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string name)
+        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string name, Ast callSite = null)
         {
-            return CommandInfoCache.GetCommandParameterSets(name);
+            return CommandInfoCache.GetCommandParameterSets(name, callSite);
         }
 
         /// <summary>Gets detached parameter facts or null when unavailable; only static cmdlet metadata is cached.</summary>
         public IReadOnlyDictionary<string, CommandParameterSnapshot> GetCommandParameterSnapshot(
-            string name, CommandTypes? commandType = null, bool bypassCache = false)
+            string name, CommandTypes? commandType = null, bool bypassCache = false, Ast callSite = null)
         {
-            return CommandInfoCache.GetParameterSnapshot(name, commandType, bypassCache);
+            return CommandInfoCache.GetParameterSnapshot(name, commandType, bypassCache, callSite);
         }
 
         /// <summary>Gets the mandatory parameter summary under a single runspace lock, or null when unavailable.</summary>
-        public IReadOnlyList<string> GetMandatoryParameterNames(string name)
+        public IReadOnlyList<string> GetMandatoryParameterNames(string name, Ast callSite = null)
         {
-            return CommandInfoCache.GetMandatoryParameterNames(name);
+            return CommandInfoCache.GetMandatoryParameterNames(name, callSite);
         }
 
         /// <summary>

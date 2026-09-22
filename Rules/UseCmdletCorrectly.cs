@@ -85,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             #region Compares parameter list and mandatory parameter list.
 
-            CommandInfo cmdInfo = Helper.Instance.GetCommandInfo(cmdAst.GetCommandName());
+            CommandInfo cmdInfo = Helper.Instance.GetCommandInfo(cmdAst.GetCommandName(), callSite: cmdAst);
 
             // If we can't resolve the command or it's not a cmdlet, we are done
             if (cmdInfo == null || (cmdInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
@@ -145,7 +145,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
-            var mandatoryParameters = Helper.Instance.GetMandatoryParameterNames(cmdAst.GetCommandName());
+            var mandatoryParameters = Helper.Instance.GetMandatoryParameterNames(cmdAst.GetCommandName(), cmdAst);
 
             if (mandatoryParameters == null || mandatoryParameters.Count == 0)
             {

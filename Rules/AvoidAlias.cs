@@ -134,7 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                if ( Helper.Instance.GetCommandInfo(commandName, callSite: cmdAst) != null ) {
                     continue;
                 }
 

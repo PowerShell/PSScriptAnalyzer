@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Linq;
+using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -82,12 +83,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
         /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
         /// <param name="bypassCache">When needed due to runspace affinity problems of some PowerShell objects.</param>
+        /// <param name="callSite">
+        /// The Ast of the command being resolved, used to check whether a same-named local function
+        /// definition is actually in lexical scope at this call site rather than merely present in the file.
+        /// </param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false, Ast callSite = null)
         {
             try
             {
-                return GetCachedCommandInfo(commandName, commandTypes, bypassCache);
+                return GetCachedCommandInfo(commandName, commandTypes, bypassCache, callSite);
             }
             catch (Exception exception) when (IsGetCommandResolutionException(exception))
             {
@@ -96,7 +101,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private CommandInfo GetCachedCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache)
+        private CommandInfo GetCachedCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache, Ast callSite = null)
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
@@ -105,7 +110,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // A name the analyzed script defines itself is not the command of the same name that happens
             // to be installed here; resolving it would validate the call against the wrong definition.
-            if (LocalFunctionScope.Current?.IsDefinedInScript(commandName) == true)
+            if (LocalFunctionScope.Current?.IsDefinedInScript(commandName, callSite) == true)
             {
                 return null;
             }
@@ -208,8 +213,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // Lookups are serialized now, so this should no longer occur; if it does, the cache
                     // entry is evicted and the lookup surfaces as a null command info.
                     // SilentlyContinue can set HadErrors without populating the stream for an unknown name.
-                    if (ps.HadErrors && ps.Streams.Error.Count > 0 && ps.Streams.Error.All(IsGetCommandResolutionError))
+                    // Any error that is not the expected resolution failure is unexpected (an engine or
+                    // module failure) and must propagate rather than be silently negative-cached as a
+                    // missing command.
+                    if (ps.HadErrors && ps.Streams.Error.Count > 0)
                     {
+                        ErrorRecord unexpected = ps.Streams.Error.FirstOrDefault(error => !IsGetCommandResolutionError(error));
+                        if (unexpected != null)
+                        {
+                            throw unexpected.Exception;
+                        }
+
                         throw ps.Streams.Error[0].Exception;
                     }
                     return result.FirstOrDefault();
@@ -226,9 +240,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Retrieves parameter metadata without allowing other threads to drive the command's runspace.
         /// </summary>
         public Dictionary<string, ParameterMetadata> GetCommandParameters(
-            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false, Ast callSite = null)
         {
-            return GetCommandMetadata(commandName, commandTypes, bypassCache, command =>
+            return GetCommandMetadata(commandName, commandTypes, bypassCache, callSite, command =>
             {
                 lock (_runspaceLock)
                 {
@@ -243,9 +257,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Retrieves parameter sets under the same lock as command lookups and dynamic parameter queries.
         /// </summary>
-        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName)
+        public ReadOnlyCollection<CommandParameterSetInfo> GetCommandParameterSets(string commandName, Ast callSite = null)
         {
-            return GetCommandMetadata(commandName, null, false, command =>
+            return GetCommandMetadata(commandName, null, false, callSite, command =>
             {
                 lock (_runspaceLock)
                 {
@@ -261,11 +275,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Unexpected exceptions still propagate.
         /// </summary>
         private T GetCommandMetadata<T>(
-            string commandName, CommandTypes? commandTypes, bool bypassCache, Func<CommandInfo, T> readMetadata)
+            string commandName, CommandTypes? commandTypes, bool bypassCache, Ast callSite, Func<CommandInfo, T> readMetadata)
             where T : class
         {
             // Resolve Lazy values outside the runspace lock: another thread's factory may need it.
-            var command = GetCommandInfo(commandName, commandTypes, bypassCache);
+            var command = GetCommandInfo(commandName, commandTypes, bypassCache, callSite);
             if (disposed || command == null || command.CommandType == CommandTypes.Application) return null;
             try
             {
@@ -306,9 +320,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         public IReadOnlyDictionary<string, CommandParameterSnapshot> GetParameterSnapshot(
-            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
+            string commandName, CommandTypes? commandTypes = null, bool bypassCache = false, Ast callSite = null)
         {
-            return GetCommandMetadata(commandName, commandTypes, bypassCache,
+            return GetCommandMetadata(commandName, commandTypes, bypassCache, callSite,
                 command => GetParameterSnapshot(command, bypassCache));
         }
 
@@ -331,9 +345,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        public IReadOnlyList<string> GetMandatoryParameterNames(string commandName)
+        public IReadOnlyList<string> GetMandatoryParameterNames(string commandName, Ast callSite = null)
         {
-            return GetCommandMetadata(commandName, null, false,
+            return GetCommandMetadata(commandName, null, false, callSite,
                 command => GetMandatoryParameterNames(command, bypassCache: false));
         }
 

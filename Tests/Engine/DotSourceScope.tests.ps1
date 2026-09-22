@@ -88,6 +88,26 @@ Describe "Functions reach across the files of a dot-sourced group" {
         }
     }
 
+    Context "Case-sensitive filesystems" {
+        It "does not collapse files that differ only by case" -Skip:(-not $IsLinux) {
+            # Regression test: on a case-sensitive filesystem (e.g. Linux ext4), 'A.ps1' and 'a.ps1'
+            # are distinct files. If they were folded into a single dictionary entry (case-insensitively),
+            # 'a.ps1' could incorrectly inherit 'A.ps1's function definitions even though it never
+            # dot-sources it, and its own call would go unreported.
+            # PowerShell hashtable literals are case-insensitive, so the two files are written directly
+            # rather than through NewWorkload's [hashtable]$Files parameter.
+            $root = Join-Path $TestDrive ([System.IO.Path]::GetRandomFileName())
+            $null = New-Item -Path $root -ItemType Directory -Force
+            Set-Content -Path (Join-Path $root 'A.ps1') -Value 'function Get-ChildItem { param($PATH) }' -Encoding utf8
+            Set-Content -Path (Join-Path $root 'a.ps1') -Value "Get-ChildItem -PATH 'x'" -Encoding utf8
+
+            $diagnostics = @(Invoke-ScriptAnalyzer -Path $root -Recurse -Settings $casingSettings)
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].ScriptPath | Should -BeExactly (Join-Path $root 'a.ps1')
+            $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'Path'
+        }
+    }
+
     Context "Dot-source targets that cannot be resolved" {
         It "ignores a target built from a variable" {
             $root = NewWorkload @{
