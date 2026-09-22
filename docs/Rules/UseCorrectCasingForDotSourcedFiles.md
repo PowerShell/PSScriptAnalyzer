@@ -8,7 +8,7 @@ title: UseCorrectCasingForDotSourcedFiles
 
 **Severity Level: Warning**
 
-**Default state: Always enabled**
+**Default state: Disabled**
 
 ## Description
 
@@ -43,14 +43,17 @@ The file on disk is actually named `Helpers.ps1`.
 
 ## Configure rule
 
-This rule is always enabled and isn't configurable. Use one of the following methods to avoid using
-this rule:
+```powershell
+Rules = @{
+    PSUseCorrectCasingForDotSourcedFiles = @{
+        Enable = $true
+    }
+}
+```
 
-- Create a custom rule configuration file to include only the rules you want or exclude the rules
-  you don't want.
-- Add the appropriate rule suppression attributes to your code to suppress the rule for specific
-  code blocks. For more information, see the _Suppressing rules_ section of
-  [Using PSScriptAnalyzer][01].
+## Parameters
 
-<!-- Link references -->
-[01]: ../using-scriptanalyzer.md#suppressing-rules
+### Enable
+
+This parameter controls whether ScriptAnalyzer checks code against this rule. It accepts a boolean
+value. To enable this rule, set this parameter to `$true`. The default value is `$false`.

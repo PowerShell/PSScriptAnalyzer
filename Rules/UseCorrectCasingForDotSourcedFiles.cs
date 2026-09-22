@@ -21,13 +21,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseCorrectCasingForDotSourcedFiles : IScriptRule
+    public class UseCorrectCasingForDotSourcedFiles : ConfigurableRule
     {
+        /// <summary>
+        /// Construct an object of UseCorrectCasingForDotSourcedFiles type.
+        /// </summary>
+        public UseCorrectCasingForDotSourcedFiles()
+        {
+            Enable = false;
+        }
+
         /// <summary>
         /// AnalyzeScript: Analyze the script to check that dot-sourced paths match the real,
         /// on-disk casing of the file they refer to.
         /// </summary>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast is null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
@@ -173,7 +181,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseCorrectCasingForDotSourcedFilesName);
         }
@@ -181,7 +189,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingForDotSourcedFilesCommonName);
         }
@@ -189,7 +197,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingForDotSourcedFilesDescription);
         }
@@ -197,7 +205,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
@@ -205,7 +213,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Warning;
         }
@@ -213,7 +221,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetSourceName: Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }

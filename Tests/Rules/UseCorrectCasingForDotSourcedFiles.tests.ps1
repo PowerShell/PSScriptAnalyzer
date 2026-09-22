@@ -5,6 +5,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
     BeforeAll {
         $settings = @{
             IncludeRules = @('PSUseCorrectCasingForDotSourcedFiles')
+            Rules        = @{ PSUseCorrectCasingForDotSourcedFiles = @{ Enable = $true } }
         }
 
         function NewWorkload {
