@@ -2,6 +2,12 @@
 # Licensed under the MIT License.
 
 Describe "UseCorrectCasingForDotSourcedFiles" {
+    # Backslash is only a path separator on Windows; on other platforms it is just a
+    # character in the file name, so a backslash-separated path never resolves to a file
+    # and is therefore excluded from the case-mismatch scenarios there. This must be evaluated
+    # at discovery time (outside BeforeAll) since -TestCases is bound during discovery.
+    $separatorTestCases = if ($IsWindows) { @(@{ Separator = '\' }, @{ Separator = '/' }) } else { @(@{ Separator = '/' }) }
+
     BeforeAll {
         $settings = @{
             IncludeRules = @('PSUseCorrectCasingForDotSourcedFiles')
@@ -23,10 +29,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
     }
 
     Context "`$PSScriptRoot-relative path" {
-        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent ". `$PSScriptRoot${Separator}HELPERS.ps1"
 
@@ -39,10 +42,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
             $diagnostics[0].SuggestedCorrections[0].Text | Should -Match 'Helpers\.ps1'
         }
 
-        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent ". `$PSScriptRoot${Separator}Helpers.ps1"
 
@@ -51,10 +51,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
     }
 
     Context "Relative path" {
-        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent ". .${Separator}HELPERS.ps1"
 
@@ -65,10 +62,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
             $diagnostics[0].SuggestedCorrections[0].Text | Should -Match 'Helpers\.ps1'
         }
 
-        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent ". .${Separator}Helpers.ps1"
 
@@ -87,10 +81,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
     }
 
     Context "Absolute path" {
-        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "flags a dot-sourced path whose casing does not match the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent 'PLACEHOLDER'
             $root = Split-Path $callerPath -Parent
@@ -104,10 +95,7 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
             $diagnostics[0].SuggestedCorrections[0].Text | Should -Match 'Helpers\.ps1'
         }
 
-        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases @(
-            @{ Separator = '\' }
-            @{ Separator = '/' }
-        ) {
+        It "does not flag a dot-sourced path whose casing matches the file on disk (separator: '<Separator>')" -TestCases $separatorTestCases {
             param($Separator)
             $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent 'PLACEHOLDER'
             $root = Split-Path $callerPath -Parent
