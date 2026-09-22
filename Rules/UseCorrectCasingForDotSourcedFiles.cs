@@ -65,12 +65,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 Ast literalAst = commandAst.CommandElements[0];
-                string raw = literalAst switch
+                string raw;
+                if (literalAst is StringConstantExpressionAst constant)
                 {
-                    StringConstantExpressionAst constant => constant.Value,
-                    ExpandableStringExpressionAst expandable => expandable.Value,
-                    _ => null,
-                };
+                    raw = constant.Value;
+                }
+                else if (literalAst is ExpandableStringExpressionAst expandable)
+                {
+                    raw = expandable.Value;
+                }
+                else
+                {
+                    raw = null;
+                }
                 if (string.IsNullOrWhiteSpace(raw))
                 {
                     continue;
