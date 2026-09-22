@@ -279,4 +279,73 @@ function Foo
             $violations[0].Extent.Text | Should -Be 'ShouldProcess'
         }
     }
+
+    Context "Method calls are not command calls" {
+        # A quoted member name may contain a hyphen, so Remove-Item serves as a member whose name also
+        # belongs to a cmdlet that declares SupportsShouldProcess on every platform.
+        It "does not treat a method invocation as a call to the command of the same name" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($o)
+    $o.'Remove-Item'()
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess)
+            $violations.Count | Should -Be 1
+        }
+
+        It "still credits a real call to a command that supports ShouldProcess" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($path)
+    Remove-Item $path
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+
+        It "does not treat a static method invocation as a command call" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($path)
+    [System.IO.File]::WriteAllText($path, 'x')
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess)
+            $violations.Count | Should -Be 1
+        }
+
+        # Graph vertices are keyed on name alone, so a name used as both must not depend on visit order.
+        It "credits the command call when the method call comes first" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($o, $path)
+    $o.'Remove-Item'()
+    Remove-Item $path
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+
+        It "credits the command call when the command call comes first" {
+            $scriptDef = @'
+function Invoke-Thing
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    param($o, $path)
+    Remove-Item $path
+    $o.'Remove-Item'()
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess | Should -BeNullOrEmpty
+        }
+    }
 }
