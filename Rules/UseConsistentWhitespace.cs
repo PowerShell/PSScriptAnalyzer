@@ -131,72 +131,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseConsistentWhitespaceName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
-        private bool IsOperator(Token token)
-        {
-            return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
+        private bool IsOperator(Token token) => TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
                     || token.Kind == TokenKind.AndAnd
                     || token.Kind == TokenKind.OrOr;
-        }
 
         private string GetError(ErrorKind kind)
         {
@@ -243,7 +219,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                
+
                 yield return new DiagnosticRecord(
                     GetError(ErrorKind.BeforeOpeningBrace),
                     lcurly.Value.Extent,
@@ -451,10 +427,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        private bool IsSeparator(Token token)
-        {
-            return token.Kind == TokenKind.Comma || token.Kind == TokenKind.Semi;
-        }
+        private bool IsSeparator(Token token) => token.Kind == TokenKind.Comma || token.Kind == TokenKind.Semi;
 
         private IEnumerable<DiagnosticRecord> FindSeparatorViolations(TokenOperations tokenOperations)
         {
@@ -487,9 +460,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private DiagnosticRecord getDiagnosticRecord(
             Token token,
             ErrorKind errKind,
-            List<CorrectionExtent> corrections)
-        {
-            return new DiagnosticRecord(
+            List<CorrectionExtent> corrections) => new DiagnosticRecord(
                 GetError(errKind),
                 token.Extent,
                 GetName(),
@@ -497,17 +468,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 token.Extent.File,
                 null,
                 corrections);
-        }
 
-        private bool IsKeyword(Token token)
-        {
-            return openParenKeywordAllowList.Contains(token.Kind);
-        }
+        private bool IsKeyword(Token token) => openParenKeywordAllowList.Contains(token.Kind);
 
-        private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
-        {
-            return IsPreviousTokenApartByWhitespace(tokenNode, out _);
-        }
+        private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode) => IsPreviousTokenApartByWhitespace(tokenNode, out _);
 
         private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode, out bool hasRedundantWhitespace)
         {
@@ -520,16 +484,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
         }
-        
-        private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode)
-        {
-            return tokenNode.Previous.Value.Kind == TokenKind.LParen;
-        }
 
-        private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
-        {
-            return IsNextTokenApartByWhitespace(tokenNode, out _);
-        }
+        private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode) => tokenNode.Previous.Value.Kind == TokenKind.LParen;
+
+        private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode) => IsNextTokenApartByWhitespace(tokenNode, out _);
 
         private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode, out bool hasRedundantWhitespace)
         {
@@ -538,10 +496,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return whiteSpaceSize == actualWhitespaceSize;
         }
 
-        private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode)
-        {
-            return IsPreviousTokenOnSameLine(tokenNode) && IsPreviousTokenApartByWhitespace(tokenNode);
-        }
+        private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode) => IsPreviousTokenOnSameLine(tokenNode) && IsPreviousTokenApartByWhitespace(tokenNode);
 
         private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
         {
@@ -637,10 +592,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
 
-        private static bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
-        {
-            return lparen.Previous.Value.Extent.EndLineNumber == lparen.Value.Extent.StartLineNumber;
-        }
+        private static bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen) => lparen.Previous.Value.Extent.EndLineNumber == lparen.Value.Extent.StartLineNumber;
 
     }
 }

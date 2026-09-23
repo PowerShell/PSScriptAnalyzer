@@ -39,57 +39,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseUsingScopeModifierInNewRunspacesName);
-        }
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         private class SyntaxCompatibilityVisitor : AstVisitor2
         {
@@ -115,11 +97,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             private readonly Dictionary<string, HashSet<string>> _varsDeclaredPerSession;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
-        
+
             private readonly UseUsingScopeModifierInNewRunspaces _rule;
-        
+
             private readonly string _analyzedFilePath;
-        
+
             public SyntaxCompatibilityVisitor(UseUsingScopeModifierInNewRunspaces rule, string analyzedScriptPath)
             {
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
@@ -131,10 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <summary>
             /// GetDiagnosticRecords: Retrieves all Diagnostic Records that were generated during visiting
             /// </summary>
-            public IEnumerable<DiagnosticRecord> GetDiagnosticRecords()
-            {
-                return _diagnosticAccumulator;
-            }
+            public IEnumerable<DiagnosticRecord> GetDiagnosticRecords() => _diagnosticAccumulator;
 
             /// <summary>
             /// VisitScriptBlockExpression: When a ScriptBlockExpression is visited, see if it belongs to a command that needs its variables
@@ -154,15 +133,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string cmdName = commandAst.GetCommandName();
                 if (cmdName == null)
                 {
-                    // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }` 
+                    // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }`
                     return AstVisitAction.SkipChildren;
                 }
-                
+
                 // We need this information, because some cmdlets can have more than one ScriptBlock parameter
                 var scriptBlockParameterAst = commandAst.CommandElements[
                         commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as CommandParameterAst;
 
-                if (IsInlineScriptBlock(cmdName) || 
+                if (IsInlineScriptBlock(cmdName) ||
                     IsJobScriptBlock(cmdName, scriptBlockParameterAst) ||
                     IsForeachScriptBlock(cmdName, scriptBlockParameterAst) ||
                     IsInvokeCommandComputerScriptBlock(cmdName, commandAst) ||
@@ -192,7 +171,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     return AstVisitAction.SkipChildren;
                 }
-                
+
                 return AstVisitAction.Continue;
             }
 
@@ -231,7 +210,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     case VariableExpressionAst variable:
                         variableExpressionAst = variable;
-                        return true; 
+                        return true;
 
                     case AttributedExpressionAst attributedAst:
                         return TryGetVariableFromExpression(attributedAst.Child, out variableExpressionAst);
@@ -246,10 +225,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// IsAssignmentStatementAst: helper function to prevent allocation of closures for FindAll predicate.
             /// </summary>
             /// <param name="ast"></param>
-            private static bool IsAssignmentStatementAst(Ast ast)
-            {
-                return ast is AssignmentStatementAst;
-            }
+            private static bool IsAssignmentStatementAst(Ast ast) => ast is AssignmentStatementAst;
 
             /// <summary>
             /// FindNonAssignedNonUsingVarAsts: Retrieve variables that are:
@@ -266,12 +242,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (VariableExpressionAst variable in ast.FindAll(IsNonUsingNonSpecialVariableExpressionAst, true))
                 {
                     var varName = string.Format(variable.VariablePath.UserPath, StringComparer.OrdinalIgnoreCase);
-                    
+
                     if (varsInAssignments.Contains(varName))
                     {
-                        yield break;    
+                        yield break;
                     }
-                    
+
                     yield return variable;
                 }
             }
@@ -280,12 +256,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// IsNonUsingNonSpecialVariableExpressionAst: helper function to prevent allocation of closures for FindAll predicate.
             /// </summary>
             /// <param name="ast"></param>
-            private static bool IsNonUsingNonSpecialVariableExpressionAst(Ast ast)
-            {
-                return ast is VariableExpressionAst variable && 
-                       !(variable.Parent is UsingExpressionAst) && 
+            private static bool IsNonUsingNonSpecialVariableExpressionAst(Ast ast) => ast is VariableExpressionAst variable &&
+                       !(variable.Parent is UsingExpressionAst) &&
                        !Helper.Instance.HasSpecialVars(variable.VariablePath.UserPath);
-            }
 
             /// <summary>
             /// GetSuggestedCorrections: Retrieves a CorrectionExtent for a given variable
@@ -364,10 +337,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// GetAssignedVarsInSession: Retrieves all previously declared vars for a given session (as in Invoke-Command -Session $session).
             /// </summary>
             /// <param name="sessionName"></param>
-            private IReadOnlyCollection<string> GetAssignedVarsInSession(string sessionName)
-            {
-                return _varsDeclaredPerSession[sessionName];
-            }
+            private IReadOnlyCollection<string> GetAssignedVarsInSession(string sessionName) => _varsDeclaredPerSession[sessionName];
 
             /// <summary>
             /// AddAssignedVarsToSession: Adds variables to the list of assigned variables for a given Invoke-Command session.
@@ -435,13 +405,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="cmdName"></param>
             /// <param name="commandAst"></param>
-            private bool IsInvokeCommandSessionScriptBlock(string cmdName, CommandAst commandAst)
-            {
-                return s_invokeCommandCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
+            private bool IsInvokeCommandSessionScriptBlock(string cmdName, CommandAst commandAst) => s_invokeCommandCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
                     commandAst.CommandElements.Any(
                         e => e is CommandParameterAst parameterAst &&
                                 parameterAst.ParameterName.Equals("session", StringComparison.OrdinalIgnoreCase));
-            }
 
             /// <summary>
             /// IsInvokeCommandComputerScriptBlock: Returns true if:
@@ -450,14 +417,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="cmdName"></param>
             /// <param name="commandAst"></param>
-            private bool IsInvokeCommandComputerScriptBlock(string cmdName, CommandAst commandAst)
-            {
+            private bool IsInvokeCommandComputerScriptBlock(string cmdName, CommandAst commandAst) =>
                 // 'com' is the shortest unambiguous form for the '-Computer' parameter
-                return s_invokeCommandCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
+                s_invokeCommandCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
                     commandAst.CommandElements.Any(
                         e => e is CommandParameterAst parameterAst &&
                                 parameterAst.ParameterName.StartsWith("com", StringComparison.OrdinalIgnoreCase));
-            }
 
             /// <summary>
             /// IsForeachScriptBlock: Returns true if:
@@ -466,13 +431,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="cmdName"></param>
             /// <param name="scriptBlockParameterAst"></param>
-            private bool IsForeachScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst)
-            {
+            private bool IsForeachScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst) =>
                 // 'pa' is the shortest unambiguous form for the '-Parallel' parameter
-                return s_foreachObjectCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
-                    (scriptBlockParameterAst != null && 
+                s_foreachObjectCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
+                    (scriptBlockParameterAst != null &&
                         scriptBlockParameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase));
-            }
 
             /// <summary>
             /// IsJobScriptBlock: Returns true if:
@@ -481,37 +444,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="cmdName"></param>
             /// <param name="scriptBlockParameterAst"></param>
-            private bool IsJobScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst)
-            {
+            private bool IsJobScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst) =>
                 // 'ini' is the shortest unambiguous form for the '-InitializationScript' parameter
-                return (s_jobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) ||
+                (s_jobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) ||
                         s_threadJobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase)) &&
-                    !(scriptBlockParameterAst != null && 
+                    !(scriptBlockParameterAst != null &&
                         scriptBlockParameterAst.ParameterName.StartsWith("ini", StringComparison.OrdinalIgnoreCase));
-            }
 
             /// <summary>
             /// IsInlineScriptBlock: Returns true if:
             /// - command is 'InlineScript' (or alias)
             /// </summary>
             /// <param name="cmdName"></param>
-            private bool IsInlineScriptBlock(string cmdName)
-            {
-                return s_inlineScriptCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase);
-            }
+            private bool IsInlineScriptBlock(string cmdName) => s_inlineScriptCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase);
 
             /// <summary>
             /// IsDSCScriptResource: Returns true if:
             /// - command is 'GetScript', 'TestScript' or 'SetScript'
             /// </summary>
             /// <param name="commandAst"></param>
-            private bool IsDSCScriptResource(string cmdName, CommandAst commandAst)
-            {
+            private bool IsDSCScriptResource(string cmdName, CommandAst commandAst) =>
                 // Inside DSC Script resource, GetScript is of the form 'Script foo { GetScript = {} }'
                 // If we reach this point in the code, we are sure there are at least two CommandElements, so the index of [1] will not fail.
-                return s_dscScriptResourceCommandNames.Contains(cmdName, StringComparer.OrdinalIgnoreCase) && 
+                s_dscScriptResourceCommandNames.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
                     commandAst.CommandElements[1].ToString() == "=";
-            }
         }
     }
 }

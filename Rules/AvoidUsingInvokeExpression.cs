@@ -22,80 +22,53 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetCmdletName: Retrieves the name of the cmdlet
         /// </summary>
         /// <returns></returns>
-        public override string GetCmdletName()
-        {
-            return "invoke-expression";
-        }
+        public override string GetCmdletName() => "invoke-expression";
 
         /// <summary>
         /// GetError: Retrieves the error message
         /// </summary>
         /// <returns></returns>
-        public override string GetError(String FileName)
-        {
-            return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionError);
-        }
+        public override string GetError(String FileName) => String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionError);
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingInvokeExpressionRuleName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingInvokeExpressionRuleName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionRuleCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionRuleCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionRuleDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInvokeExpressionRuleDescription);
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity:Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// DiagnosticSeverity: Retrieves the severity of the rule of type DiagnosticSeverity: error, warning or information.
         /// </summary>
         /// <returns></returns>
-        public override DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public override DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
     }
 }

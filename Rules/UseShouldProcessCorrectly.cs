@@ -67,58 +67,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ShouldProcessName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ShouldProcessName);
 
         /// <summary>
         /// GetCommonName: Retrieves the Common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture,Strings.ShouldProcessDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
-        private DiagnosticSeverity GetDianosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        private DiagnosticSeverity GetDianosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// Find the violations in the current AST
@@ -232,10 +211,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool callsShouldProcessDirectly(Vertex vertex)
-        {
-            return funcDigraph.GetNeighbors(vertex).Contains(shouldProcessVertex);
-        }
+        private bool callsShouldProcessDirectly(Vertex vertex) => funcDigraph.GetNeighbors(vertex).Contains(shouldProcessVertex);
 
         /// <summary>
         /// Checks if an upstream function declares SupportsShouldProcess
@@ -475,10 +451,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Returns string representation of a Vertex instance
         /// </summary>
-        public override string ToString()
-        {
-            return name;
-        }
+        public override string ToString() => name;
 
         /// <summary>
         /// Compares two instances of Vertex class to check for equality
@@ -502,10 +475,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Returns the Hash code of the given Vertex instance
         /// </summary>
-        public override int GetHashCode()
-        {
-            return name.ToLowerInvariant().GetHashCode();
-        }
+        public override int GetHashCode() => name.ToLowerInvariant().GetHashCode();
     }
 
     /// <summary>
@@ -520,26 +490,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Checks if the AST being visited is in an instance FunctionDefinitionAst type
         /// </summary>
-        private bool IsWithinFunctionDefinition()
-        {
-            return functionVisitStack.Count > 0;
-        }
+        private bool IsWithinFunctionDefinition() => functionVisitStack.Count > 0;
 
         /// <summary>
         /// Returns the function vertex whose children are being currently visited
         /// </summary>
-        private Vertex GetCurrentFunctionContext()
-        {
-            return functionVisitStack.Peek();
-        }
+        private Vertex GetCurrentFunctionContext() => functionVisitStack.Peek();
 
         /// <summary>
         /// Return the constructed digraph
         /// </summary>
-        public Digraph<Vertex> GetDigraph()
-        {
-            return digraph;
-        }
+        public Digraph<Vertex> GetDigraph() => digraph;
 
         /// <summary>
         /// Public constructor
@@ -678,10 +639,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Return the vertices in the graph
         /// </summary>
-        public IEnumerable<Vertex> GetVertices()
-        {
-            return digraph.GetVertices();
-        }
+        public IEnumerable<Vertex> GetVertices() => digraph.GetVertices();
 
         /// <summary>
         /// Check if two vertices are connected
@@ -702,14 +660,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Get the number of edges out of the given vertex
         /// </summary>
-        public int GetOutDegree(Vertex v)
-        {
-            return digraph.GetOutDegree(v);
-        }
+        public int GetOutDegree(Vertex v) => digraph.GetOutDegree(v);
 
-        public IEnumerable<Vertex> GetNeighbors(Vertex v)
-        {
-            return digraph.GetNeighbors(v);
-        }
+        public IEnumerable<Vertex> GetNeighbors(Vertex v) => digraph.GetNeighbors(v);
     }
 }

@@ -81,6 +81,24 @@ function Copy-CompatibilityProfiles
     Copy-Item -Force $profileDir/* $targetProfileDir
 }
 
+function Test-CodeStyle
+{
+    if ( -not $script:DotnetExe ) {
+        $script:DotnetExe = Get-DotnetExe
+    }
+    $dotnetArgs = "format",
+        "--verify-no-changes",
+        "style"
+    $formatOutput = & $script:DotnetExe $dotnetArgs 2>&1
+    if ( $LASTEXITCODE -ne 0 ) {
+        Write-Verbose -Verbose -Message "dotnet is $(${script:DotnetExe}.Source)"
+        $dotnetArgs | Foreach-Object {"dotnetArg: $_"} | Write-Verbose -Verbose
+        Get-PSCallStack | Write-Verbose -Verbose
+        Write-Verbose -Verbose -Message "$formatOutput"
+        throw "Please, fix code style via running 'dotnet format style' command."
+    }
+}
+
 # build script analyzer (and optionally build everything with -All)
 function Start-ScriptAnalyzerBuild
 {
@@ -110,6 +128,9 @@ function Start-ScriptAnalyzerBuild
         if ( $PSBoundParameters['Verbose'] ) {
             $verboseWanted = $PSBoundParameters['Verbose'].ToBool()
         }
+
+        # don't allow the build to be started unless we have the proper code formatting
+        Test-CodeStyle
     }
     END {
 

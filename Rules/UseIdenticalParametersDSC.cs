@@ -62,7 +62,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         || !CompareParamAsts(paramAst, paramNames[paramAst.Name.VariablePath.UserPath]))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);   
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                     }
                 }
             }
@@ -74,10 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
-        {
-            return Enumerable.Empty<DiagnosticRecord>();
-        }
+        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName) => Enumerable.Empty<DiagnosticRecord>();
 
         // We assume they have the same name
         private bool CompareParamAsts(ParameterAst paramAst1, ParameterAst paramAst2)
@@ -118,59 +115,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return true;
         }
-        
+
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {            
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalParametersDSCName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalParametersDSCName);
 
         /// <summary>
         /// GetCommonName: Retrieves the Common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
     }
 
 }

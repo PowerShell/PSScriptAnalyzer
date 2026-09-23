@@ -118,64 +118,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ProvideCommentHelpName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ProvideCommentHelpName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpDescription);
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         // TODO replace with extension version
-        private static IEnumerable<string> GetLines(string text)
-        {
-            return text.Split('\n').Select(l => l.Trim('\r'));
-        }
+        private static IEnumerable<string> GetLines(string text) => text.Split('\n').Select(l => l.Trim('\r'));
 
-        private DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Information;
-        }
+        private DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Information;
 
         private IEnumerable<CorrectionExtent> GetCorrection(Ast ast, FunctionDefinitionAst funcDefnAst)
         {
@@ -326,10 +302,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 notes = new CommentHelpNode("Notes", "General notes");
             }
 
-            public void AddParameter(string paramName)
-            {
-                parameters.Add(new ParameterHelpNode(paramName, "Parameter description"));
-            }
+            public void AddParameter(string paramName) => parameters.Add(new ParameterHelpNode(paramName, "Parameter description"));
 
             public string GetCommentHelp(bool blockComment, bool snippet)
             {
@@ -358,16 +331,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return sb.ToString();
             }
 
-            public override string ToString()
-            {
-                return ToString(false);
-            }
+            public override string ToString() => ToString(false);
 
             // todo remove code duplication
-            public string ToSnippetString()
-            {
-                return ToString(true);
-            }
+            public string ToSnippetString() => ToString(true);
 
             private string ToString(bool snippetify)
             {
@@ -394,10 +361,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     count = start;
                 }
 
-                public int? Next()
-                {
-                    return count.HasValue ? count++ : null;
-                }
+                public int? Next() => count.HasValue ? count++ : null;
             }
 
             private class CommentHelpNode
@@ -411,10 +375,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 public string Name { get; }
                 public string Description { get; set; }
 
-                public override string ToString()
-                {
-                    return ToString(null);
-                }
+                public override string ToString() => ToString(null);
 
                 public virtual string ToString(int? tabStop)
                 {
@@ -428,10 +389,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return sb.ToString();
                 }
 
-                protected string Snippetify(int? tabStop, string defaultValue)
-                {
-                    return tabStop == null ? defaultValue : $"${{{tabStop}:{defaultValue}}}";
-                }
+                protected string Snippetify(int? tabStop, string defaultValue) => tabStop == null ? defaultValue : $"${{{tabStop}:{defaultValue}}}";
             }
 
             private class ParameterHelpNode : CommentHelpNode
@@ -444,10 +402,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 public string ParameterName { get; }
 
-                public override string ToString()
-                {
-                    return ToString(null);
-                }
+                public override string ToString() => ToString(null);
 
                 public override string ToString(int? tabStop)
                 {

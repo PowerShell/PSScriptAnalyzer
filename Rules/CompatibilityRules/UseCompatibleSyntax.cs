@@ -69,58 +69,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Get the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(
+        public override string GetCommonName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.UseCompatibleSyntaxCommonName);
-        }
 
         /// <summary>
         /// Get the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(
+        public override string GetDescription() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.UseCompatibleSyntaxDescription);
-        }
 
         /// <summary>
         /// Get the localized name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseCompatibleSyntaxName);
-        }
 
         /// <summary>
         /// Get the severity of this rule.
         /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         /// <summary>
         /// Get the name of the source of this rule.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Get the type of the source of this rule.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         private static HashSet<Version> GetTargetedVersions(string[] versionSettings)
         {
@@ -170,10 +152,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 _targetVersions = targetVersions;
             }
 
-            public IEnumerable<DiagnosticRecord> GetDiagnosticRecords()
-            {
-                return _diagnosticAccumulator;
-            }
+            public IEnumerable<DiagnosticRecord> GetDiagnosticRecords() => _diagnosticAccumulator;
 
             public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
             {
@@ -394,13 +373,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            private bool TargetsNonPS7()
-            {
-                return _targetVersions.Contains(s_v3)
+            private bool TargetsNonPS7() => _targetVersions.Contains(s_v3)
                     || _targetVersions.Contains(s_v4)
                     || _targetVersions.Contains(s_v5)
                     || _targetVersions.Contains(s_v6);
-            }
 #endif
 
             private void AddDiagnostic(
