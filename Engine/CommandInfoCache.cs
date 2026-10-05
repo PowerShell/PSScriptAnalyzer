@@ -69,6 +69,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return GetCommandInfoInternal(commandName, commandTypes);
             }
+
+            if (_commandInfoCache.TryGetValue(key, out Lazy<CommandInfo> cachedCommand))
+            {
+                return cachedCommand.Value;
+            }
+
+            return AddCommandInfo(key, commandName, commandTypes);
+        }
+
+        private CommandInfo AddCommandInfo(CommandLookupKey key, string commandName, CommandTypes? commandTypes)
+        {
+            // Keep the closure and Lazy allocation off the cache-hit path. Concurrent misses
+            // still share the winning Lazy so command discovery runs once for each key.
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
@@ -146,7 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 unchecked
                 {
                     int hash = 17;
-                    hash = hash * 31 + Name.ToUpperInvariant().GetHashCode();
+                    hash = hash * 31 + StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
                     hash = hash * 31 + CommandTypes.GetHashCode();
                     return hash;
                 }
