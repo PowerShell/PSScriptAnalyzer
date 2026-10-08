@@ -122,28 +122,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 yield break;
             }
 
-            Func<Token, Ast, bool> predicate;
-
             switch (tokenKind)
             {
                 case TokenKind.LCurly:
-                    predicate = (x, cmdElemAst) =>
-                        x.Kind == TokenKind.LCurly && x.Extent.StartOffset == cmdElemAst.Extent.StartOffset;
-                    break;
-
                 case TokenKind.RCurly:
-                    predicate = (x, cmdElemAst) =>
-                        x.Kind == TokenKind.RCurly && x.Extent.EndOffset == cmdElemAst.Extent.EndOffset;
                     break;
 
                 default:
                     throw new ArgumentException("", nameof(tokenKind));
             }
 
+            // Index once rather than scanning every token for each script block.
+            // Preserve the first matching token if callers supply duplicate offsets.
+            var braceTokens = new Dictionary<int, Token>();
+            foreach (var token in tokens)
+            {
+                if (token.Kind != tokenKind)
+                {
+                    continue;
+                }
+
+                int offset = tokenKind == TokenKind.LCurly ? token.Extent.StartOffset : token.Extent.EndOffset;
+                if (!braceTokens.ContainsKey(offset))
+                {
+                    braceTokens.Add(offset, token);
+                }
+            }
+
             foreach (var cmdElemAst in cmdElemAsts)
             {
-                var tokenFound = tokens.FirstOrDefault(token => predicate(token, cmdElemAst));
-                if (tokenFound != null)
+                int offset = tokenKind == TokenKind.LCurly ? cmdElemAst.Extent.StartOffset : cmdElemAst.Extent.EndOffset;
+                if (braceTokens.TryGetValue(offset, out var tokenFound))
                 {
                     yield return tokenFound;
                 }

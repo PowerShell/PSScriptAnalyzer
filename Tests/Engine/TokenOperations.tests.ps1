@@ -2,6 +2,36 @@
 # Licensed under the MIT License.
 
 Describe "TokenOperations" {
+    It 'Should return only script-block expression braces in AST order' {
+        $scriptText = @'
+function Test-Example { 'function body' }
+$value = @{ Handler = { 'hashtable value' } }
+Get-Item | ForEach-Object { Where-Object { $_.Name -ne '{literal}' } }
+& { 'invoked block' }
+'@
+        $tokens = $null
+        $parseErrors = $null
+        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref] $tokens, [ref] $parseErrors)
+        $parseErrors | Should -BeNullOrEmpty
+        $tokenOperations = [Microsoft.Windows.PowerShell.ScriptAnalyzer.TokenOperations]::new($tokens, $scriptAst)
+        $openBraces = @($tokenOperations.GetOpenBracesInCommandElements())
+        $closeBraces = @($tokenOperations.GetCloseBracesInCommandElements())
+        $openBraces.Count | Should -Be 4
+        $closeBraces.Count | Should -Be 4
+        ($openBraces.Extent.StartOffset -join ',') | Should -Be (@(
+            $scriptText.IndexOf("{ 'hashtable value'")
+            $scriptText.IndexOf('{ Where-Object')
+            $scriptText.IndexOf('{ $_.Name')
+            $scriptText.IndexOf("{ 'invoked block'")
+        ) -join ',')
+        ($closeBraces.Extent.EndOffset -join ',') | Should -Be (@(
+            $scriptText.IndexOf("'hashtable value' }") + "'hashtable value' }".Length
+            $scriptText.IndexOf("'{literal}' } }") + "'{literal}' } }".Length
+            $scriptText.IndexOf("'{literal}' }") + "'{literal}' }".Length
+            $scriptText.IndexOf("'invoked block' }") + "'invoked block' }".Length
+        ) -join ',')
+    }
+
     It "Should return correct AST position for assignment operator in hash table" {
         $scriptText = @'
 $h = @{
