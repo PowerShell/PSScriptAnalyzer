@@ -26,7 +26,7 @@ variables include:
 
 This rule doesn't detect use of the `New-Variable` cmdlet to create variables in the global scope or
 the other `*-Variable` cmdlets to work with variables in the global scope. It only detects variable
-expressions with the global scope modifier, like `$global:example`.
+expressions with the global scope modifier, like `$Global:example`.
 
 This rule doesn't apply to variable expressions that use the global scope modifier where the
 variable name is for an [automatic variable][01] or a [preference variable][02].
@@ -68,8 +68,32 @@ this rule:
 - Add the appropriate rule suppression attributes to your code to suppress the rule for specific
   code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][04].
 
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
+```
+
+To suppress the rule for a single variable, pass the variable name, including the `Global:` scope
+modifier, as the second argument. The name isn't case sensitive.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', 'Global:Variable')]
+    param(
+        [String]$Parameter
+    )
+
+    $Global:Variable = $Parameter
+}
+```
+
 <!-- link references -->
 [01]: /powershell/module/microsoft.powershell.core/about/about_automatic_variables
 [02]: /powershell/module/microsoft.powershell.core/about/about_preference_variables
 [03]: /powershell/module/microsoft.powershell.core/about/about_scopes
-[04]: ../using-scriptanalyzer.md
+[04]: ../using-scriptanalyzer.md#suppressing-rules

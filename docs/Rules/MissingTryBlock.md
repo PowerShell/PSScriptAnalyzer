@@ -56,5 +56,27 @@ Rules = @{
 
   Enable or disable the rule during ScriptAnalyzer invocation.
 
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSMissingTryBlock', '')]
+```
+
+To suppress the rule for only one of the two keywords, pass `catch` or `finally` as the second
+argument. The value isn't case sensitive.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSMissingTryBlock', 'finally')]
+    param()
+
+    finally { 'Cleaning up.' }
+}
+```
+
 <!-- link references -->
 [01]: AvoidReservedWordsAsFunctionNames.md

@@ -65,7 +65,31 @@ using this rule:
 - Create a custom rule configuration file to include only the rules you want or exclude the rules
   you don't want.
 - Add the appropriate rule suppression attributes to your code to suppress the rule for specific
-  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][01].
+
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingCmdletAliases', '')]
+```
+
+To suppress the rule for a single alias, pass the alias as the second argument. For an implicit
+alias, pass the command name as it's written without the `Get-` prefix, for example `'verb'` for
+`verb`. The name isn't case sensitive. To allow an alias everywhere, use the `allowlist` setting
+instead.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingCmdletAliases', 'gps')]
+    param()
+
+    gps | Where-Object { $_.WorkingSet -gt 20000000 }
+}
+```
 
 <!-- Link references -->
-[02]: ../using-scriptanalyzer.md
+[01]: ../using-scriptanalyzer.md#suppressing-rules

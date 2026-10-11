@@ -59,3 +59,27 @@ array. The default value is `@()`.
 
 This parameter controls whether ScriptAnalyzer checks the code against this rule. It accepts a
 boolean value. To disable this rule, set this parameter to `$false`. The default value is `$true`.
+
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPositionalParameters', '')]
+```
+
+To suppress the rule for a single command, pass the command name as it appears in the call as the
+second argument. The name isn't case sensitive, but it must match what's written in the script, so
+a call made through an alias needs the alias name. To exclude a command everywhere, use the
+`CommandAllowList` setting instead.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPositionalParameters', 'Set-ItemProperty')]
+    param()
+
+    Set-ItemProperty foo.txt IsReadOnly $true
+}
+```

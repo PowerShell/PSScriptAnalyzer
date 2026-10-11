@@ -54,6 +54,30 @@ this rule:
 - Add the appropriate rule suppression attributes to your code to suppress the rule for specific
   code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
 
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable', '')]
+```
+
+To suppress the rule for a single automatic variable, pass the variable name without the leading
+`$` as the second argument. The name isn't case sensitive.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable', 'Error')]
+    param(
+        [String]$ErrorMessage
+    )
+
+    $Error = "Error occurred: $ErrorMessage"
+}
+```
+
 <!-- Link references -->
 [01]: /powershell/module/microsoft.powershell.core/about/about_automatic_variables
-[02]: ../using-scriptanalyzer.md
+[02]: ../using-scriptanalyzer.md#suppressing-rules
