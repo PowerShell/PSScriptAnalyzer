@@ -74,7 +74,29 @@ using this rule:
 - Create a custom rule configuration file to include only the rules you want or exclude the rules
   you don't want.
 - Add the appropriate rule suppression attributes to your code to suppress the rule for specific
-  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][02].
+  code blocks. For more information, see the _Suppressing rules_ section of [Using PSScriptAnalyzer][01].
+
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+```
+
+To suppress the rule for a single parameter, pass the parameter name without the leading `$` as
+the second argument. The name isn't case sensitive.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'UnusedParameter')]
+    param(
+        [String]$UnusedParameter
+    )
+}
+```
 
 <!-- link references -->
-[02]: ../using-scriptanalyzer.md
+[01]: ../using-scriptanalyzer.md#suppressing-rules

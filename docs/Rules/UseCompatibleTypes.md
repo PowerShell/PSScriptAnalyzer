@@ -16,7 +16,7 @@ This rule detects types that aren't available by default on your targeted PowerS
 
 PowerShell platform names use the following format:
 
-```
+```plain
 <os-name>_<os-arch>_<os-version>_<ps-version>_<ps-arch>_<dotnet-version>_<dotnet-edition>
 ```
 
@@ -180,29 +180,28 @@ the `compatibility_profiles` directory in the PSScriptAnalyzer module.
 This parameter specifies the full names of types or type accelerators to exclude from compatibility
 checks. It accepts an array of type-name strings. The default value is `@()`.
 
-<!-- link references -->
-[01]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector
-[02]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector/optional_profiles
-
 ## Suppression
 
 As with other rules, you can suppress type compatibility diagnostics by adding a suppression
-attribute to the `param` block of a scriptblock.
+attribute to the `param` block of a scriptblock. An empty string as the second argument suppresses
+every type compatibility diagnostic in that scope.
 
 ```powershell
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes', '')]
 ```
 
-You can also suppress the rule for specific types:
+You can also suppress diagnostics for a specific static member, whether a method, property,
+field, or event, by passing the full type name and the member name, separated by `/`, as the
+second argument:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes',
-    'System.Management.Automation.Security.SystemPolicy')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes', 'System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName')]
 ```
 
-You can also suppress it for specific type members:
+Diagnostics for a type or type accelerator that isn't available on a target platform don't carry a
+suppression ID, so they can only be suppressed with an empty second argument. To skip a type
+everywhere, add it to the `IgnoreTypes` setting instead.
 
-```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes',
-    'System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName')]
-```
+<!-- link references -->
+[01]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector
+[02]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector/optional_profiles

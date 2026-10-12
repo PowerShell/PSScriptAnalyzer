@@ -61,3 +61,26 @@ Rules = @{
 - `Enable`: **bool** (Default value is `$false`)
 
   Enable or disable the rule during ScriptAnalyzer invocation.
+
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSInvalidMultiDotValue', '')]
+```
+
+To suppress the rule for a single value, pass the value exactly as it's written in the script as
+the second argument, for example `'1.2.3'` or `'127.0.0.1'`.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSInvalidMultiDotValue', '1.2.3')]
+    param()
+
+    $Version = 1.2.3
+    Write-Output $Version
+}
+```

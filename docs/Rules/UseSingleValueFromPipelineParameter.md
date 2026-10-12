@@ -78,30 +78,34 @@ boolean value. To enable this rule, set this parameter to `$true`. The default v
 
 ## Suppression
 
-This rule is disabled by default. If you have enabled it in your configuration but want to suppress
-it for a specific function, you can use the `SuppressMessage` attribute:
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
 
 ```powershell
-function Process-Data {
-    [Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingleValueFromPipelineParameter', 'MyParameterSet')]
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
-        [string] $InputData,
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingleValueFromPipelineParameter', '')]
+```
 
-        [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
-        [string] $ProcessingMode
+To suppress the rule for a single parameter set, pass the parameter set name as the second
+argument. The name isn't case sensitive.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingleValueFromPipelineParameter', 'MyParameterSet')]
+    param(
+        [Parameter(ParameterSetName = 'MyParameterSet', ValueFromPipeline)]
+        [String]$InputObject,
+
+        [Parameter(ParameterSetName = 'MyParameterSet', ValueFromPipeline)]
+        [String]$ProcessingMode
     )
-    process {
-        Write-Output "$ProcessingMode`: $InputData"
-    }
 }
 ```
 
-For the default parameter set, use `'default'` as the suppression target:
+For parameters that don't declare a parameter set name, use `default` as the second argument:
 
 ```powershell
-[Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingleValueFromPipelineParameter', 'default')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingleValueFromPipelineParameter', 'default')]
 ```
 
 ## Notes
