@@ -61,7 +61,7 @@ Rules = @{
         Enable                                  = $true
         CheckHashtable                          = $true
         AlignHashtableKvpWithInterveningComment = $true
-        CheckEnum                               = $true
+        CheckEnums                              = $true
         AlignEnumMemberWithInterveningComment   = $true
         IncludeValuelessEnumMembers             = $true
     }
@@ -118,7 +118,7 @@ $hashtable = @{
 }
 ```
 
-### CheckEnum
+### CheckEnums
 
 This parameter controls whether ScriptAnalyzer checks assignment alignment in enum member
 definitions. It accepts a boolean value. To disable this check, set this parameter to `$false`. The
