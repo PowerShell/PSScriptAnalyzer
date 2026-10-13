@@ -39,3 +39,28 @@ Describe "Test Directed Graph" {
         }
     }
 }
+
+Describe "Exported function parameter resolution" {
+    BeforeAll {
+        $null = Invoke-ScriptAnalyzer -ScriptDefinition 'Get-Item -Path .'
+    }
+
+    It "resolves exports from <Script>" -TestCases @(
+        @{ Script = 'Export-ModuleMember -Function Test-Example' }
+        @{ Script = 'Export-ModuleMember -fUnCtIoN Test-Example' }
+        @{ Script = 'Export-ModuleMember -Fun Test-Example' }
+        @{ Script = 'Export-ModuleMember -Function:Test-Example' }
+        @{ Script = 'Export-ModuleMember Test-Example' }
+        @{ Script = 'Export-ModuleMember -Verbose Test-Example' }
+        @{ Script = 'Export-ModuleMember -vb Test-Example' }
+        @{ Script = 'Export-ModuleMember -Alias example -Function Test-Example' }
+        @{ Script = 'Export-ModuleMember -ea Stop -Fun Test-Example' }
+    ) {
+        param($Script)
+
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Script, [ref]$null, [ref]$null)
+        $exports = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetExportedFunction($ast)
+        $exports.Count | Should -Be 1
+        $exports | Should -Contain 'Test-Example'
+    }
+}
