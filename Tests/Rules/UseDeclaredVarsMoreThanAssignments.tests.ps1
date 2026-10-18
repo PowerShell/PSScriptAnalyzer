@@ -117,6 +117,18 @@ function MyFunc2() {
             $results | Get-Count | Should -Be 1
             $results[0].Extent | Should -Be '$mySecondvar'
         }
+
+        It "flags each unused variable of a multiple assignment" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$a, $b = $null' -IncludeRule $violationName | `
+            Get-Count | `
+            Should -Be 2
+        }
+
+        It "flags only the unused variable of a multiple assignment" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$a, $b = 1, 2; $b' -IncludeRule $violationName
+            $results | Get-Count | Should -Be 1
+            $results[0].RuleSuppressionID | Should -Be 'a'
+        }
     }
 
     Context "When there are no violations" {
@@ -136,6 +148,11 @@ function MyFunc2() {
 
         It "Does not flag += operator when using unassigned variable" {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$list | ForEach-Object { $array += $c }' | Where-Object { $_.RuleName -eq $violationName }
+            $results.Count | Should -Be 0
+        }
+
+        It "Does not flag variables of a multiple assignment that are used" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$a, $b = 1, 2; $a + $b' -IncludeRule $violationName
             $results.Count | Should -Be 0
         }
 

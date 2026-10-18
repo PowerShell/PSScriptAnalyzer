@@ -126,32 +126,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
             {
-                // Only checks for the case where lhs is a variable. Ignore things like $foo.property
-                VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
+                // Assigning multiple variables, e.g. $a, $b = 1, 2, assigns each element of the array literal
+                IEnumerable<ExpressionAst> leftAsts = assignmentAst.Left is ArrayLiteralAst arrayLiteralAst
+                    ? arrayLiteralAst.Elements
+                    : (IEnumerable<ExpressionAst>)new[] { assignmentAst.Left };
 
-                if (assignmentVarAst == null)
+                foreach (ExpressionAst leftAst in leftAsts)
                 {
-                    // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
-                    // Therefore we need to the VariableExpressionAst from its Child property.
-                    var assignmentVarAstAsConvertExpressionAst = assignmentAst.Left as ConvertExpressionAst;
-                    if (assignmentVarAstAsConvertExpressionAst != null && assignmentVarAstAsConvertExpressionAst.Child != null)
-                    {
-                        assignmentVarAst = assignmentVarAstAsConvertExpressionAst.Child as VariableExpressionAst;
-                    }
-                }
+                    // Only checks for the case where lhs is a variable. Ignore things like $foo.property
+                    VariableExpressionAst assignmentVarAst = leftAst as VariableExpressionAst;
 
-                if (assignmentVarAst != null)
-                {
-                    // Ignore if variable is global or environment variable or scope is drive qualified variable
-                    if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst)
-                        && !assignmentVarAst.VariablePath.IsScript
-                        && assignmentVarAst.VariablePath.DriveName == null)
+                    if (assignmentVarAst == null)
                     {
-                        string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
-
-                        if (!assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
+                        // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
+                        // Therefore we need to the VariableExpressionAst from its Child property.
+                        var assignmentVarAstAsConvertExpressionAst = leftAst as ConvertExpressionAst;
+                        if (assignmentVarAstAsConvertExpressionAst != null && assignmentVarAstAsConvertExpressionAst.Child != null)
                         {
-                            assignmentsDictionary_OrdinalIgnoreCase.Add(variableName, assignmentAst);
+                            assignmentVarAst = assignmentVarAstAsConvertExpressionAst.Child as VariableExpressionAst;
+                        }
+                    }
+
+                    if (assignmentVarAst != null)
+                    {
+                        // Ignore if variable is global or environment variable or scope is drive qualified variable
+                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst)
+                            && !assignmentVarAst.VariablePath.IsScript
+                            && assignmentVarAst.VariablePath.DriveName == null)
+                        {
+                            string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
+
+                            if (!assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
+                            {
+                                assignmentsDictionary_OrdinalIgnoreCase.Add(variableName, assignmentAst);
+                            }
                         }
                     }
                 }
@@ -191,6 +199,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             else
                             {
                                 inAssignment = varInAssignment.Equals(varAst);
+                            }
+
+                            // A multiple assignment has several variables on the lhs, so stop at the first match
+                            if (inAssignment)
+                            {
+                                break;
                             }
                         }
 
