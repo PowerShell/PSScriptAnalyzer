@@ -1,6 +1,6 @@
 ---
 description: Use compatible commands
-ms.date: 07/21/2026
+ms.date: 10/18/2026
 ms.topic: reference
 title: UseCompatibleCommands
 ---
@@ -54,6 +54,7 @@ Platforms bundled by default are:
 |        5.1         | Windows Server 2016    | `win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework` |
 |        5.1         | Windows Server 2019    | `win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework`  |
 |        5.1         | Windows 10 Pro         | `win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework` |
+|        5.1         | Windows 11 Enterprise  | `win-4_x64_10.0.26200.0_5.1.26100.9711_x64_4.0.30319.42000_framework` |
 |        6.2         | Ubuntu 18.04 LTS       | `ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core`                     |
 |        6.2         | Windows 10.0.14393     | `win-8_x64_10.0.14393.0_6.2.4_x64_4.0.30319.42000_core`               |
 |        6.2         | Windows 10.0.17763     | `win-8_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core`               |
@@ -62,6 +63,9 @@ Platforms bundled by default are:
 |        7.0         | Windows 10.0.14393     | `win-8_x64_10.0.14393.0_7.0.0_x64_3.1.2_core`                         |
 |        7.0         | Windows 10.0.17763     | `win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core`                         |
 |        7.0         | Windows 10.0.18362     | `win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core`                         |
+|        7.4         | Windows 11 Enterprise  | `win-4_x64_10.0.26200.0_7.4.21_x64_8.0.32_core`                       |
+|        7.5         | Windows 11 Enterprise  | `win-4_x64_10.0.26200.0_7.5.12_x64_9.0.21_core`                       |
+|        7.6         | Windows 11 Enterprise  | `win-4_x64_10.0.26200.0_7.6.7_x64_10.0.13_core`                       |
 
 Other profiles can be found in the [GitHub repo][02].
 
