@@ -129,6 +129,15 @@ function MyFunc2() {
             $results | Get-Count | Should -Be 1
             $results[0].RuleSuppressionID | Should -Be 'a'
         }
+
+        It "flags variables of a multiple assignment that are only assigned again" -TestCases @(
+            @{ ScriptDefinition = '$a, $b = 1, 2; $a = 3' }
+            @{ ScriptDefinition = '$a, $b = 1, 2; $a, $b = 3, 4' }
+        ) {
+            param($ScriptDefinition)
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $violationName
+            $results.RuleSuppressionID | Sort-Object | Should -Be @('a', 'b')
+        }
     }
 
     Context "When there are no violations" {
@@ -153,6 +162,11 @@ function MyFunc2() {
 
         It "Does not flag variables of a multiple assignment that are used" {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$a, $b = 1, 2; $a + $b' -IncludeRule $violationName
+            $results.Count | Should -Be 0
+        }
+
+        It "Does not flag a variable of a multiple assignment that is used in an index of another target" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition 'param($items); $index, $items[$index] = 0, 42' -IncludeRule $violationName
             $results.Count | Should -Be 0
         }
 

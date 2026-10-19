@@ -126,40 +126,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
             {
-                // Assigning multiple variables, e.g. $a, $b = 1, 2, assigns each element of the array literal
-                IEnumerable<ExpressionAst> leftAsts = assignmentAst.Left is ArrayLiteralAst arrayLiteralAst
-                    ? arrayLiteralAst.Elements
-                    : (IEnumerable<ExpressionAst>)new[] { assignmentAst.Left };
-
-                foreach (ExpressionAst leftAst in leftAsts)
+                foreach (VariableExpressionAst assignmentVarAst in GetAssignedVariables(assignmentAst.Left))
                 {
-                    // Only checks for the case where lhs is a variable. Ignore things like $foo.property
-                    VariableExpressionAst assignmentVarAst = leftAst as VariableExpressionAst;
-
-                    if (assignmentVarAst == null)
+                    // Ignore if variable is global or environment variable or scope is drive qualified variable
+                    if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst)
+                        && !assignmentVarAst.VariablePath.IsScript
+                        && assignmentVarAst.VariablePath.DriveName == null)
                     {
-                        // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
-                        // Therefore we need to the VariableExpressionAst from its Child property.
-                        var assignmentVarAstAsConvertExpressionAst = leftAst as ConvertExpressionAst;
-                        if (assignmentVarAstAsConvertExpressionAst != null && assignmentVarAstAsConvertExpressionAst.Child != null)
-                        {
-                            assignmentVarAst = assignmentVarAstAsConvertExpressionAst.Child as VariableExpressionAst;
-                        }
-                    }
+                        string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
 
-                    if (assignmentVarAst != null)
-                    {
-                        // Ignore if variable is global or environment variable or scope is drive qualified variable
-                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst)
-                            && !assignmentVarAst.VariablePath.IsScript
-                            && assignmentVarAst.VariablePath.DriveName == null)
+                        if (!assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
                         {
-                            string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
-
-                            if (!assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
-                            {
-                                assignmentsDictionary_OrdinalIgnoreCase.Add(variableName, assignmentAst);
-                            }
+                            assignmentsDictionary_OrdinalIgnoreCase.Add(variableName, assignmentAst);
                         }
                     }
                 }
@@ -174,21 +152,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(varKey))
                     {
-                        varsInAssignment = assignmentsDictionary_OrdinalIgnoreCase[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true);
+                        varsInAssignment = GetAssignedVariables(assignmentsDictionary_OrdinalIgnoreCase[varKey].Left);
 
                         // Checks if this variableAst is part of the logged assignment
                         foreach (VariableExpressionAst varInAssignment in varsInAssignment)
                         {
                             // Try casting to AssignmentStatementAst to be able to catch case where a variable is assigned more than once (https://github.com/PowerShell/PSScriptAnalyzer/issues/833)
-                            var varInAssignmentAsStatementAst = varInAssignment.Parent as AssignmentStatementAst;
-                            var varAstAsAssignmentStatementAst = varAst.Parent as AssignmentStatementAst;
+                            var varInAssignmentAsStatementAst = GetAssignmentStatementOfTarget(varInAssignment);
+                            var varAstAsAssignmentStatementAst = GetAssignmentStatementOfTarget(varAst);
                             if (varAstAsAssignmentStatementAst != null)
                             {
                                 if (varAstAsAssignmentStatementAst.Operator == TokenKind.Equals)
                                 {
                                     if (varInAssignmentAsStatementAst != null)
                                     {
-                                        inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                                        inAssignment = varInAssignment.Extent.Text.Equals(varAst.Extent.Text, StringComparison.OrdinalIgnoreCase);
                                     }
                                     else
                                     {
@@ -234,6 +212,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     fileName,
                     key);
             }
+        }
+
+        /// <summary>
+        /// Returns the variables assigned by the lhs of an assignment, e.g. $a, [string]$s or each of $a, $b.
+        /// Ignores things like $foo.property and $foo[$i], including the variables they read.
+        /// </summary>
+        private static IEnumerable<VariableExpressionAst> GetAssignedVariables(ExpressionAst left)
+        {
+            // Assigning multiple variables, e.g. $a, $b = 1, 2, assigns each element of the array literal
+            IEnumerable<ExpressionAst> leftAsts = left is ArrayLiteralAst arrayLiteralAst
+                ? arrayLiteralAst.Elements
+                : (IEnumerable<ExpressionAst>)new[] { left };
+
+            foreach (ExpressionAst leftAst in leftAsts)
+            {
+                // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
+                // Therefore we need to the VariableExpressionAst from its Child property.
+                VariableExpressionAst variableAst = leftAst as VariableExpressionAst ?? (leftAst as ConvertExpressionAst)?.Child as VariableExpressionAst;
+                if (variableAst != null)
+                {
+                    yield return variableAst;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the assignment whose lhs is this variable, or contains it as an element as in $a, $b = 1, 2.
+        /// </summary>
+        private static AssignmentStatementAst GetAssignmentStatementOfTarget(VariableExpressionAst variableAst)
+        {
+            return variableAst.Parent as AssignmentStatementAst
+                ?? (variableAst.Parent as ArrayLiteralAst)?.Parent as AssignmentStatementAst;
         }
 
         /// <summary>
