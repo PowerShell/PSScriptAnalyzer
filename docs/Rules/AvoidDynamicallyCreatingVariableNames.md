@@ -69,6 +69,33 @@ Rules = @{
 
   Enable or disable the rule during ScriptAnalyzer invocation.
 
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidDynamicallyCreatingVariableNames', '')]
+```
+
+To suppress the rule for a single `New-Variable` call, pass the value of its `Name` argument
+exactly as it's written in the call, without any enclosing double quotes, as the second argument.
+For example, use `'My$_'` for `New-Variable -Name "My$_"` and `'$name'` for
+`New-Variable -Name $name`. Enclose the second argument in single quotes so that PowerShell
+doesn't try to expand it.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidDynamicallyCreatingVariableNames', 'My$_')]
+    param()
+
+    'One', 'Two', 'Three' | ForEach-Object -Begin { $i = 1 } -Process {
+        New-Variable -Name "My$_" -Value ($i++)
+    }
+}
+```
+
 ## References
 
 - [New-Variable][02]

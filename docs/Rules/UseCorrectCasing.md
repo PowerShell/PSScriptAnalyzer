@@ -82,3 +82,30 @@ accepts a boolean value. The default value is `$true`.
 
 This parameter controls whether ScriptAnalyzer checks that all operators are lowercase. For example,
 `-eq`, `-ne`, and `-gt`. It accepts a boolean value. The default value is `$true`.
+
+## Suppression
+
+As with other rules, you can suppress this rule by adding a suppression attribute to the `param`
+block of a function or script. An empty string as the second argument suppresses every violation
+of the rule in that scope.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCorrectCasing', '')]
+```
+
+To suppress the rule for a single command, parameter, keyword, or operator, pass its correctly
+cased form as the second argument: the canonical command name, such as `Get-ChildItem`, the
+canonical parameter name without the leading dash, such as `RunAsAdministrator`, or the lowercase
+keyword or operator, such as `foreach` or `-eq`. If a command is written with a module qualifier,
+include the qualifier, for example `Microsoft.PowerShell.Management\Get-ChildItem`.
+
+```powershell
+function Test-Script {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCorrectCasing', 'Get-ChildItem')]
+    param()
+
+    foreach ($File in Get-childitem -Recurse) {
+        $File.Extension -eq '.txt'
+    }
+}
+```
