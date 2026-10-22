@@ -349,7 +349,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 precedingIndex--;
                 if (precedingIndex < 0 ||
                     tokens[precedingIndex].Kind != TokenKind.Comment ||
-                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1)
+                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1 ||
+                    (precedingIndex > 0 && tokens[precedingIndex - 1].Kind != TokenKind.NewLine))
                 {
                     break;
                 }
@@ -706,9 +707,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return indentationLevel * indentationLevelMultiplier;
         }
 
-        private string GetIndentationString(int indentationLevel)
-        {
-            return new string(indentationChar, GetIndentation(indentationLevel));
-        }
     }
 }

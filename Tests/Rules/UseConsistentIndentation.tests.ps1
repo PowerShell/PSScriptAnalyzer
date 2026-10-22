@@ -204,7 +204,7 @@ function foo {
         }
     }
 
-    Context "When a multi-line command is given" {
+    Context "When a commented-out code block is provided" {
 
         It 'Should preserve relative indentation in commented-out code with <Kind> indentation' -TestCases @(
             @{ Kind = 'space'; Indentation = '    ' }
@@ -219,17 +219,8 @@ function foo {
                 "$($Indentation)Write-Output 'after'"
                 '}'
             ) -join "`n"
-            $settings = @{
-                IncludeRules = @('PSUseConsistentIndentation')
-                Rules = @{
-                    PSUseConsistentIndentation = @{
-                        Enable = $true
-                        IndentationSize = 4
-                        PipelineIndentation = 'NoIndentation'
-                        Kind = $Kind
-                    }
-                }
-            }
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $scriptDefinition
@@ -256,22 +247,15 @@ function foo {
                 "$($Indentation)Write-Output 'after'"
                 '}'
             ) -join "`n"
-            $settings = @{
-                IncludeRules = @('PSUseConsistentIndentation')
-                Rules = @{
-                    PSUseConsistentIndentation = @{
-                        Enable = $true
-                        IndentationSize = 4
-                        PipelineIndentation = 'NoIndentation'
-                        Kind = $Kind
-                    }
-                }
-            }
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $expectedScriptDefinition
         }
+    }
 
+    Context "When a multi-line command is given" {
         It "When a comment is in the middle of a multi-line statement with preceding and succeeding line continuations" {
             $scriptDefinition = @'
 foo `
