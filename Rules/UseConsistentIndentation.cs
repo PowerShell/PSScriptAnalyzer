@@ -298,7 +298,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
 
                             bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
-                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
+                            int commentIndentationOffset = token.Kind == TokenKind.Comment
+                                ? GetCommentRunIndentationOffset(tokens, tokenIndex)
+                                : 0;
+                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken, commentIndentationOffset);
                         }
                         break;
                 }
@@ -334,6 +337,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static int GetCommentRunIndentationOffset(Token[] tokens, int tokenIndex)
+        {
+            int firstCommentIndex = tokenIndex;
+            int currentLine = tokens[tokenIndex].Extent.StartLineNumber;
+            int precedingIndex = tokenIndex - 1;
+            while (precedingIndex >= 0 && tokens[precedingIndex].Kind == TokenKind.NewLine)
+            {
+                precedingIndex--;
+                if (precedingIndex < 0 ||
+                    tokens[precedingIndex].Kind != TokenKind.Comment ||
+                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1 ||
+                    (precedingIndex > 0 && tokens[precedingIndex - 1].Kind != TokenKind.NewLine))
+                {
+                    break;
+                }
+
+                firstCommentIndex = precedingIndex;
+                currentLine = tokens[precedingIndex].Extent.StartLineNumber;
+                precedingIndex--;
+            }
+
+            return tokens[tokenIndex].Extent.StartColumnNumber -
+                tokens[firstCommentIndex].Extent.StartColumnNumber;
         }
 
         /// <summary>
@@ -612,12 +640,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int expectedIndentationLevel,
             List<DiagnosticRecord> diagnosticRecords,
             ref bool onNewLine,
-            bool lineHasPipelineBeforeToken = false)
+            bool lineHasPipelineBeforeToken = false,
+            int indentationOffset = 0)
         {
             if (onNewLine)
             {
                 onNewLine = false;
-                if (token.Extent.StartColumnNumber - 1 != GetIndentation(expectedIndentationLevel))
+                int expectedIndentation = Math.Max(0, GetIndentation(expectedIndentationLevel) + indentationOffset);
+                if (token.Extent.StartColumnNumber - 1 != expectedIndentation)
                 {
                     var fileName = token.Extent.File;
                     var extent = token.Extent;
@@ -640,14 +670,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            GetSuggestedCorrections(token, expectedIndentationLevel, lineHasPipelineBeforeToken)));
+                            GetSuggestedCorrections(token, expectedIndentation, lineHasPipelineBeforeToken)));
                 }
             }
         }
 
         private List<CorrectionExtent> GetSuggestedCorrections(
             Token token,
-            int indentationLevel,
+            int indentation,
             bool lineHasPipelineBeforeToken = false)
         {
             // TODO Add another constructor for correction extent that takes extent
@@ -661,7 +691,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 token.Extent.EndLineNumber,
                 1,
                 token.Extent.EndColumnNumber,
-                GetIndentationString(indentationLevel) + optionalPipeline + token.Extent.Text,
+                new string(indentationChar, indentation) + optionalPipeline + token.Extent.Text,
                 token.Extent.File));
             return corrections;
         }
@@ -677,9 +707,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return indentationLevel * indentationLevelMultiplier;
         }
 
-        private string GetIndentationString(int indentationLevel)
-        {
-            return new string(indentationChar, GetIndentation(indentationLevel));
-        }
     }
 }

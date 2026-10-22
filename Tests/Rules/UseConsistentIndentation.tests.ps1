@@ -204,8 +204,58 @@ function foo {
         }
     }
 
-    Context "When a multi-line command is given" {
+    Context "When a commented-out code block is provided" {
 
+        It 'Should preserve relative indentation in commented-out code with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# if (`$b) {"
+                "$Indentation$Indentation# doThing"
+                "$Indentation# }"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
+        It 'Should shift a commented-out code block without flattening it with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                '# if ($b) {'
+                "$Indentation# doThing"
+                '# }'
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $expectedScriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# if (`$b) {"
+                "$Indentation$Indentation# doThing"
+                "$Indentation# }"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+    }
+
+    Context "When a multi-line command is given" {
         It "When a comment is in the middle of a multi-line statement with preceding and succeeding line continuations" {
             $scriptDefinition = @'
 foo `
