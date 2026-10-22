@@ -27,6 +27,44 @@ Describe "Invoke-Formatter Cmdlet" {
         }
     }
 
+    Context 'Formatting files' {
+        It 'Formats a file in place while preserving its encoding, line endings, and tab indentation' {
+            $path = Join-Path $TestDrive 'script.ps1'
+            $scriptDefinition = "function foo {`r`n`t`$x=1`r`n}"
+            $expected = "function foo {`r`n`t`$x = 1`r`n}"
+            $encoding = [System.Text.UTF8Encoding]::new($true)
+            [System.IO.File]::WriteAllText($path, $scriptDefinition, $encoding)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+            [System.IO.File]::ReadAllBytes($path)[0..2] | Should -Be @(239, 187, 191)
+        }
+
+        It 'Preserves a UTF-16 encoding and space indentation' {
+            $path = Join-Path $TestDrive 'unicode.ps1'
+            $scriptDefinition = "function foo {`n    `$x=1`n}"
+            $expected = "function foo {`n    `$x = 1`n}"
+            $encoding = [System.Text.UnicodeEncoding]::new($false, $true)
+            [System.IO.File]::WriteAllText($path, $scriptDefinition, $encoding)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+            [System.IO.File]::ReadAllBytes($path)[0..1] | Should -Be @(255, 254)
+        }
+
+        It 'Does not modify a file when WhatIf is specified' {
+            $path = Join-Path $TestDrive 'whatif.ps1'
+            $scriptDefinition = '$x=1'
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            Invoke-Formatter -Path $path -WhatIf 6>$null
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $scriptDefinition
+        }
+    }
+
     Context "When positional parameters are given" {
         It "Should use the positional parameters" {
             $def = @"

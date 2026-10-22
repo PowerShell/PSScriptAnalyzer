@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using System;
+using System.IO;
 using System.Globalization;
+using System.Text;
 using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
@@ -12,20 +14,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// <summary>
     /// A cmdlet to format a PowerShell script text.
     /// </summary>
-    [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
+    [Cmdlet(VerbsLifecycle.Invoke, "Formatter", DefaultParameterSetName = ParameterSet_ScriptDefinition, SupportsShouldProcess = true)]
     [OutputType(typeof(string))]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
+        private const string ParameterSet_ScriptDefinition = nameof(ScriptDefinition);
+        private const string ParameterSet_Path = nameof(Path);
+        private const string IndentationRule = "PSUseConsistentIndentation";
         private const string defaultSettingsPreset = "CodeFormatting";
         private Settings inputSettings;
         private Range range;
+        private bool settingsWereSpecified;
+
+        /// <summary>
+        /// The path to the file to format in place.
+        /// </summary>
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet_Path, ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ValidateNotNull]
+        [Alias("PSPath")]
+        public string Path { get; set; }
 
         /// <summary>
         /// The script text to be formated.
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ParameterAttribute(Mandatory = true, ParameterSetName = ParameterSet_ScriptDefinition, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 1)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
@@ -80,6 +94,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 #endif
 
             this.range = Range == null ? null : new Range(Range[0], Range[1], Range[2], Range[3]);
+            settingsWereSpecified = MyInvocation.BoundParameters.ContainsKey(nameof(Settings));
             try
             {
                 inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this, GetResolvedProviderPathFromPSPath);
@@ -108,9 +123,91 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         protected override void ProcessRecord()
         {
             // todo add tests to check range formatting
-            string formattedScriptDefinition;
-            formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
-            this.WriteObject(formattedScriptDefinition);
+            if (ParameterSetName == ParameterSet_Path)
+            {
+                ProviderInfo provider;
+                var resolvedPaths = GetResolvedProviderPathFromPSPath(Path, out provider);
+                if (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
+                {
+                    ThrowTerminatingError(new ErrorRecord(
+                        new ArgumentException("Path must resolve to a file system path.", nameof(Path)),
+                        "INVALID_PATH_PROVIDER",
+                        ErrorCategory.InvalidArgument,
+                        Path));
+                }
+
+                foreach (var path in resolvedPaths)
+                {
+                    FormatFile(path);
+                }
+            }
+            else
+            {
+                string formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
+                WriteObject(formattedScriptDefinition);
+            }
+        }
+
+        private void FormatFile(string path)
+        {
+            Encoding encoding;
+            string scriptDefinition;
+            using (var reader = new StreamReader(path, Encoding.UTF8, true))
+            {
+                scriptDefinition = reader.ReadToEnd();
+                encoding = reader.CurrentEncoding;
+            }
+
+            if (inputSettings.RuleArguments.TryGetValue(IndentationRule, out var indentationSettings)
+                && (!settingsWereSpecified || !indentationSettings.ContainsKey("Kind")))
+            {
+                indentationSettings["Kind"] = GetIndentationKind(scriptDefinition);
+            }
+
+            string formattedScriptDefinition = Formatter.Format(scriptDefinition, inputSettings, range, this);
+            if (!String.Equals(scriptDefinition, formattedScriptDefinition, StringComparison.Ordinal)
+                && ShouldProcess(path, "Format file"))
+            {
+                File.WriteAllText(path, formattedScriptDefinition, encoding);
+            }
+
+            WriteObject(formattedScriptDefinition);
+        }
+
+        private static string GetIndentationKind(string scriptDefinition)
+        {
+            int tabIndentedLines = 0;
+            int spaceIndentedLines = 0;
+            string firstIndentationKind = "space";
+            bool foundIndentation = false;
+
+            foreach (var line in scriptDefinition.Split('\n'))
+            {
+                var trimmedLine = line.TrimEnd('\r');
+                if (trimmedLine.Length > 0 && (trimmedLine[0] == '\t' || trimmedLine[0] == ' '))
+                {
+                    if (!foundIndentation)
+                    {
+                        firstIndentationKind = trimmedLine[0] == '\t' ? "tab" : "space";
+                        foundIndentation = true;
+                    }
+
+                    if (trimmedLine[0] == '\t')
+                    {
+                        tabIndentedLines++;
+                    }
+                    else
+                    {
+                        spaceIndentedLines++;
+                    }
+                }
+            }
+
+            return tabIndentedLines > spaceIndentedLines
+                ? "tab"
+                : tabIndentedLines < spaceIndentedLines
+                    ? "space"
+                    : firstIndentationKind;
         }
 
         protected override void EndProcessing()

@@ -10,20 +10,25 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
-Formats a script text based on the input settings or default settings.
+Formats script text or a file based on the input settings or default settings.
 
 ## SYNTAX
 
 ```
 Invoke-Formatter [-ScriptDefinition] <string> [[-Settings] <Object>] [[-Range] <int[]>]
  [<CommonParameters>]
+Invoke-Formatter -Path <string> [[-Settings] <Object>] [[-Range] <int[]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 
-The `Invoke-Formatter` cmdlet takes a string input and formats it according to defined settings. If
-no **Settings** parameter is provided, the cmdlet assumes the default code formatting settings as
-defined in `Settings/CodeFormatting.psd1`.
+The `Invoke-Formatter` cmdlet formats a string input or a file according to defined settings. If no
+**Settings** parameter is provided, the cmdlet assumes the default code formatting settings as
+defined in `Settings/CodeFormatting.psd1`. When **Path** is used, the file is formatted in place.
+The file's detected encoding and line-ending style are retained, and the default settings use the
+file's detected tab or space indentation style. Use `-WhatIf` to preview whether a file would be
+changed without writing it.
 
 ## EXAMPLES
 
@@ -83,6 +88,12 @@ function foo
 Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
 ```
 
+### EXAMPLE 4 - Format a file in place
+
+```powershell
+Invoke-Formatter -Path /path/to/script.ps1
+```
+
 ## PARAMETERS
 
 ### -Range
@@ -106,6 +117,22 @@ Position: 3
 Default value: None
 Accept pipeline input: True
 Accept wildcard characters: False
+```
+
+### -Path
+
+The path to the file to format. The file is updated in place.
+
+```yaml
+Type: String
+Parameter Sets: Path
+Aliases: PSPath
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: True
 ```
 
 ### -ScriptDefinition
