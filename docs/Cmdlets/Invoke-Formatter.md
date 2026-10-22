@@ -170,7 +170,8 @@ Accept wildcard characters: False
 
 ### -Confirm
 
-Prompts you for confirmation before running the cmdlet.
+Prompts you for confirmation before writing changes to a file specified by **Path**. This parameter
+has no effect when **ScriptDefinition** is used.
 
 ```yaml
 Type: SwitchParameter
@@ -186,7 +187,9 @@ Accept wildcard characters: False
 
 ### -WhatIf
 
-Shows what would happen if the cmdlet runs. The cmdlet isn't run.
+Shows which files specified by **Path** would be changed without writing them. Formatting still
+runs and the formatted text is returned. This parameter has no effect when **ScriptDefinition** is
+used.
 
 ```yaml
 Type: SwitchParameter
