@@ -16,9 +16,9 @@ Formats script text or a file based on the input settings or default settings.
 
 ```
 Invoke-Formatter [-ScriptDefinition] <string> [[-Settings] <Object>] [[-Range] <int[]>]
- [<CommonParameters>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 Invoke-Formatter -Path <string> [[-Settings] <Object>] [[-Range] <int[]>]
- [<CommonParameters>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -165,6 +165,41 @@ Required: False
 Position: 2
 Default value: CodeFormatting
 Accept pipeline input: True
+Accept wildcard characters: False
+```
+
+### -Confirm
+
+Prompts you for confirmation before writing changes to a file specified by **Path**. This parameter
+has no effect when **ScriptDefinition** is used.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+
+Shows which files specified by **Path** would be changed without writing them. Formatting still
+runs and the formatted text is returned. This parameter has no effect when **ScriptDefinition** is
+used.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
