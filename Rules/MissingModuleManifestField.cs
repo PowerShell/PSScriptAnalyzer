@@ -48,7 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
                             System.Diagnostics.Debug.Assert(
-                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
+                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message),
                                 Strings.NullErrorMessage);
                             var hashTableAst = ast.Find(x => x is HashtableAst, false);
                             if (hashTableAst == null)
@@ -56,10 +56,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 yield break;
                             }
                             yield return new DiagnosticRecord(
-                                errorRecord.Exception.Message, 
-                                hashTableAst.Extent, 
-                                GetName(), 
-                                DiagnosticSeverity.Warning, 
+                                errorRecord.Exception.Message,
+                                hashTableAst.Extent,
+                                GetName(),
+                                DiagnosticSeverity.Warning,
                                 fileName,
                                 suggestedCorrections:GetCorrectionExtent(hashTableAst as HashtableAst));
                         }
@@ -133,57 +133,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             correctionExtents.Add(correctionExtent);
             return correctionExtents;
         }
-        
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.MissingModuleManifestFieldName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.MissingModuleManifestFieldName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return String.Format(CultureInfo.CurrentCulture, Strings.MissingModuleManifestFieldCommonName);
-        }
+        public string GetCommonName() => String.Format(CultureInfo.CurrentCulture, Strings.MissingModuleManifestFieldCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return String.Format(CultureInfo.CurrentCulture, Strings.MissingModuleManifestFieldDescription);
-        }
+        public string GetDescription() => String.Format(CultureInfo.CurrentCulture, Strings.MissingModuleManifestFieldDescription);
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }

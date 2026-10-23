@@ -224,52 +224,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseCorrectCasingName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseCorrectCasingName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// GetSourceName: Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }

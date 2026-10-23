@@ -338,10 +338,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <param name="attributeAst">The AttributeAst to search.</param>
         /// <returns>The IScriptExtent of the ParameterSetName value, or null if not found.</returns>
-        private static IScriptExtent GetParameterSetNameValueExtent(AttributeAst attributeAst)
-        {
-            return GetAttributeNamedArgumentValueExtent(attributeAst, "ParameterSetName", "Parameter");
-        }
+        private static IScriptExtent GetParameterSetNameValueExtent(AttributeAst attributeAst) => GetAttributeNamedArgumentValueExtent(attributeAst, "ParameterSetName", "Parameter");
 
         /// <summary>
         /// Finds the IScriptExtent of the value assigned to the DefaultParameterSetName argument
@@ -350,10 +347,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <param name="attributeAst">The AttributeAst to search.</param>
         /// <returns>The IScriptExtent of the DefaultParameterSetName value, or null if not found.</returns>
-        private static IScriptExtent GetDefaultParameterSetNameValueExtent(AttributeAst attributeAst)
-        {
-            return GetAttributeNamedArgumentValueExtent(attributeAst, "DefaultParameterSetName", "CmdletBinding");
-        }
+        private static IScriptExtent GetDefaultParameterSetNameValueExtent(AttributeAst attributeAst) => GetAttributeNamedArgumentValueExtent(attributeAst, "DefaultParameterSetName", "CmdletBinding");
 
         /// <summary>
         /// Finds the IScriptExtent of the value of a named argument in the given AttributeAst.
@@ -433,7 +427,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             );
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
         public override SourceType GetSourceType() => SourceType.Builtin;
 

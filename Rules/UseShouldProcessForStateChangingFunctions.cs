@@ -32,17 +32,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);            
+            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);
             foreach (FunctionDefinitionAst funcDefAst in funcDefWithNoShouldProcessAttrAsts)
             {
                 yield return new DiagnosticRecord(
-                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name), 
-                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),                    
-                    this.GetName(), 
-                    DiagnosticSeverity.Warning, 
+                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name),
+                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),
+                    this.GetName(),
+                    DiagnosticSeverity.Warning,
                     fileName);
             }
-                            
+
         }
         /// <summary>
         /// Checks if the ast defines a state changing function
@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return false;
             }
-            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name) 
+            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name)
                     && (funcDefAst.Body.ParamBlock == null
                         || funcDefAst.Body.ParamBlock.Attributes == null
                         || !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes));
@@ -82,55 +82,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, this.GetSourceName(), Strings.UseShouldProcessForStateChangingFunctionsName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, this.GetSourceName(), Strings.UseShouldProcessForStateChangingFunctionsName);
 
         /// <summary>
         /// GetCommonName: Retrieves the Common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: built-in, managed or module.
         /// </summary>
         /// <returns>Source type {PS, PSDSC}</returns>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns>Rule severity {Information, Warning, Error}</returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
         /// <returns>Source name</returns>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }
 

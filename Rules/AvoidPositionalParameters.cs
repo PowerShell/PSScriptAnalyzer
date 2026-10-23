@@ -61,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
-                
+
                 if ((Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst, out CommandInfo commandInfo) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
                     (Helper.Instance.PositionalParameterUsed(cmdAst, true)))
                 {
@@ -96,53 +96,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingPositionalParametersName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingPositionalParametersName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersDescription);
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }
 

@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             IEnumerable<Ast> scriptblockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
-            
+
             foreach (ScriptBlockAst scriptblockAst in scriptblockAsts)
             {
                 if (scriptblockAst.ProcessBlock != null
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                
+
                 foreach (ParameterAst paramAst in scriptblockAst.ParamBlock.Parameters)
                 {
                     foreach (AttributeBaseAst paramAstAttribute in paramAst.Attributes)
@@ -65,34 +65,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseProcessBlockForPipelineCommandName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseProcessBlockForPipelineCommandName);
 
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandCommonName);
 
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandDescription);
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }

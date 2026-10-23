@@ -32,9 +32,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> binExpressionAsts = ast.FindAll(testAst => testAst is BinaryExpressionAst, false);
 
             foreach (BinaryExpressionAst binExpressionAst in binExpressionAsts) {
-                if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+                if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq)
                     || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
-                    && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+                    && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
                 {
                     if (IncorrectComparisonWithNull(binExpressionAst, ast))
                     {
@@ -62,9 +62,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IncorrectComparisonWithNull(BinaryExpressionAst binExpressionAst, Ast ast)
         {
-            if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+            if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq)
                 || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
-                && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+                && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
             {
                 if (binExpressionAst.Left.StaticType.IsArray)
                 {
@@ -114,51 +114,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName() {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.PossibleIncorrectComparisonWithNullName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.PossibleIncorrectComparisonWithNullName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectComparisonWithNullCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectComparisonWithNullCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
-            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectComparisonWithNullDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectComparisonWithNullDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 
 }

@@ -134,70 +134,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
-        {
+        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName) =>
             // For DSC Class based resource, this rule is N/A, since the Class Properties
             // are declared only once and available to Get(), Set(), Test() functions
-            return Enumerable.Empty<DiagnosticRecord>();
-        }
+            Enumerable.Empty<DiagnosticRecord>();
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalMandatoryParametersDSCName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalMandatoryParametersDSCName);
 
         /// <summary>
         /// GetCommonName: Retrieves the Common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
 
-        private IEnumerable<ParameterAst> GetMandatoryParameters(FunctionDefinitionAst functionDefinitionAst)
-        {
-            return functionDefinitionAst.GetParameterAsts()?.Where(IsParameterMandatory) ??
+        private IEnumerable<ParameterAst> GetMandatoryParameters(FunctionDefinitionAst functionDefinitionAst) => functionDefinitionAst.GetParameterAsts()?.Where(IsParameterMandatory) ??
                         Enumerable.Empty<ParameterAst>();
-        }
 
         private bool IsParameterMandatory(ParameterAst paramAst)
         {
@@ -208,16 +185,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return attrAsts.Any(a => a.NamedArguments.Any(IsNamedAttributeArgumentMandatory));
         }
 
-        private bool IsParameterAttribute(AttributeBaseAst attributeBaseAst)
-        {
-            return attributeBaseAst.TypeName.GetReflectionType().Name.Equals("ParameterAttribute");
-        }
+        private bool IsParameterAttribute(AttributeBaseAst attributeBaseAst) => attributeBaseAst.TypeName.GetReflectionType().Name.Equals("ParameterAttribute");
 
-        private bool IsNamedAttributeArgumentMandatory(NamedAttributeArgumentAst namedAttrArgAst)
-        {
-            return namedAttrArgAst.ArgumentName.Equals("mandatory", StringComparison.OrdinalIgnoreCase) &&
+        private bool IsNamedAttributeArgumentMandatory(NamedAttributeArgumentAst namedAttrArgAst) => namedAttrArgAst.ArgumentName.Equals("mandatory", StringComparison.OrdinalIgnoreCase) &&
                     namedAttrArgAst.GetValue();
-        }
 
         private IDictionary<string, string> GetKeys(string fileName)
         {
@@ -321,15 +292,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return version == null ? null : Tuple.Create(moduleName, version);
         }
 
-        private FileInfo GetModuleManifest(string fileName)
-        {
-            return Directory
+        private FileInfo GetModuleManifest(string fileName) => Directory
                     .GetParent(fileName)?
                     .Parent?
                     .Parent?
                     .GetFiles("*.psd1")
                     .Where(f => Helper.IsModuleManifest(f.FullName))
                     .FirstOrDefault();
-        }
     }
 }

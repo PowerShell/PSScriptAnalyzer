@@ -58,63 +58,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseCompatibleCmdletsName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -363,10 +342,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Checks if the given directory has the reference file
         /// directory must be non-null
         /// </summary>
-        private bool ContainsReferenceFile(string directory)
-        {
-            return File.Exists(Path.Combine(directory, reference + ".json"));
-        }
+        private bool ContainsReferenceFile(string directory) => File.Exists(Path.Combine(directory, reference + ".json"));
 
         /// <summary>
         /// Resets the values in curCmdletCompatibilityMap to true
@@ -491,11 +467,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Check if rule arguments are valid
         /// </summary>
-        private bool RuleParamsValid(Dictionary<string, object> ruleArgs)
-        {
-            return ruleArgs.Keys.All(
+        private bool RuleParamsValid(Dictionary<string, object> ruleArgs) => ruleArgs.Keys.All(
                 key => validParameters.Any(x => x.Equals(key, StringComparison.OrdinalIgnoreCase)));
-        }
 
         /// <summary>
         /// Check if current command is present in the allowlists

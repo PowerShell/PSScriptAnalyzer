@@ -197,16 +197,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return result;
         }
 
-        private CorrectionExtent GetCorrectionsToSetShouldProcessToTrue(ExpressionAst argAst)
-        {
-            return new CorrectionExtent(
+        private CorrectionExtent GetCorrectionsToSetShouldProcessToTrue(ExpressionAst argAst) => new CorrectionExtent(
                 argAst.Extent.StartLineNumber,
                 argAst.Extent.EndLineNumber,
                 argAst.Extent.StartColumnNumber,
                 argAst.Extent.EndColumnNumber,
                 "$true",
                 argAst.Extent.File);
-        }
 
         private CorrectionExtent GetCorrectionToAddParamBlock(
             FunctionDefinitionAst funcDefnAst,
@@ -291,9 +288,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                  correctionExtent.Description);
         }
 
-        private static CorrectionExtent GetCorrectionToAddAttribute(ParamBlockAst paramBlockAst)
-        {
-            return new CorrectionExtent(
+        private static CorrectionExtent GetCorrectionToAddAttribute(ParamBlockAst paramBlockAst) => new CorrectionExtent(
                 paramBlockAst.Extent.StartLineNumber,
                 paramBlockAst.Extent.StartLineNumber,
                 1,
@@ -305,7 +300,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 },
                 null,
                 null);
-        }
         private static CorrectionExtent GetCorrectionToAddShouldProcess(AttributeAst cmdletBindingAttributeAst)
         {
             // 1 for the next position.
@@ -423,89 +417,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private static bool IsParameter(ParameterAst parameterAst, string parameterName)
-        {
-            return parameterAst.Name.VariablePath.UserPath.Equals(
+        private static bool IsParameter(ParameterAst parameterAst, string parameterName) => parameterAst.Name.VariablePath.UserPath.Equals(
                 parameterName,
                 StringComparison.OrdinalIgnoreCase);
-        }
-        private static bool IsWhatIf(ParameterAst parameterAst)
-        {
-            return IsParameter(parameterAst, "whatif");
-        }
+        private static bool IsWhatIf(ParameterAst parameterAst) => IsParameter(parameterAst, "whatif");
 
-        private static bool IsConfirm(ParameterAst parameterAst)
-        {
-            return IsParameter(parameterAst, "confirm");
-        }
+        private static bool IsConfirm(ParameterAst parameterAst) => IsParameter(parameterAst, "confirm");
 
-        private string GetError(string functionName)
-        {
-            return string.Format(
+        private string GetError(string functionName) => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.UseSupportsShouldProcessError,
                 functionName);
-        }
 
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseSupportsShouldProcessCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseSupportsShouldProcessCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseSupportsShouldProcessDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseSupportsShouldProcessDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseSupportsShouldProcessName);
-        }
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
     }
 }

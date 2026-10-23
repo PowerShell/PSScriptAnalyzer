@@ -26,10 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <param name="CmdAst"></param>
         /// <returns></returns>
-        public override bool CommandCondition(CommandAst CmdAst)
-        {
-            return true;
-        }
+        public override bool CommandCondition(CommandAst CmdAst) => true;
 
         /// <summary>
         /// Condition on the parameter that must be satisfied for the error to be raised.
@@ -37,10 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="CmdAst"></param>
         /// <param name="CeAst"></param>
         /// <returns></returns>
-        public override bool ParameterCondition(CommandAst CmdAst, CommandElementAst CeAst)
-        {
-            return CeAst is CommandParameterAst && String.Equals((CeAst as CommandParameterAst).ParameterName, "AllowUnencryptedAuthentication", StringComparison.OrdinalIgnoreCase);
-        }
+        public override bool ParameterCondition(CommandAst CmdAst, CommandElementAst CeAst) => CeAst is CommandParameterAst && String.Equals((CeAst as CommandParameterAst).ParameterName, "AllowUnencryptedAuthentication", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Retrieves the error message
@@ -48,70 +42,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="FileName"></param>
         /// <param name="CmdAst"></param>
         /// <returns></returns>
-        public override string GetError(string fileName, CommandAst cmdAst)
-        {
-            return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationError);
-        }
+        public override string GetError(string fileName, CommandAst cmdAst) => String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationError);
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingAllowUnencryptedAuthenticationName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingAllowUnencryptedAuthenticationName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingAllowUnencryptedAuthenticationDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning or information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// DiagnosticSeverity: Retrieves the severity of the rule of type DiagnosticSeverity: error, warning or information.
         /// </summary>
         /// <returns></returns>
-        public override DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public override DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }

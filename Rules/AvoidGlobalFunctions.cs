@@ -72,38 +72,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         #endregion
 
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsCommonName);
 
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsDescription);
 
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AvoidGlobalFunctionsName);
-        }
 
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
     }
 }

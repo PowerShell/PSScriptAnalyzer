@@ -107,62 +107,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AvoidTrailingWhitespaceName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Information;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Information;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Information;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
     }
 }

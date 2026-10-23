@@ -27,12 +27,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// CmdletSingularNoun: Analyzes scripts to check that all defined cmdlets use singular nouns.
-    /// 
+    ///
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
-    public class CmdletSingularNoun : ConfigurableRule 
+    public class CmdletSingularNoun : ConfigurableRule
     {
         [ConfigurableRuleProperty(defaultValue: new string[] { "Data", "Windows" })]
         public string[] NounAllowList { get; set; }
@@ -101,53 +101,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public override string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseSingularNounsName);
-        }
+        public override string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseSingularNounsName);
 
         /// <summary>
         /// GetName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         private CorrectionExtent GetCorrection(PluralizerProxy pluralizer, IScriptExtent extent, string commandName, string noun)
         {

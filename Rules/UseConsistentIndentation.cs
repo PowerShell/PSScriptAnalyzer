@@ -385,7 +385,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return null;
             }
-            
+
             for (int i = startIndex + 1; i < tokens.Length; i++)
             {
                 switch (tokens[i].Kind)
@@ -397,18 +397,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return tokens[i];
                 }
             }
-            
+
             // We've run out of tokens
             return null;
         }
-        
+
         private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int startIndex)
         {
             if (startIndex >= tokens.Length - 1)
             {
                 return false;
             }
-            
+
             Token nextToken = null;
             for (int i = startIndex + 1; i < tokens.Length; i++)
             {
@@ -427,7 +427,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return false;
                 }
             }
-            
+
             // We've run out of tokens but haven't seen a newline
             return false;
         }
@@ -539,73 +539,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return best;
         }
 
-        private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)
-        {
-            return position1.ColumnNumber == position2.ColumnNumber &&
+        private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2) => position1.ColumnNumber == position2.ColumnNumber &&
                    position1.LineNumber == position2.LineNumber &&
                    position1.File == position2.File;
-        }
 
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationCommonName);
 
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationDescription);
 
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseConsistentIndentationName);
-        }
 
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public override RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
         /// <summary>
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
+        public DiagnosticSeverity GetDiagnosticSeverity() => DiagnosticSeverity.Warning;
 
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public override string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public override SourceType GetSourceType() => SourceType.Builtin;
 
         private void AddViolation(
             Token token,
@@ -666,20 +642,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return corrections;
         }
 
-        private static int ClipNegative(int x)
-        {
-            return x > 0 ? x : 0;
-        }
+        private static int ClipNegative(int x) => x > 0 ? x : 0;
 
-        private int GetIndentation(int indentationLevel)
-        {
+        private int GetIndentation(int indentationLevel) =>
             // todo if condition can be evaluated during rule configuration
-            return indentationLevel * indentationLevelMultiplier;
-        }
+            indentationLevel * indentationLevelMultiplier;
 
-        private string GetIndentationString(int indentationLevel)
-        {
-            return new string(indentationChar, GetIndentation(indentationLevel));
-        }
+        private string GetIndentationString(int indentationLevel) => new string(indentationChar, GetIndentation(indentationLevel));
     }
 }

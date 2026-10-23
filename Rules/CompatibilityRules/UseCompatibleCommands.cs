@@ -33,30 +33,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Get the common name of this rule.
         /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsCommonName);
-        }
+        public override string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsCommonName);
 
         /// <summary>
         /// Get the description of this rule.
         /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsDescription);
-        }
+        public override string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsDescription);
 
         /// <summary>
         /// Get the localized name of this rule.
         /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
+        public override string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.UseCompatibleCommandsName);
-        }
 
         /// <summary>
         /// Create an AST visitor to generate command-compatiblity diagnostics.
@@ -151,10 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            public override IEnumerable<DiagnosticRecord> GetDiagnosticRecords()
-            {
-                return _diagnosticAccumulator;
-            }
+            public override IEnumerable<DiagnosticRecord> GetDiagnosticRecords() => _diagnosticAccumulator;
 
             private void CheckCommandInvocationParameters(
                 CompatibilityProfileData targetProfile,

@@ -101,38 +101,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        public string GetCommonName()
-        {
-             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesCommonName);
 
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesDescription);
 
-        public string GetName()
-        {
-            return string.Format(
+        public string GetName() => string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
                 Strings.AvoidGlobalAliasesName);
-        }
 
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
 
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
     }
 }

@@ -16,9 +16,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptExtent"></param>
         /// <returns></returns>
-        internal static bool ScriptExtendIsWrappedInParenthesis(IScriptExtent scriptExtent)
-        {
-            return scriptExtent.Text.StartsWith("(") && scriptExtent.Text.EndsWith(")");
-        }
+        internal static bool ScriptExtendIsWrappedInParenthesis(IScriptExtent scriptExtent) => scriptExtent.Text.StartsWith("(") && scriptExtent.Text.EndsWith(")");
     }
 }

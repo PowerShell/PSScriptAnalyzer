@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     var attributes = typeAllowList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
-                    String paramName = paramAst.Name.VariablePath.ToString();                    
+                    String paramName = paramAst.Name.VariablePath.ToString();
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
@@ -91,10 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        private AttributeBaseAst GetAttributeOfType(IEnumerable<AttributeBaseAst> attributeAsts, Type type)
-        {
-            return attributeAsts.FirstOrDefault(x => IsAttributeOfType(x, type));
-        }
+        private AttributeBaseAst GetAttributeOfType(IEnumerable<AttributeBaseAst> attributeAsts, Type type) => attributeAsts.FirstOrDefault(x => IsAttributeOfType(x, type));
 
         private bool IsAttributeOfType(AttributeBaseAst attributeAst, Type type)
         {
@@ -116,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var usrExt = usernameAst.Extent;
             var pwdExt = passwordAst.Extent;
             IScriptExtent startExt, endExt;
-            var usrBeforePwd 
+            var usrBeforePwd
                 = (usrExt.StartLineNumber == pwdExt.StartLineNumber
                     && usrExt.StartColumnNumber < pwdExt.StartColumnNumber)
                     || usrExt.StartLineNumber < pwdExt.StartLineNumber;
@@ -147,52 +144,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsernameAndPasswordParamsName);
-        }
+        public string GetName() => string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsernameAndPasswordParamsName);
 
         /// <summary>
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsCommonName);
-        }
+        public string GetCommonName() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsCommonName);
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsDescription);
-        }
+        public string GetDescription() => string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsDescription);
 
         /// <summary>
         /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
+        public SourceType GetSourceType() => SourceType.Builtin;
 
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
+        public RuleSeverity GetSeverity() => RuleSeverity.Error;
 
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
+        public string GetSourceName() => string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
     }
 }
