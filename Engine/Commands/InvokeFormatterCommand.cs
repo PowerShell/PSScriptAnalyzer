@@ -154,19 +154,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             Encoding encoding;
             string scriptDefinition;
-            using (var reader = new StreamReader(path, Encoding.UTF8, true))
+            using (var reader = new StreamReader(path, new UTF8Encoding(false, true), true))
             {
                 scriptDefinition = reader.ReadToEnd();
                 encoding = reader.CurrentEncoding;
             }
 
-            if (inputSettings.RuleArguments.TryGetValue(IndentationRule, out var indentationSettings)
-                && (!settingsWereSpecified || !indentationSettings.ContainsKey("Kind")))
+            bool inferIndentationKind = inputSettings.RuleArguments.TryGetValue(IndentationRule, out var indentationSettings)
+                && (!settingsWereSpecified || !indentationSettings.ContainsKey("Kind"));
+            if (inferIndentationKind)
             {
                 indentationSettings["Kind"] = GetIndentationKind(scriptDefinition);
             }
 
-            string formattedScriptDefinition = Formatter.Format(scriptDefinition, inputSettings, range, this);
+            string formattedScriptDefinition;
+            try
+            {
+                formattedScriptDefinition = Formatter.Format(scriptDefinition, inputSettings, range, this);
+            }
+            finally
+            {
+                if (inferIndentationKind && settingsWereSpecified)
+                {
+                    indentationSettings.Remove("Kind");
+                }
+            }
             if (!String.Equals(scriptDefinition, formattedScriptDefinition, StringComparison.Ordinal)
                 && ShouldProcess(path, "Format file"))
             {
