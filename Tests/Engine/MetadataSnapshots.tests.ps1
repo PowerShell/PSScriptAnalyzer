@@ -214,7 +214,7 @@ New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
     Export-ModuleMember -Function Get-Command
 } | Import-Module -Force
 '@)
-        $lookup = $cache.GetType().GetMethod('GetCommandInfo')
+        $lookup = $cache.GetType().GetMethod('GetCommandInfo', [type[]]@([string], [Nullable[System.Management.Automation.CommandTypes]], [bool], [System.Management.Automation.Language.Ast]))
         $lookup.Invoke($cache, @('Write-Output', $null, $false, $null)) | Should -BeNullOrEmpty
     }
 
@@ -242,7 +242,7 @@ New-Module -Name Microsoft.PowerShell.Core -ScriptBlock {
     }
 
     It "resolves module-qualified command names against the named module only" {
-        $lookup = $cache.GetType().GetMethod('GetCommandInfo')
+        $lookup = $cache.GetType().GetMethod('GetCommandInfo', [type[]]@([string], [Nullable[System.Management.Automation.CommandTypes]], [bool], [System.Management.Automation.Language.Ast]))
         $lookup.Invoke($cache, @('Microsoft.PowerShell.Utility\Write-Output', $null, $false, $null)).Name |
             Should -BeExactly 'Write-Output'
         $lookup.Invoke($cache, @('Microsoft.PowerShell.Management\Write-Output', $null, $false, $null)) |
