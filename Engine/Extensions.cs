@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
         /// <returns></returns>
         public static IEnumerable<string> GetLines(this string text)
         {
-            return text.Split('\n').Select(line => line.TrimEnd('\r'));
+            return text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         }
 
         /// <summary>

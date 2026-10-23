@@ -54,10 +54,22 @@ Describe "Invoke-Formatter Cmdlet" {
             [System.IO.File]::ReadAllBytes($path)[0..1] | Should -Be @(255, 254)
         }
 
+        It 'Formats a file with CR-only line endings' {
+            $path = Join-Path $TestDrive 'cr-only.ps1'
+            $scriptDefinition = "function foo {`r`t`$x=1`r}"
+            $expected = "function foo {`r`t`$x = 1`r}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+        }
+
         It 'Best-effort formats BOM-less files using a legacy encoding' {
             $path = Join-Path $TestDrive 'legacy-encoding.ps1'
-            $scriptDefinition = '$name=''café'''
-            $expected = '$name = ''café'''
+            $cafe = 'caf' + [char]0xE9
+            $scriptDefinition = "`$name='$cafe'"
+            $expected = "`$name = '$cafe'"
             $encoding = [System.Text.Encoding]::GetEncoding(1252)
             [System.IO.File]::WriteAllBytes($path, $encoding.GetBytes($scriptDefinition))
 
