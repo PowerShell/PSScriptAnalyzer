@@ -67,8 +67,9 @@ Describe "Invoke-Formatter Cmdlet" {
 
         It 'Best-effort formats BOM-less files using a legacy encoding' {
             $path = Join-Path $TestDrive 'legacy-encoding.ps1'
-            $scriptDefinition = '$name=''café'''
-            $expected = '$name = ''café'''
+            $cafe = 'caf' + [char]0xE9
+            $scriptDefinition = "`$name='$cafe'"
+            $expected = "`$name = '$cafe'"
             $encoding = [System.Text.Encoding]::GetEncoding(1252)
             [System.IO.File]::WriteAllBytes($path, $encoding.GetBytes($scriptDefinition))
 
