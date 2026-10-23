@@ -1783,18 +1783,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (searchRecursively)
                 {
-                    foreach (string filePath in Directory.GetFiles(path))
+                    foreach (string filePath in Directory.EnumerateFiles(path))
                     {
                         this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
                     }
-                    foreach (string filePath in Directory.GetDirectories(path))
+                    foreach (string filePath in Directory.EnumerateDirectories(path))
                     {
                         this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
                     }
                 }
                 else
                 {
-                    foreach (string filePath in Directory.GetFiles(path))
+                    foreach (string filePath in Directory.EnumerateFiles(path))
                     {
                         this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
                     }
