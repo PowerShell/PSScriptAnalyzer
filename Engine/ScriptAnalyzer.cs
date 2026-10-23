@@ -51,6 +51,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> excludeRegexList;
         private SuppressionPreference _suppressionPreference;
         ModuleDependencyHandler moduleHandler;
+
+        // Set when a whole path is analyzed; null for single-file and script-definition entry points.
+        private DotSourceScope _dotSourceScope;
 #endregion
 
 #region Singleton
@@ -1394,17 +1397,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<DiagnosticRecord> AnalyzePath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
         {
             List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
+            var previousDotSourceScope = _dotSourceScope;
+            _dotSourceScope = DotSourceScope.Build(scriptFilePaths);
 
-            foreach (string scriptFilePath in scriptFilePaths)
+            try
             {
-                if (shouldProcess(scriptFilePath, $"Analyzing file {scriptFilePath}"))
+                foreach (string scriptFilePath in scriptFilePaths)
                 {
-                    // Yield each record in the result so that the caller can pull them one at a time
-                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                    if (shouldProcess(scriptFilePath, $"Analyzing file {scriptFilePath}"))
                     {
-                        yield return diagnosticRecord;
+                        // Yield each record in the result so that the caller can pull them one at a time
+                        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                        {
+                            yield return diagnosticRecord;
+                        }
                     }
                 }
+            }
+            finally
+            {
+                _dotSourceScope = previousDotSourceScope;
             }
         }
 
@@ -1421,24 +1433,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<DiagnosticRecord> AnalyzeAndFixPath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
         {
             List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
+            var previousDotSourceScope = _dotSourceScope;
+            // -Fix rewrites each file before it is analyzed, so the pre-pass trees would be stale.
+            _dotSourceScope = DotSourceScope.Build(scriptFilePaths, retainParses: false);
 
-            foreach (string scriptFilePath in scriptFilePaths)
+            try
             {
-                if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
+                foreach (string scriptFilePath in scriptFilePaths)
                 {
-                    var fileEncoding = GetFileEncoding(scriptFilePath);
-                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out bool fixesWereApplied);
-                    if (fixesWereApplied)
+                    if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
                     {
-                        File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
-                    }
+                        var fileEncoding = GetFileEncoding(scriptFilePath);
+                        var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out bool fixesWereApplied);
+                        if (fixesWereApplied)
+                        {
+                            File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+                        }
 
-                    // Yield each record in the result so that the caller can pull them one at a time
-                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
-                    {
-                        yield return diagnosticRecord;
+                        // Yield each record in the result so that the caller can pull them one at a time
+                        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                        {
+                            yield return diagnosticRecord;
+                        }
                     }
                 }
+            }
+            finally
+            {
+                _dotSourceScope = previousDotSourceScope;
             }
         }
 
@@ -1880,14 +1902,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // Process script
-            try
+            // A whole-path run has already parsed this file to work out dot-source scope; reuse that
+            // tree rather than parsing a second time.
+            if (_dotSourceScope == null || !_dotSourceScope.TryTakeParse(filePath, out scriptAst, out scriptTokens, out errors))
             {
-                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-            }
-            catch (Exception e)
-            {
-                this.outputWriter.WriteWarning(e.ToString());
-                return null;
+                try
+                {
+                    scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+                }
+                catch (Exception e)
+                {
+                    this.outputWriter.WriteWarning(e.ToString());
+                    return null;
+                }
             }
 
             //try parsing again
@@ -2128,6 +2155,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
             if (this.ScriptRules != null)
             {
+                var manifestCache = new ModuleManifestAnalysisCache();
+                var localFunctions = LocalFunctionScope.FromAst(
+                    scriptAst,
+                    _dotSourceScope?.GetFunctionsInScope(filePath),
+                    _dotSourceScope?.GetChildScopeFunctions(filePath));
                 var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
                 if (allowedRules.Any())
                 {
@@ -2139,6 +2171,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        using (localFunctions.Enter())
+                        using (manifestCache.Enter())
                         try
                         {
                             if (helpRule && helpFile)

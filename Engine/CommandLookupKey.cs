@@ -30,7 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             unchecked
             {
                 int hash = 17;
-                hash = hash * 31 + Name.ToUpperInvariant().GetHashCode();
+                hash = hash * 31 + StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
                 hash = hash * 31 + CommandTypes.GetHashCode();
                 return hash;
             }

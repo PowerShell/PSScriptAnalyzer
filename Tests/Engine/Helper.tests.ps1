@@ -39,3 +39,42 @@ Describe "Test Directed Graph" {
         }
     }
 }
+
+Describe "Exported function parameter resolution" {
+    BeforeAll {
+        $null = Invoke-ScriptAnalyzer -ScriptDefinition 'Get-Item -Path .'
+    }
+
+    It "resolves exports from <Script>" -TestCases @(
+        @{ Script = 'Export-ModuleMember -Function Test-Example' }
+        @{ Script = 'Export-ModuleMember -fUnCtIoN Test-Example' }
+        @{ Script = 'Export-ModuleMember -Fun Test-Example' }
+        @{ Script = 'Export-ModuleMember -Function:Test-Example' }
+        @{ Script = 'Export-ModuleMember Test-Example' }
+        @{ Script = 'Export-ModuleMember -Verbose Test-Example' }
+        @{ Script = 'Export-ModuleMember -vb Test-Example' }
+        @{ Script = 'Export-ModuleMember -Alias example -Function Test-Example' }
+        @{ Script = 'Export-ModuleMember -ea Stop -Fun Test-Example' }
+    ) {
+        param($Script)
+
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($Script, [ref]$null, [ref]$null)
+        $exports = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetExportedFunction($ast)
+        $exports.Count | Should -Be 1
+        $exports | Should -Contain 'Test-Example'
+    }
+
+    It "is not cancelled by an unrelated nested declaration of the same name" {
+        $script = "function Outer { function Export-ModuleMember {} }`nExport-ModuleMember -Function Test-Example"
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$null, [ref]$null)
+        $exports = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetExportedFunction($ast)
+        $exports | Should -Contain 'Test-Example'
+    }
+}
+
+Describe "Public API compatibility" {
+    It "keeps Helper.GetCommandInfo(string, CommandTypes?, bool)" {
+        $signature = [Type[]]@([string], [Nullable[System.Management.Automation.CommandTypes]], [bool])
+        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper].GetMethod('GetCommandInfo', $signature) | Should -Not -BeNullOrEmpty
+    }
+}

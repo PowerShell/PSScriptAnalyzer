@@ -2,6 +2,7 @@
 {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param ([string]$c)
+    if ($PSCmdlet.ShouldProcess("target")) { }
 }
 
 function Stop-MyObject{ 
