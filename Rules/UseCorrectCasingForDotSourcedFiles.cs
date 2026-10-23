@@ -83,9 +83,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                // PowerShell folds '\' to '/' in FileSystem paths on Linux and macOS, where System.IO treats
+                // a backslash as an ordinary file name character; resolve against the platform separator.
+                string platformRaw = Path.DirectorySeparatorChar == '\\' ? raw : raw.Replace('\\', '/');
+
                 // The only variable worth expanding is the one that names the script's own
                 // location; anything else means the target cannot be resolved statically.
-                string expanded = raw.Replace("$PSScriptRoot", containingDirectory).Replace("${PSScriptRoot}", containingDirectory);
+                string expanded = platformRaw.Replace("$PSScriptRoot", containingDirectory).Replace("${PSScriptRoot}", containingDirectory);
                 if (expanded.IndexOf('$') >= 0)
                 {
                     continue;
@@ -112,13 +116,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // attempted, so this only reports (without a fix) when a parent directory's casing
                 // also does not match what is on disk.
                 string rawFileName = raw.Substring(raw.LastIndexOfAny(new[] { '/', '\\' }) + 1);
-                bool canCorrectLiteral = string.Equals(rawFileName, Path.GetFileName(fullPath), StringComparison.OrdinalIgnoreCase);
+                string correctedLiteral = null;
+                if (string.Equals(rawFileName, Path.GetFileName(fullPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    correctedLiteral = ReplaceFinalFileName(literalAst.Extent.Text, raw, rawFileName, actualFileName);
+                }
 
                 var correctedFileName = actualFileName;
                 IEnumerable<CorrectionExtent> corrections = Enumerable.Empty<CorrectionExtent>();
-                if (canCorrectLiteral)
+                if (correctedLiteral != null)
                 {
-                    string correctedRaw = raw.Substring(0, raw.Length - rawFileName.Length) + correctedFileName;
                     corrections = new[]
                     {
                         new CorrectionExtent(
@@ -126,7 +133,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             literalAst.Extent.EndLineNumber,
                             literalAst.Extent.StartColumnNumber,
                             literalAst.Extent.EndColumnNumber,
-                            literalAst.Extent.Text.Replace(rawFileName, correctedFileName),
+                            correctedLiteral,
                             literalAst.Extent.File,
                             GetDescription()),
                     };
@@ -165,14 +172,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             try
             {
+                // An exact match always wins over case-insensitive candidates, which on a case-sensitive
+                // file system are different files. Only a single unambiguous candidate is reported;
+                // with several, any suggestion could change which script is loaded.
+                string candidate = null;
+                int candidates = 0;
                 foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
                 {
                     string entryName = Path.GetFileName(entry);
-                    if (string.Equals(entryName, fileName, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(entryName, fileName, StringComparison.Ordinal))
                     {
                         actualFileName = entryName;
                         return true;
                     }
+                    if (string.Equals(entryName, fileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        candidate = entryName;
+                        candidates++;
+                    }
+                }
+
+                if (candidates == 1)
+                {
+                    actualFileName = candidate;
+                    return true;
                 }
             }
             catch (IOException)
@@ -183,6 +206,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Replaces only the final file name of the path inside the original source literal, keeping its
+        /// quoting and prefix. Returns null when the literal's text does not contain the path verbatim
+        /// (for example because of escape sequences), as the span cannot be identified safely then.
+        /// </summary>
+        private static string ReplaceFinalFileName(string literalText, string raw, string rawFileName, string actualFileName)
+        {
+            int pathStart = literalText.IndexOf(raw, StringComparison.Ordinal);
+            if (pathStart < 0)
+            {
+                return null;
+            }
+
+            int nameStart = pathStart + raw.Length - rawFileName.Length;
+            return literalText.Substring(0, nameStart) + actualFileName + literalText.Substring(nameStart + rawFileName.Length);
         }
 
         /// <summary>

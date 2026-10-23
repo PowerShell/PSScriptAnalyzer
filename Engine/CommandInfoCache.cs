@@ -88,6 +88,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// definition is actually in lexical scope at this call site rather than merely present in the file.
         /// </param>
         /// <returns></returns>
+        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache)
+        {
+            return GetCommandInfo(commandName, commandTypes, bypassCache, null);
+        }
+
+        /// <summary>
+        /// Retrieve a command info object about a command.
+        /// </summary>
+        /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
+        /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
+        /// <param name="bypassCache">When needed due to runspace affinity problems of some PowerShell objects.</param>
+        /// <param name="callSite">
+        /// The Ast of the command being resolved, used to check whether a same-named local function
+        /// definition is actually in lexical scope at this call site rather than merely present in the file.
+        /// </param>
+        /// <returns></returns>
         public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false, Ast callSite = null)
         {
             try
@@ -110,11 +126,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // A name the analyzed script defines itself is not the command of the same name that happens
             // to be installed here; resolving it would validate the call against the wrong definition.
+            // PowerShell still resolves aliases before functions, so an alias of the same name keeps winning.
             if (LocalFunctionScope.Current?.IsDefinedInScript(commandName, callSite) == true)
             {
-                return null;
+                if (commandTypes.HasValue && (commandTypes.Value & CommandTypes.Alias) == 0)
+                {
+                    return null;
+                }
+                return LookupCommandInfo(commandName, CommandTypes.Alias, bypassCache);
             }
 
+            return LookupCommandInfo(commandName, commandTypes, bypassCache);
+        }
+
+        private CommandInfo LookupCommandInfo(string commandName, CommandTypes? commandTypes, bool bypassCache)
+        {
             var key = new CommandLookupKey(commandName, commandTypes);
             if (bypassCache)
             {

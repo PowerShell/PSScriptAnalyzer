@@ -2,11 +2,19 @@
 # Licensed under the MIT License.
 
 Describe "UseCorrectCasingForDotSourcedFiles" {
-    # Backslash is only a path separator on Windows; on other platforms it is just a
-    # character in the file name, so a backslash-separated path never resolves to a file
-    # and is therefore excluded from the case-mismatch scenarios there. This must be evaluated
-    # at discovery time (outside BeforeAll) since -TestCases is bound during discovery.
-    $separatorTestCases = if ($IsWindows) { @(@{ Separator = '\' }, @{ Separator = '/' }) } else { @(@{ Separator = '/' }) }
+    # PowerShell folds '\' to '/' for FileSystem paths on Linux and macOS, so a backslash-separated
+    # path is valid and must be checked on every platform. Evaluated at discovery time
+    # since -TestCases is bound during discovery.
+    $separatorTestCases = @(@{ Separator = '\' }, @{ Separator = '/' })
+    $caseSensitive = & {
+        $probeDirectory = Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName())
+        $null = New-Item -ItemType Directory -Path $probeDirectory
+        try {
+            $null = New-Item -ItemType File -Path (Join-Path $probeDirectory 'probe.txt')
+            -not (Test-Path -LiteralPath (Join-Path $probeDirectory 'PROBE.TXT'))
+        }
+        finally { Remove-Item -LiteralPath $probeDirectory -Recurse -Force }
+    }
 
     BeforeAll {
         $settings = @{
@@ -116,5 +124,57 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
         $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent '$name = "HELPERS"; . "$PSScriptRoot\$name.ps1"'
 
         Invoke-ScriptAnalyzer -Path $callerPath -Settings $settings | Should -BeNullOrEmpty
+    }
+
+    Context "Correction span" {
+        It "only corrects the final file name, not a directory that contains the same text" {
+            $root = Join-Path $TestDrive ([System.IO.Path]::GetRandomFileName())
+            $null = New-Item -Path (Join-Path $root 'HELPERS.ps1.d') -ItemType Directory -Force
+            Set-Content -Path (Join-Path $root 'HELPERS.ps1.d/Helpers.ps1') -Value 'function Get-Something { }'
+            $callerPath = Join-Path $root 'Caller.ps1'
+            Set-Content -Path $callerPath -Value '. "$PSScriptRoot/HELPERS.ps1.d/HELPERS.ps1"'
+
+            $diagnostics = @(Invoke-ScriptAnalyzer -Path $callerPath -Settings $settings)
+
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly '"$PSScriptRoot/HELPERS.ps1.d/Helpers.ps1"'
+        }
+
+        It "offers no correction when escaping prevents locating the file name span" {
+            $callerPath = NewWorkload -FileNames @('Helpers.ps1') -CallerContent '. "$PSScriptRoot/HELP`ERS.ps1"'
+
+            $diagnostics = @(Invoke-ScriptAnalyzer -Path $callerPath -Settings $settings)
+
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].SuggestedCorrections | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Files that differ only by case on a case-sensitive file system" {
+        It "does not flag an exact match when a differently-cased sibling is enumerated first" -Skip:(-not $caseSensitive) {
+            $root = Join-Path $TestDrive ([System.IO.Path]::GetRandomFileName())
+            $null = New-Item -Path $root -ItemType Directory -Force
+            foreach ($name in 'Helpers.ps1', 'helpers.ps1') {
+                Set-Content -LiteralPath (Join-Path $root $name) -Value 'function Get-Something { }'
+            }
+            foreach ($reference in 'Helpers.ps1', 'helpers.ps1') {
+                $callerPath = Join-Path $root 'Caller.ps1'
+                Set-Content -LiteralPath $callerPath -Value ". `$PSScriptRoot/$reference"
+                Invoke-ScriptAnalyzer -Path $callerPath -Settings $settings | Should -BeNullOrEmpty
+            }
+        }
+
+        It "does not guess when several differently-cased files could match" -Skip:(-not $caseSensitive) {
+            $root = Join-Path $TestDrive ([System.IO.Path]::GetRandomFileName())
+            $null = New-Item -Path $root -ItemType Directory -Force
+            foreach ($name in 'Helpers.ps1', 'helpers.ps1') {
+                Set-Content -LiteralPath (Join-Path $root $name) -Value 'function Get-Something { }'
+            }
+            $callerPath = Join-Path $root 'Caller.ps1'
+            Set-Content -LiteralPath $callerPath -Value '. $PSScriptRoot/HELPERS.ps1'
+
+            $diagnostics = @(Invoke-ScriptAnalyzer -Path $callerPath -Settings $settings)
+            @($diagnostics | ? { $_.SuggestedCorrections }) | Should -BeNullOrEmpty
+        }
     }
 }

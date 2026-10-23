@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -19,22 +20,68 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly Dictionary<string, List<FunctionDefinitionAst>> definitionsByName;
         private readonly HashSet<string> alsoInScopeNames;
         private readonly HashSet<string> privateInScopeNames;
+        private readonly List<KeyValuePair<Ast, HashSet<string>>> childScopeNames;
 
         private LocalFunctionScope(
             Dictionary<string, List<FunctionDefinitionAst>> definitionsByName,
             HashSet<string> alsoInScopeNames,
-            HashSet<string> privateInScopeNames)
+            HashSet<string> privateInScopeNames,
+            List<KeyValuePair<Ast, HashSet<string>>> childScopeNames)
         {
             this.definitionsByName = definitionsByName;
             this.alsoInScopeNames = alsoInScopeNames;
             this.privateInScopeNames = privateInScopeNames;
+            this.childScopeNames = childScopeNames;
         }
 
-        internal static LocalFunctionScope FromAst(Ast ast) => FromAst(ast, null);
+        internal static LocalFunctionScope FromAst(Ast ast) => FromAst(ast, null, null);
 
-        internal static LocalFunctionScope FromAst(Ast ast, IEnumerable<string> alsoInScope)
+        internal static LocalFunctionScope FromAst(Ast ast, IEnumerable<string> alsoInScope) => FromAst(ast, alsoInScope, null);
+
+        // Scope containers are numbered in document order so that a position recorded against one parse
+        // of a file can be found again in a later parse of the same file.
+        internal static int GetScopeOrdinal(Ast root, Ast container)
+        {
+            int ordinal = 0;
+            foreach (Ast node in root.FindAll(IsScopeCandidate, true))
+            {
+                if (ReferenceEquals(node, container))
+                {
+                    return ordinal;
+                }
+                ordinal++;
+            }
+            return -1;
+        }
+
+        private static bool IsScopeCandidate(Ast node) => node is FunctionDefinitionAst || node is ScriptBlockAst;
+
+        /// <summary>The owning child scope of a dot-source command, or null when it runs at file scope.</summary>
+        internal static Ast GetOwningScope(Ast node) => GetContainingScope(node);
+
+        internal struct ChildScopeNames
+        {
+            internal int ContainerOrdinal;
+            internal HashSet<string> Names;
+        }
+
+        internal static LocalFunctionScope FromAst(
+            Ast ast, IEnumerable<string> alsoInScope, IEnumerable<ChildScopeNames> childScopes)
         {
             var definitionsByName = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
+            var childScopeNames = new List<KeyValuePair<Ast, HashSet<string>>>();
+            if (ast != null && childScopes != null)
+            {
+                var candidates = ast.FindAll(IsScopeCandidate, true).ToList();
+                foreach (var childScope in childScopes)
+                {
+                    if (childScope.ContainerOrdinal >= 0 && childScope.ContainerOrdinal < candidates.Count)
+                    {
+                        childScopeNames.Add(new KeyValuePair<Ast, HashSet<string>>(
+                            candidates[childScope.ContainerOrdinal], childScope.Names));
+                    }
+                }
+            }
             if (ast != null)
             {
                 foreach (FunctionDefinitionAst function in ast.FindAll(node => node is FunctionDefinitionAst, true))
@@ -68,12 +115,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
             }
-            return new LocalFunctionScope(definitionsByName, alsoInScopeNames, privateInScopeNames);
+            return new LocalFunctionScope(definitionsByName, alsoInScopeNames, privateInScopeNames, childScopeNames);
+        }
+
+        private static bool IsWithin(Ast node, Ast container)
+        {
+            for (Ast current = node; current != null; current = current.Parent)
+            {
+                if (ReferenceEquals(current, container))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // A script block kept in a variable, hashtable, array or return value is not executed here.
+        // Blocks passed to commands or methods are assumed to run in the enclosing scope.
+        private static bool IsStoredScriptBlock(ScriptBlockExpressionAst expression)
+        {
+            Ast parent = expression.Parent;
+            while (parent is CommandExpressionAst || parent is PipelineAst || parent is ParenExpressionAst)
+            {
+                parent = parent.Parent;
+            }
+            return parent is AssignmentStatementAst || parent is HashtableAst
+                || parent is ArrayLiteralAst || parent is ArrayExpressionAst || parent is ReturnStatementAst;
         }
 
         /// <summary>
-        /// Returns the enclosing function or directly invoked child script block, or null for file scope.
-        /// Dot-sourced blocks execute in the caller's scope rather than introducing a child scope.
+        /// Returns the enclosing function, directly invoked child script block or stored script block,
+        /// or null for file scope. Dot-sourced blocks execute in the caller's scope rather than
+        /// introducing a child scope.
         /// </summary>
         private static Ast GetContainingScope(Ast node)
         {
@@ -83,11 +156,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     return enclosingFunction;
                 }
-                if (parent is ScriptBlockAst block && block.Parent is ScriptBlockExpressionAst expression
-                    && expression.Parent is CommandAst invocation && invocation.InvocationOperator == TokenKind.Ampersand
-                    && ReferenceEquals(invocation.CommandElements[0], expression))
+                if (parent is ScriptBlockAst block && block.Parent is ScriptBlockExpressionAst expression)
                 {
-                    return block;
+                    if (expression.Parent is CommandAst invocation && invocation.InvocationOperator == TokenKind.Ampersand
+                        && ReferenceEquals(invocation.CommandElements[0], expression))
+                    {
+                        return block;
+                    }
+                    if (IsStoredScriptBlock(expression))
+                    {
+                        return block;
+                    }
                 }
             }
             return null;
@@ -139,6 +218,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (alsoInScopeNames.Contains(commandName))
             {
                 return true;
+            }
+
+            foreach (var childScope in childScopeNames)
+            {
+                if (childScope.Value.Contains(commandName) && (callSite == null || IsWithin(callSite, childScope.Key)))
+                {
+                    return true;
+                }
             }
 
             if (privateInScopeNames.Contains(commandName)

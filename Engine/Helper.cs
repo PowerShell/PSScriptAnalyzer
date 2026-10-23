@@ -418,7 +418,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Export-ModuleMember has no dynamic parameters. Resolve names from its static
             // metadata instead of ResolveParameter(), which re-enters the cached command's
             // runspace and races with command lookups and metadata queries on other rule threads.
-            var parameters = GetCommandParameterSnapshot("export-modulemember", CommandTypes.Cmdlet);
+            var parameters = GetCommandParameterSnapshot("Microsoft.PowerShell.Core\\Export-ModuleMember", CommandTypes.Cmdlet);
             if (parameters == null)
             {
                 return exportedFunctions;
@@ -692,6 +692,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="commandType"></param>
         /// <param name="bypassCache"></param>
         /// <returns></returns>
+        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType, bool bypassCache)
+        {
+            return GetCommandInfo(name, commandType, bypassCache, null);
+        }
+
+        /// <summary>
+        /// Given a command's name, checks whether it exists, taking the call site into account.
+        /// </summary>
         public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null, bool bypassCache = false, Ast callSite = null)
         {
             return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType, bypassCache: bypassCache, callSite: callSite);

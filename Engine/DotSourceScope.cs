@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation.Language;
@@ -28,13 +29,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private readonly Dictionary<string, HashSet<string>> namesByFile;
         private readonly Dictionary<string, ParsedFile> parsedByFile;
+        private readonly Dictionary<string, List<LocalFunctionScope.ChildScopeNames>> childScopesByFile;
+        private readonly PathCanonicalizer paths;
 
         private DotSourceScope(
             Dictionary<string, HashSet<string>> namesByFile,
-            Dictionary<string, ParsedFile> parsedByFile)
+            Dictionary<string, ParsedFile> parsedByFile,
+            Dictionary<string, List<LocalFunctionScope.ChildScopeNames>> childScopesByFile,
+            PathCanonicalizer paths)
         {
             this.namesByFile = namesByFile;
             this.parsedByFile = parsedByFile;
+            this.childScopesByFile = childScopesByFile;
+            this.paths = paths;
         }
 
         private struct ParsedFile
@@ -46,11 +53,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         internal IEnumerable<string> GetFunctionsInScope(string filePath)
         {
-            if (filePath != null && namesByFile.TryGetValue(Normalize(filePath), out var names))
+            if (filePath != null && namesByFile.TryGetValue(paths.Normalize(filePath), out var names))
             {
                 return names;
             }
             return Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Functions that a dot-source inside a function or other child scope makes visible, but only to
+        /// that scope: loading a file there does not export its definitions to the rest of the file.
+        /// </summary>
+        internal IEnumerable<LocalFunctionScope.ChildScopeNames> GetChildScopeFunctions(string filePath)
+        {
+            if (filePath != null && childScopesByFile.TryGetValue(paths.Normalize(filePath), out var scopes))
+            {
+                return scopes;
+            }
+            return null;
         }
 
         /// <summary>
@@ -60,7 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         internal bool TryTakeParse(string filePath, out ScriptBlockAst ast, out Token[] tokens, out ParseError[] errors)
         {
-            string normalized = filePath != null ? Normalize(filePath) : null;
+            string normalized = filePath != null ? paths.Normalize(filePath) : null;
             if (normalized != null && parsedByFile.TryGetValue(normalized, out var parsed))
             {
                 parsedByFile.Remove(normalized);
@@ -82,19 +102,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </param>
         internal static DotSourceScope Build(IReadOnlyList<string> filePaths, bool retainParses = true)
         {
+            var paths = new PathCanonicalizer();
             var known = new HashSet<string>(PathComparer);
             foreach (var path in filePaths)
             {
-                known.Add(Normalize(path));
+                known.Add(paths.Normalize(path));
             }
 
             var definitions = new Dictionary<string, HashSet<string>>(PathComparer);
             var parsed = new Dictionary<string, ParsedFile>(PathComparer);
             var dotSourced = new Dictionary<string, List<string>>(PathComparer);
+            var childDotSourced = new Dictionary<string, List<KeyValuePair<int, string>>>(PathComparer);
 
             foreach (var path in filePaths)
             {
-                var normalized = Normalize(path);
+                var normalized = paths.Normalize(path);
                 var functions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 definitions[normalized] = functions;
 
@@ -129,16 +151,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 foreach (CommandAst command in ast.FindAll(node => node is CommandAst, true))
                 {
-                    var target = ResolveDotSourceTarget(command, path);
-                    if (target != null && known.Contains(target))
+                    var target = ResolveDotSourceTarget(command, path, paths);
+                    if (target == null || !known.Contains(target))
                     {
-                        if (!dotSourced.TryGetValue(normalized, out var targets))
-                        {
-                            targets = new List<string>();
-                            dotSourced[normalized] = targets;
-                        }
-                        targets.Add(target);
+                        continue;
                     }
+
+                    // Dot-sourcing inside a function or other child scope loads the file into that scope,
+                    // so its definitions must not become visible to the rest of the file or its group.
+                    var owningScope = LocalFunctionScope.GetOwningScope(command);
+                    if (owningScope != null)
+                    {
+                        int ordinal = LocalFunctionScope.GetScopeOrdinal(ast, owningScope);
+                        if (ordinal >= 0)
+                        {
+                            if (!childDotSourced.TryGetValue(normalized, out var childTargets))
+                            {
+                                childTargets = new List<KeyValuePair<int, string>>();
+                                childDotSourced[normalized] = childTargets;
+                            }
+                            childTargets.Add(new KeyValuePair<int, string>(ordinal, target));
+                        }
+                        continue;
+                    }
+
+                    if (!dotSourced.TryGetValue(normalized, out var targets))
+                    {
+                        targets = new List<string>();
+                        dotSourced[normalized] = targets;
+                    }
+                    targets.Add(target);
                 }
             }
 
@@ -174,7 +216,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            return new DotSourceScope(namesByFile, parsed);
+            var childScopesByFile = new Dictionary<string, List<LocalFunctionScope.ChildScopeNames>>(PathComparer);
+            foreach (var entry in childDotSourced)
+            {
+                var scopes = new List<LocalFunctionScope.ChildScopeNames>();
+                foreach (var edge in entry.Value)
+                {
+                    var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var member in Closure(edge.Value, dotSourced))
+                    {
+                        if (definitions.TryGetValue(member, out var defined))
+                        {
+                            names.UnionWith(defined);
+                        }
+                    }
+                    scopes.Add(new LocalFunctionScope.ChildScopeNames { ContainerOrdinal = edge.Key, Names = names });
+                }
+                childScopesByFile[entry.Key] = scopes;
+            }
+
+            return new DotSourceScope(namesByFile, parsed, childScopesByFile, paths);
         }
 
         /// <summary>
@@ -208,7 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return reached;
         }
 
-        private static string ResolveDotSourceTarget(CommandAst command, string containingFile)
+        private static string ResolveDotSourceTarget(CommandAst command, string containingFile, PathCanonicalizer paths)
         {
             if (command.InvocationOperator != TokenKind.Dot || command.CommandElements.Count == 0)
             {
@@ -227,6 +288,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var directory = Path.GetDirectoryName(Path.GetFullPath(containingFile));
+            // PowerShell folds '\' to '/' in FileSystem paths on Linux and macOS, where System.IO does not.
+            raw = PathCanonicalizer.ToPlatformSeparators(raw);
             // The only variables worth expanding are the ones that name the script's own location.
             raw = raw.Replace("$PSScriptRoot", directory).Replace("${PSScriptRoot}", directory);
             if (raw.IndexOf('$') >= 0)
@@ -236,7 +299,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             try
             {
-                return Normalize(Path.IsPathRooted(raw) ? raw : Path.Combine(directory, raw));
+                return paths.Normalize(Path.IsPathRooted(raw) ? raw : Path.Combine(directory, raw));
             }
             catch
             {
@@ -244,62 +307,106 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private static string Normalize(string path)
-        {
-            try
-            {
-                return CanonicalizeCase(Path.GetFullPath(path));
-            }
-            catch
-            {
-                return path;
-            }
-        }
-
         /// <summary>
-        /// Resolves the file name segment of <paramref name="fullPath"/> to its actual on-disk casing,
-        /// so that dictionary keys reflect what the real filesystem considers "the same file" rather than
-        /// a guess about the platform's case sensitivity. An exact (ordinal) match against a directory
-        /// entry always wins, so two files that a case-sensitive filesystem treats as distinct (such as
-        /// 'Lib.ps1' and 'lib.ps1' both existing side by side) keep distinct keys. Only when the requested
-        /// name has no exact match - e.g. a dot-source target typed with different case than the file it
-        /// refers to - does this fall back to a case-insensitive match, folding it onto the real file's key.
-        /// This is correct on any platform or mount, including a case-sensitive volume on an otherwise
-        /// case-insensitive OS such as macOS, without assuming a single case-sensitivity rule per OS.
+        /// Canonicalizes paths against the real file system and remembers directory listings and results,
+        /// so a run enumerates each directory once rather than once per path it normalizes.
         /// </summary>
-        private static string CanonicalizeCase(string fullPath)
+        private sealed class PathCanonicalizer
         {
-            string directory = Path.GetDirectoryName(fullPath);
-            string fileName = Path.GetFileName(fullPath);
-            if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName) || !Directory.Exists(directory))
+            private sealed class DirectoryListing
             {
-                return fullPath;
+                internal readonly HashSet<string> Exact = new HashSet<string>(StringComparer.Ordinal);
+                internal readonly Dictionary<string, string> FirstIgnoringCase =
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
-            string caseInsensitiveMatch = null;
-            try
+            private readonly ConcurrentDictionary<string, DirectoryListing> listings =
+                new ConcurrentDictionary<string, DirectoryListing>(StringComparer.Ordinal);
+            private readonly ConcurrentDictionary<string, string> canonical =
+                new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+
+            internal static string ToPlatformSeparators(string path) =>
+                Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
+
+            internal string Normalize(string path)
             {
-                foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
+                if (canonical.TryGetValue(path, out var cached))
                 {
-                    string entryName = Path.GetFileName(entry);
-                    if (string.Equals(entryName, fileName, StringComparison.Ordinal))
+                    return cached;
+                }
+
+                string result;
+                try
+                {
+                    result = CanonicalizeCase(Path.GetFullPath(ToPlatformSeparators(path)));
+                }
+                catch
+                {
+                    result = path;
+                }
+                canonical[path] = result;
+                return result;
+            }
+
+            /// <summary>
+            /// Resolves the file name segment of <paramref name="fullPath"/> to its actual on-disk casing,
+            /// so that dictionary keys reflect what the real filesystem considers "the same file" rather than
+            /// a guess about the platform's case sensitivity. An exact (ordinal) match against a directory
+            /// entry always wins, so two files that a case-sensitive filesystem treats as distinct (such as
+            /// 'Lib.ps1' and 'lib.ps1' both existing side by side) keep distinct keys. Only when the requested
+            /// name has no exact match - e.g. a dot-source target typed with different case than the file it
+            /// refers to - does this fall back to a case-insensitive match, folding it onto the real file's key.
+            /// A mismatched reference is deliberately treated as the file it names: whether it would load
+            /// depends on the file system, so UseCorrectCasingForDotSourcedFiles reports it instead.
+            /// </summary>
+            private string CanonicalizeCase(string fullPath)
+            {
+                string directory = Path.GetDirectoryName(fullPath);
+                string fileName = Path.GetFileName(fullPath);
+                if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+                {
+                    return fullPath;
+                }
+
+                var listing = listings.GetOrAdd(directory, ListDirectory);
+                if (listing == null || listing.Exact.Contains(fileName))
+                {
+                    return fullPath;
+                }
+
+                return listing.FirstIgnoringCase.TryGetValue(fileName, out var match)
+                    ? Path.Combine(directory, match)
+                    : fullPath;
+            }
+
+            private static DirectoryListing ListDirectory(string directory)
+            {
+                if (!Directory.Exists(directory))
+                {
+                    return null;
+                }
+
+                var listing = new DirectoryListing();
+                try
+                {
+                    foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
                     {
-                        return Path.Combine(directory, entryName);
-                    }
-                    if (caseInsensitiveMatch == null && string.Equals(entryName, fileName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        caseInsensitiveMatch = entryName;
+                        string entryName = Path.GetFileName(entry);
+                        listing.Exact.Add(entryName);
+                        if (!listing.FirstIgnoringCase.ContainsKey(entryName))
+                        {
+                            listing.FirstIgnoringCase[entryName] = entryName;
+                        }
                     }
                 }
+                catch (IOException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+                return listing;
             }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
-            {
-            }
-
-            return caseInsensitiveMatch != null ? Path.Combine(directory, caseInsensitiveMatch) : fullPath;
         }
     }
 }
