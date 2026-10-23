@@ -229,20 +229,14 @@ Describe 'Cmdlet parameter help' {
 			foreach($parameterAttribute in $parameter.Attributes) {
 				if ($parameterAttribute.ValueFromPipeline -eq $null) { continue }
 
-				$parameterHelpPipelineInput = if ($parameterHelp.pipelineInput -eq 'True (ByPropertyName, ByValue)') {
-					$true
-				}
-				else {
-					[System.Boolean]::Parse($parameterHelp.pipelineInput)
-				}
+				$parameterHelpPipelineInput = $parameterHelp.pipelineInput -eq 'True' -or $parameterHelp.pipelineInput -match 'ByPropertyName'
 
 				$parameterHelpPipelineInput | Should -Be $parameterAttribute.ValueFromPipelineByPropertyName `
 					-Because "Parameter $parameterName of command $CommandName and parameter set $($parameterAttribute.ParameterSetName) has correct ValueFromPipelineByPropertyName attribute"
 
-				if ($parameterHelp.pipelineInput -eq 'True (ByPropertyName, ByValue)') {
-					$parameterAttribute.ValueFromPipeline | Should -BeTrue `
-						-Because "Parameter $parameterName of command $CommandName and parameter set $($parameterAttribute.ParameterSetName) has correct ValueFromPipeline attribute"
-				}
+				$parameterHelpPipelineInput = $parameterHelp.pipelineInput -match 'ByValue'
+				$parameterHelpPipelineInput | Should -Be $parameterAttribute.ValueFromPipeline `
+					-Because "Parameter $parameterName of command $CommandName and parameter set $($parameterAttribute.ParameterSetName) has correct ValueFromPipeline attribute"
 			}
 		}
 

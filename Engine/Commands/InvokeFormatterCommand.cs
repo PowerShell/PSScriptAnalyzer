@@ -2,8 +2,14 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Management.Automation;
+using System.Management.Automation.Language;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -12,20 +18,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// <summary>
     /// A cmdlet to format a PowerShell script text.
     /// </summary>
-    [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
+    [Cmdlet(VerbsLifecycle.Invoke, "Formatter", DefaultParameterSetName = ParameterSet_ScriptDefinition, SupportsShouldProcess = true)]
     [OutputType(typeof(string))]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
+        private const string ParameterSet_ScriptDefinition = nameof(ScriptDefinition);
+        private const string ParameterSet_Path = nameof(Path);
+        private const string IndentationRule = "PSUseConsistentIndentation";
         private const string defaultSettingsPreset = "CodeFormatting";
         private Settings inputSettings;
         private Range range;
+        private bool settingsWereSpecified;
+
+        /// <summary>
+        /// The path to the file to format in place.
+        /// </summary>
+        [Parameter(Mandatory = true, ParameterSetName = ParameterSet_Path, ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ValidateNotNull]
+        [Alias("PSPath")]
+        public string Path { get; set; }
 
         /// <summary>
         /// The script text to be formated.
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 1)]
+        [ParameterAttribute(Mandatory = true, ParameterSetName = ParameterSet_ScriptDefinition, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 1)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
@@ -80,6 +98,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 #endif
 
             this.range = Range == null ? null : new Range(Range[0], Range[1], Range[2], Range[3]);
+            settingsWereSpecified = MyInvocation.BoundParameters.ContainsKey(nameof(Settings));
             try
             {
                 inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this, GetResolvedProviderPathFromPSPath);
@@ -108,9 +127,184 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         protected override void ProcessRecord()
         {
             // todo add tests to check range formatting
+            if (ParameterSetName == ParameterSet_Path)
+            {
+                ProviderInfo provider;
+                var resolvedPaths = GetResolvedProviderPathFromPSPath(Path, out provider);
+                if (!String.Equals(provider.Name, "FileSystem", StringComparison.OrdinalIgnoreCase))
+                {
+                    ThrowTerminatingError(new ErrorRecord(
+                        new ArgumentException("Path must resolve to a file system path.", nameof(Path)),
+                        "INVALID_PATH_PROVIDER",
+                        ErrorCategory.InvalidArgument,
+                        Path));
+                }
+
+                foreach (var path in resolvedPaths)
+                {
+                    FormatFile(path);
+                }
+            }
+            else
+            {
+                string formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
+                WriteObject(formattedScriptDefinition);
+            }
+        }
+
+        private void FormatFile(string path)
+        {
+            Encoding encoding;
+            string scriptDefinition;
+            try
+            {
+                using (var reader = new StreamReader(path, new UTF8Encoding(false, true), true))
+                {
+                    scriptDefinition = reader.ReadToEnd();
+                    encoding = reader.CurrentEncoding;
+                }
+            }
+            catch (DecoderFallbackException) when (!HasByteOrderMark(path))
+            {
+                encoding = GetLegacyFallbackEncoding();
+                using (var reader = new StreamReader(path, encoding, true))
+                {
+                    scriptDefinition = reader.ReadToEnd();
+                    encoding = reader.CurrentEncoding;
+                }
+            }
+
+            bool inferIndentationKind = inputSettings.RuleArguments.TryGetValue(IndentationRule, out var indentationSettings)
+                && (!settingsWereSpecified || !indentationSettings.ContainsKey("Kind"));
+            if (inferIndentationKind)
+            {
+                indentationSettings["Kind"] = GetIndentationKind(scriptDefinition);
+            }
+
             string formattedScriptDefinition;
-            formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
-            this.WriteObject(formattedScriptDefinition);
+            try
+            {
+                formattedScriptDefinition = Formatter.Format(scriptDefinition, inputSettings, range, this);
+            }
+            finally
+            {
+                if (inferIndentationKind && settingsWereSpecified)
+                {
+                    indentationSettings.Remove("Kind");
+                }
+            }
+            if (!String.Equals(scriptDefinition, formattedScriptDefinition, StringComparison.Ordinal)
+                && ShouldProcess(path, "Format file"))
+            {
+                File.WriteAllText(path, formattedScriptDefinition, encoding);
+            }
+
+            WriteObject(formattedScriptDefinition);
+        }
+
+        private static bool HasByteOrderMark(string path)
+        {
+            using (var stream = File.OpenRead(path))
+            {
+                int firstByte = stream.ReadByte();
+                int secondByte = stream.ReadByte();
+                int thirdByte = stream.ReadByte();
+                int fourthByte = stream.ReadByte();
+
+                return firstByte == 0xEF && secondByte == 0xBB && thirdByte == 0xBF
+                    || firstByte == 0xFF && secondByte == 0xFE
+                    || firstByte == 0xFE && secondByte == 0xFF
+                    || firstByte == 0x00 && secondByte == 0x00 && thirdByte == 0xFE && fourthByte == 0xFF
+                    || firstByte == 0xFF && secondByte == 0xFE && thirdByte == 0x00 && fourthByte == 0x00;
+            }
+        }
+
+        private static Encoding GetLegacyFallbackEncoding()
+        {
+            if (Encoding.Default.CodePage != 65001)
+            {
+                return Encoding.GetEncoding(
+                    Encoding.Default.CodePage,
+                    EncoderFallback.ExceptionFallback,
+                    DecoderFallback.ExceptionFallback);
+            }
+
+#if CORECLR
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
+            return Encoding.GetEncoding(1252, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+        }
+
+        private static string GetIndentationKind(string scriptDefinition)
+        {
+            int tabIndentedLines = 0;
+            int spaceIndentedLines = 0;
+            string firstIndentationKind = "space";
+            bool foundIndentation = false;
+            string[] lines = scriptDefinition.GetLines().ToArray();
+            Parser.ParseInput(scriptDefinition, out Token[] tokens, out ParseError[] errors);
+            var countedLines = new HashSet<int>();
+
+            foreach (var token in tokens)
+            {
+                if (token.Kind == TokenKind.Comment
+                    || token.Kind == TokenKind.NewLine
+                    || token.Kind == TokenKind.LineContinuation
+                    || token.Kind == TokenKind.EndOfInput)
+                {
+                    continue;
+                }
+
+                int lineNumber = token.Extent.StartLineNumber;
+                if (!countedLines.Add(lineNumber))
+                {
+                    continue;
+                }
+
+                string line = lines[lineNumber - 1].TrimEnd('\r');
+                int indentationLength = token.Extent.StartColumnNumber - 1;
+                if (indentationLength == 0 || indentationLength > line.Length)
+                {
+                    continue;
+                }
+
+                char indentationCharacter = line[0];
+                bool isIndentedCode = true;
+                for (int i = 0; i < indentationLength; i++)
+                {
+                    if (line[i] != ' ' && line[i] != '\t')
+                    {
+                        isIndentedCode = false;
+                        break;
+                    }
+                }
+
+                if (!isIndentedCode)
+                {
+                    continue;
+                }
+
+                if (!foundIndentation)
+                {
+                    firstIndentationKind = indentationCharacter == '\t' ? "tab" : "space";
+                    foundIndentation = true;
+                }
+
+                if (indentationCharacter == '\t')
+                {
+                    tabIndentedLines++;
+                }
+                else
+                {
+                    spaceIndentedLines++;
+                }
+            }
+
+            return tabIndentedLines > spaceIndentedLines
+                ? "tab"
+                : tabIndentedLines < spaceIndentedLines
+                    ? "space"
+                    : firstIndentationKind;
         }
 
         protected override void EndProcessing()

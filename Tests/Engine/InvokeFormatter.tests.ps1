@@ -27,6 +27,91 @@ Describe "Invoke-Formatter Cmdlet" {
         }
     }
 
+    Context 'Formatting files' {
+        It 'Formats a file in place while preserving its encoding, line endings, and tab indentation' {
+            $path = Join-Path $TestDrive 'script.ps1'
+            $scriptDefinition = "function foo {`r`n`t`$x=1`r`n}"
+            $expected = "function foo {`r`n`t`$x = 1`r`n}"
+            $encoding = [System.Text.UTF8Encoding]::new($true)
+            [System.IO.File]::WriteAllText($path, $scriptDefinition, $encoding)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+            [System.IO.File]::ReadAllBytes($path)[0..2] | Should -Be @(239, 187, 191)
+        }
+
+        It 'Preserves a UTF-16 encoding and space indentation' {
+            $path = Join-Path $TestDrive 'unicode.ps1'
+            $scriptDefinition = "function foo {`n    `$x=1`n}"
+            $expected = "function foo {`n    `$x = 1`n}"
+            $encoding = [System.Text.UnicodeEncoding]::new($false, $true)
+            [System.IO.File]::WriteAllText($path, $scriptDefinition, $encoding)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+            [System.IO.File]::ReadAllBytes($path)[0..1] | Should -Be @(255, 254)
+        }
+
+        It 'Formats a file with CR-only line endings' {
+            $path = Join-Path $TestDrive 'cr-only.ps1'
+            $scriptDefinition = "function foo {`r`t`$x=1`r}"
+            $expected = "function foo {`r`t`$x = 1`r}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $expected
+        }
+
+        It 'Best-effort formats BOM-less files using a legacy encoding' {
+            $path = Join-Path $TestDrive 'legacy-encoding.ps1'
+            $cafe = 'caf' + [char]0xE9
+            $scriptDefinition = "`$name='$cafe'"
+            $expected = "`$name = '$cafe'"
+            $encoding = [System.Text.Encoding]::GetEncoding(1252)
+            [System.IO.File]::WriteAllBytes($path, $encoding.GetBytes($scriptDefinition))
+
+            Invoke-Formatter -Path $path | Should -Be $expected
+
+            [System.IO.File]::ReadAllBytes($path) | Should -Be $encoding.GetBytes($expected)
+        }
+
+        It 'Infers indentation from code instead of whitespace-only lines' {
+            $path = Join-Path $TestDrive 'blank-lines.ps1'
+            $scriptDefinition = "function foo {`n`t`$x=1`n    `n    `n    `n    `n`t`$y=2`n}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            $formatted = Invoke-Formatter -Path $path
+
+            $formatted | Should -Match '(?m)^\t\$x = 1$'
+            $formatted | Should -Match '(?m)^\t\$y = 2$'
+        }
+
+        It 'Infers indentation from code instead of multiline payload lines' {
+            $path = Join-Path $TestDrive 'here-string.ps1'
+            $scriptDefinition = "function foo {`n`t`$value = @'`n        first payload`n        second payload`n        third payload`n        fourth payload`n        fifth payload`n'@`n<#`n        comment payload`n        second comment payload`n        third comment payload`n        fourth comment payload`n        fifth comment payload`n#>`n`t`$x=1`n}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            $formatted = Invoke-Formatter -Path $path
+
+            $formatted | Should -Match '(?m)^\t\$x = 1$'
+            $formatted | Should -Match '(?m)^        first payload$'
+            $formatted | Should -Match '(?m)^        comment payload$'
+        }
+
+        It 'Does not modify a file when WhatIf is specified' {
+            $path = Join-Path $TestDrive 'whatif.ps1'
+            $scriptDefinition = '$x=1'
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            Invoke-Formatter -Path $path -WhatIf 6>$null
+
+            [System.IO.File]::ReadAllText($path) | Should -Be $scriptDefinition
+        }
+    }
+
     Context "When positional parameters are given" {
         It "Should use the positional parameters" {
             $def = @"
