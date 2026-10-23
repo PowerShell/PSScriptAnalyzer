@@ -16,9 +16,9 @@ Formats script text or a file based on the input settings or default settings.
 
 ```
 Invoke-Formatter [-ScriptDefinition] <string> [[-Settings] <Object>] [[-Range] <int[]>]
- [-Encoding <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 Invoke-Formatter -Path <string> [[-Settings] <Object>] [[-Range] <int[]>]
- [-Encoding <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -28,8 +28,8 @@ The `Invoke-Formatter` cmdlet formats a string input or a file according to defi
 defined in `Settings/CodeFormatting.psd1`. When **Path** is used, the file is formatted in place.
 The file's detected encoding and line-ending style are retained, and the default settings use the
 file's detected tab or space indentation style. Use `-WhatIf` to preview whether a file would be
-changed without writing it. Use **Encoding** to specify the encoding for files without a byte-order
-mark (BOM); a detected BOM takes precedence.
+changed without writing it. BOM-less files are interpreted as UTF-8 when valid; otherwise the system
+ANSI encoding or Windows-1252 is used as a best-effort fallback.
 
 ## EXAMPLES
 
@@ -96,23 +96,6 @@ Invoke-Formatter -Path /path/to/script.ps1
 ```
 
 ## PARAMETERS
-
-### -Encoding
-
-The encoding to use when reading and writing files without a byte-order mark (BOM). Files with a BOM
-continue to use the encoding detected from the BOM. The default is UTF-8.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: utf-8
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -Range
 

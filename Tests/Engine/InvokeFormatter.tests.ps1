@@ -54,14 +54,14 @@ Describe "Invoke-Formatter Cmdlet" {
             [System.IO.File]::ReadAllBytes($path)[0..1] | Should -Be @(255, 254)
         }
 
-        It 'Formats BOM-less files using the specified encoding' {
+        It 'Best-effort formats BOM-less files using a legacy encoding' {
             $path = Join-Path $TestDrive 'legacy-encoding.ps1'
             $scriptDefinition = '$name=''café'''
             $expected = '$name = ''café'''
             $encoding = [System.Text.Encoding]::GetEncoding(1252)
             [System.IO.File]::WriteAllBytes($path, $encoding.GetBytes($scriptDefinition))
 
-            Invoke-Formatter -Path $path -Encoding 'windows-1252' | Should -Be $expected
+            Invoke-Formatter -Path $path | Should -Be $expected
 
             [System.IO.File]::ReadAllBytes($path) | Should -Be $encoding.GetBytes($expected)
         }
