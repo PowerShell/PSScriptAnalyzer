@@ -103,4 +103,25 @@ Get-ChildItem -PATH 'outside'
         $diagnostics.Count | Should -Be 1
         $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'Path'
     }
+
+    It 'does not treat a declaration in <Name> as in scope' -TestCases @(
+        @{ Name = 'a script block stored in a variable'; Prefix = '$unused = { function Get-ChildItem { param($PATH) } }' }
+        @{ Name = 'a script block stored in a hashtable'; Prefix = '$h = @{ Run = { function Get-ChildItem { param($PATH) } } }' }
+        @{ Name = 'a directly invoked script block'; Prefix = '& { function Get-ChildItem { param($PATH) } }' }
+    ) {
+        param($Prefix)
+        $definition = "$Prefix`nGet-ChildItem -PATH 'x'"
+        $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition $definition -Settings $casingSettings)
+        $diagnostics.Count | Should -Be 1
+        $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'Path'
+    }
+
+    It 'keeps a declaration in <Name> in scope' -TestCases @(
+        @{ Name = 'a ForEach-Object block'; Prefix = '1 | ForEach-Object { function Get-ChildItem { param($PATH) } }' }
+        @{ Name = 'a dot-sourced script block'; Prefix = '. { function Get-ChildItem { param($PATH) } }' }
+    ) {
+        param($Prefix)
+        $definition = "$Prefix`nGet-ChildItem -PATH 'x'"
+        Invoke-ScriptAnalyzer -ScriptDefinition $definition -Settings $casingSettings | Should -BeNullOrEmpty
+    }
 }

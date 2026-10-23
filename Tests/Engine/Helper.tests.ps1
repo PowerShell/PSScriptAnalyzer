@@ -63,4 +63,18 @@ Describe "Exported function parameter resolution" {
         $exports.Count | Should -Be 1
         $exports | Should -Contain 'Test-Example'
     }
+
+    It "is not cancelled by an unrelated nested declaration of the same name" {
+        $script = "function Outer { function Export-ModuleMember {} }`nExport-ModuleMember -Function Test-Example"
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$null, [ref]$null)
+        $exports = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::Instance.GetExportedFunction($ast)
+        $exports | Should -Contain 'Test-Example'
+    }
+}
+
+Describe "Public API compatibility" {
+    It "keeps Helper.GetCommandInfo(string, CommandTypes?, bool)" {
+        $signature = [Type[]]@([string], [Nullable[System.Management.Automation.CommandTypes]], [bool])
+        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper].GetMethod('GetCommandInfo', $signature) | Should -Not -BeNullOrEmpty
+    }
 }

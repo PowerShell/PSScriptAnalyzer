@@ -63,6 +63,14 @@ function Sibling {
         }
     }
 
+    Context "Alias precedence" {
+        It "still resolves the alias that PowerShell prefers over a same-named function" {
+            $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition "function gci { }`ngci -literalpath ." -Settings $casingSettings)
+            $diagnostics.Count | Should -Be 1
+            $diagnostics[0].SuggestedCorrections[0].Text | Should -BeExactly 'LiteralPath'
+        }
+    }
+
     Context "Command name casing" {
         It "corrects a cmdlet the script does not define" {
             $diagnostics = @(Invoke-ScriptAnalyzer -ScriptDefinition 'get-childitem' -Settings $casingSettings)
