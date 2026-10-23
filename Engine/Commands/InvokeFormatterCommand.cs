@@ -65,6 +65,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateCount(4, 4)]
         public int[] Range { get; set; }
 
+        /// <summary>
+        /// The encoding to use when reading files without a byte-order mark.
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [ValidateNotNullOrEmpty]
+        public string Encoding { get; set; } = "utf-8";
+
 #if DEBUG
         /// <summary>
         /// Attaches to an instance of a .Net debugger
@@ -154,7 +161,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             Encoding encoding;
             string scriptDefinition;
-            using (var reader = new StreamReader(path, new UTF8Encoding(false, true), true))
+            var requestedEncoding = System.Text.Encoding.GetEncoding(
+                Encoding,
+                EncoderFallback.ExceptionFallback,
+                DecoderFallback.ExceptionFallback);
+            using (var reader = new StreamReader(path, requestedEncoding, true))
             {
                 scriptDefinition = reader.ReadToEnd();
                 encoding = reader.CurrentEncoding;
