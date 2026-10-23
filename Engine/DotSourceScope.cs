@@ -310,6 +310,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Canonicalizes paths against the real file system and remembers directory listings and results,
         /// so a run enumerates each directory once rather than once per path it normalizes.
+        /// Case rules are taken from the file system itself, never from the OS: an exact-case entry always
+        /// wins, and only without one does the first case-insensitive entry apply (which on a
+        /// case-insensitive volume is the same file). A mismatched reference is thus folded onto the real
+        /// file, and the mismatch is left to PSUseCorrectCasingForDotSourcedFiles.
         /// </summary>
         private sealed class PathCanonicalizer
         {

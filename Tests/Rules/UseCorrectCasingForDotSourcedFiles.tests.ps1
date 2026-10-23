@@ -6,6 +6,18 @@ Describe "UseCorrectCasingForDotSourcedFiles" {
     # path is valid and must be checked on every platform. Evaluated at discovery time
     # since -TestCases is bound during discovery.
     $separatorTestCases = @(@{ Separator = '\' }, @{ Separator = '/' })
+
+    # File system case rules differ per platform and even per volume, so they are probed rather than
+    # assumed from the OS:
+    #   Windows: case-insensitive, case-preserving; '\' and '/' both separate path segments.
+    #   Linux:   usually case-sensitive; 'Helpers.ps1' and 'helpers.ps1' can coexist and a wrong-case
+    #            reference does not load at all. A literal '\' in a file name is unreachable from
+    #            PowerShell because it is folded to '/'.
+    #   macOS:   usually case-insensitive and case-preserving (APFS/HFS+), but case-sensitive
+    #            volumes exist.
+    # Tests that need two files differing only by case run only when this probe says the file system
+    # is case-sensitive; the remaining tests hold on every file system.
+    # Evaluated at discovery time because -Skip is bound during discovery.
     $caseSensitive = & {
         $probeDirectory = Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName())
         $null = New-Item -ItemType Directory -Path $probeDirectory

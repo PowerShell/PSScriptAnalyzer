@@ -2,6 +2,15 @@
 # Licensed under the MIT License.
 
 # Evaluated at discovery time because -Skip is bound during discovery.
+# File system case rules differ per platform and even per volume, so they are probed rather than
+# assumed from the OS:
+#   Windows: case-insensitive, case-preserving; '\' and '/' both separate path segments.
+#   Linux:   usually case-sensitive; 'Helpers.ps1' and 'helpers.ps1' can coexist, and PowerShell
+#            folds '\' to '/' in FileSystem paths.
+#   macOS:   usually case-insensitive and case-preserving, but case-sensitive volumes exist.
+# Tests that need two files differing only by case are skipped on case-insensitive file systems.
+# A case-mismatched reference is deliberately folded onto the file it names instead of being judged
+# per file system; PSUseCorrectCasingForDotSourcedFiles reports that mismatch.
 function Test-CaseSensitiveFileSystem {
     $probeDirectory = Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName())
     $null = New-Item -ItemType Directory -Path $probeDirectory
