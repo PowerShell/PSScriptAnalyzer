@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -239,7 +241,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             int spaceIndentedLines = 0;
             string firstIndentationKind = "space";
             bool foundIndentation = false;
-            string[] lines = scriptDefinition.Split('\n');
+            string[] lines = scriptDefinition.GetLines().ToArray();
             Parser.ParseInput(scriptDefinition, out Token[] tokens, out ParseError[] errors);
             var countedLines = new HashSet<int>();
 
