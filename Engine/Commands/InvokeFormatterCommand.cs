@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using System.Text;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -180,26 +182,62 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             int spaceIndentedLines = 0;
             string firstIndentationKind = "space";
             bool foundIndentation = false;
+            string[] lines = scriptDefinition.Split('\n');
+            Parser.ParseInput(scriptDefinition, out Token[] tokens, out ParseError[] errors);
+            var countedLines = new HashSet<int>();
 
-            foreach (var line in scriptDefinition.Split('\n'))
+            foreach (var token in tokens)
             {
-                var trimmedLine = line.TrimEnd('\r');
-                if (trimmedLine.Length > 0 && (trimmedLine[0] == '\t' || trimmedLine[0] == ' '))
+                if (token.Kind == TokenKind.Comment
+                    || token.Kind == TokenKind.NewLine
+                    || token.Kind == TokenKind.LineContinuation
+                    || token.Kind == TokenKind.EndOfInput)
                 {
-                    if (!foundIndentation)
-                    {
-                        firstIndentationKind = trimmedLine[0] == '\t' ? "tab" : "space";
-                        foundIndentation = true;
-                    }
+                    continue;
+                }
 
-                    if (trimmedLine[0] == '\t')
+                int lineNumber = token.Extent.StartLineNumber;
+                if (!countedLines.Add(lineNumber))
+                {
+                    continue;
+                }
+
+                string line = lines[lineNumber - 1].TrimEnd('\r');
+                int indentationLength = token.Extent.StartColumnNumber - 1;
+                if (indentationLength == 0 || indentationLength > line.Length)
+                {
+                    continue;
+                }
+
+                char indentationCharacter = line[0];
+                bool isIndentedCode = true;
+                for (int i = 0; i < indentationLength; i++)
+                {
+                    if (line[i] != ' ' && line[i] != '\t')
                     {
-                        tabIndentedLines++;
+                        isIndentedCode = false;
+                        break;
                     }
-                    else
-                    {
-                        spaceIndentedLines++;
-                    }
+                }
+
+                if (!isIndentedCode)
+                {
+                    continue;
+                }
+
+                if (!foundIndentation)
+                {
+                    firstIndentationKind = indentationCharacter == '\t' ? "tab" : "space";
+                    foundIndentation = true;
+                }
+
+                if (indentationCharacter == '\t')
+                {
+                    tabIndentedLines++;
+                }
+                else
+                {
+                    spaceIndentedLines++;
                 }
             }
 

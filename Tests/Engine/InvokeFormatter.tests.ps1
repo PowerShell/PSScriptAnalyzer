@@ -54,6 +54,29 @@ Describe "Invoke-Formatter Cmdlet" {
             [System.IO.File]::ReadAllBytes($path)[0..1] | Should -Be @(255, 254)
         }
 
+        It 'Infers indentation from code instead of whitespace-only lines' {
+            $path = Join-Path $TestDrive 'blank-lines.ps1'
+            $scriptDefinition = "function foo {`n`t`$x=1`n    `n    `n    `n    `n`t`$y=2`n}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            $formatted = Invoke-Formatter -Path $path
+
+            $formatted | Should -Match '(?m)^\t\$x = 1$'
+            $formatted | Should -Match '(?m)^\t\$y = 2$'
+        }
+
+        It 'Infers indentation from code instead of multiline payload lines' {
+            $path = Join-Path $TestDrive 'here-string.ps1'
+            $scriptDefinition = "function foo {`n`t`$value = @'`n        first payload`n        second payload`n        third payload`n        fourth payload`n        fifth payload`n'@`n<#`n        comment payload`n        second comment payload`n        third comment payload`n        fourth comment payload`n        fifth comment payload`n#>`n`t`$x=1`n}"
+            [System.IO.File]::WriteAllText($path, $scriptDefinition)
+
+            $formatted = Invoke-Formatter -Path $path
+
+            $formatted | Should -Match '(?m)^\t\$x = 1$'
+            $formatted | Should -Match '(?m)^        first payload$'
+            $formatted | Should -Match '(?m)^        comment payload$'
+        }
+
         It 'Does not modify a file when WhatIf is specified' {
             $path = Join-Path $TestDrive 'whatif.ps1'
             $scriptDefinition = '$x=1'
