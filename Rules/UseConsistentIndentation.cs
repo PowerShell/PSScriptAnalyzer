@@ -381,7 +381,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int leastIndentedColumn = tokens[firstCommentIndex].Extent.StartColumnNumber;
             for (int nextCommentIndex = firstCommentIndex + 2;
                 nextCommentIndex < tokens.Length &&
-                    tokens[nextCommentIndex - 1].Kind == TokenKind.NewLine &&
+                    (tokens[nextCommentIndex - 1].Kind == TokenKind.NewLine ||
+                        tokens[nextCommentIndex - 1].Kind == TokenKind.LineContinuation) &&
                     tokens[nextCommentIndex].Kind == TokenKind.Comment &&
                     tokens[nextCommentIndex].Extent.StartLineNumber == tokens[nextCommentIndex - 2].Extent.EndLineNumber + 1;
                 nextCommentIndex += 2)
