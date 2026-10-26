@@ -253,6 +253,20 @@ function foo {
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $expectedScriptDefinition
         }
+
+        It 'Should preserve relative indentation in comments after a line continuation' {
+            $scriptDefinition = @'
+Write-Output `
+    # first
+        # nested
+    # last
+    -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
     }
 
     Context "When a multi-line command is given" {
