@@ -360,6 +360,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             out bool commentRunStartsAfterPipeline)
         {
             commentRunStartsAfterLineContinuation = false;
+            commentRunStartsAfterPipeline = false;
             if (HasCodeAfterCommentOnSameLine(tokens, tokenIndex))
             {
                 commentRunStartsAfterLineContinuation =
@@ -372,7 +373,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     GetCommentRunIndentationOffset(
                         tokens,
                         tokenIndex - 2,
-                        out commentRunStartsAfterLineContinuation);
+                        out commentRunStartsAfterLineContinuation,
+                        out commentRunStartsAfterPipeline);
                 }
 
                 return 0;
