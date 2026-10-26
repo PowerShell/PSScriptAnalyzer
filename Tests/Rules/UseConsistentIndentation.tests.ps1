@@ -253,6 +253,22 @@ function foo {
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $expectedScriptDefinition
         }
+
+        It 'Should preserve indentation when the first comment is not the least-indented with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                "$Indentation# inner"
+                '# outer'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
     }
 
     Context "When a multi-line command is given" {
