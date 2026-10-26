@@ -693,6 +693,16 @@ bar
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
         }
 
+        It "Should preserve pipeline indentation across a comment line continuation with PipelineIndentation None" {
+            $def = @'
+foo |
+    <# comment #> `
+        <# note #> bar
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
+        }
+
         It "Should indent properly after line continuation (backtick) character with pipeline" {
             $def = @'
 foo |

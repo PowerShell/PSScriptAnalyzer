@@ -367,13 +367,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokenIndex > 0 &&
                     tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation;
                 if (tokenIndex > 2 &&
-                    tokens[tokenIndex - 1].Kind == TokenKind.NewLine &&
+                    (tokens[tokenIndex - 1].Kind == TokenKind.NewLine ||
+                        tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation) &&
                     tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                 {
                     GetCommentRunIndentationOffset(
                         tokens,
                         tokenIndex - 2,
-                        out commentRunStartsAfterLineContinuation,
+                        out _,
                         out commentRunStartsAfterPipeline);
                 }
 
