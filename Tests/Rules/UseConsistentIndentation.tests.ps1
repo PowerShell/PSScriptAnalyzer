@@ -254,6 +254,20 @@ function foo {
                 Should -Be $expectedScriptDefinition
         }
 
+        It 'Should preserve relative indentation in comments after a line continuation' {
+            $scriptDefinition = @'
+Write-Output `
+    # first
+        # nested
+    # last
+    -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve indentation when the first comment is not the least-indented with <Kind> indentation' -TestCases @(
             @{ Kind = 'space'; Indentation = '    ' }
             @{ Kind = 'tab'; Indentation = "`t" }
@@ -268,6 +282,57 @@ function foo {
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve a comment run containing an internal line continuation with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                '<# first #> `'
+                "$Indentation<# second #>"
+                "Write-Output 'after'"
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 0
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $scriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $formatted
+        }
+
+        It 'Should shift a comment run containing an internal line continuation uniformly with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                '<# first #> `'
+                "$Indentation<# second #>"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $expectedScriptDefinition = @(
+                'if ($a) {'
+                "$Indentation<# first #> ``"
+                "$Indentation$Indentation<# second #>"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 2
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $expectedScriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $formatted
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $formatted -Settings $settings
+            $violations.Count | Should -Be 0
         }
     }
 
