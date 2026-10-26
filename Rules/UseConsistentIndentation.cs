@@ -353,6 +353,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             commentRunStartsAfterLineContinuation = false;
             if (HasCodeAfterCommentOnSameLine(tokens, tokenIndex))
             {
+                commentRunStartsAfterLineContinuation =
+                    tokenIndex > 0 &&
+                    tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation;
+                if (tokenIndex > 2 &&
+                    tokens[tokenIndex - 1].Kind == TokenKind.NewLine &&
+                    tokens[tokenIndex - 2].Kind == TokenKind.Comment)
+                {
+                    GetCommentRunIndentationOffset(
+                        tokens,
+                        tokenIndex - 2,
+                        out commentRunStartsAfterLineContinuation);
+                }
+
                 return 0;
             }
 
@@ -404,17 +417,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool HasCodeAfterCommentOnSameLine(Token[] tokens, int commentIndex)
         {
-            int nextTokenIndex = commentIndex + 1;
-            if (nextTokenIndex >= tokens.Length)
-            {
-                return false;
-            }
-
-            Token nextToken = tokens[nextTokenIndex];
-            return nextToken.Kind != TokenKind.NewLine &&
+            Token nextToken = NextTokenIgnoringComments(tokens, commentIndex);
+            return nextToken != null &&
+                nextToken.Kind != TokenKind.NewLine &&
                 nextToken.Kind != TokenKind.LineContinuation &&
                 nextToken.Kind != TokenKind.EndOfInput &&
-                nextToken.Kind != TokenKind.Comment &&
                 nextToken.Extent.StartLineNumber <= tokens[commentIndex].Extent.EndLineNumber;
         }
 
