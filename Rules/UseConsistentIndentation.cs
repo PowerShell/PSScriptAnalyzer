@@ -282,7 +282,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 GetCommentRunIndentationOffset(
                                     tokens,
                                     tokenIndex - 2,
-                                    out bool commentRunStartsAfterLineContinuation);
+                                    out bool commentRunStartsAfterLineContinuation,
+                                    out _);
                                 if (commentRunStartsAfterLineContinuation)
                                 {
                                     tempIndentationLevel++;
@@ -302,7 +303,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 commentIndentationOffset = GetCommentRunIndentationOffset(
                                     tokens,
                                     tokenIndex,
-                                    out bool commentRunStartsAfterLineContinuation);
+                                    out bool commentRunStartsAfterLineContinuation,
+                                    out bool commentRunStartsAfterPipeline);
+                                if (pipelineIndentationStyle == PipelineIndentationStyle.None &&
+                                    commentRunStartsAfterPipeline)
+                                {
+                                    onNewLine = false;
+                                    continue;
+                                }
                                 tempIndentationLevel = indentationLevel +
                                     (commentRunStartsAfterLineContinuation ? 1 : 0);
                             }
@@ -348,7 +356,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static int GetCommentRunIndentationOffset(
             Token[] tokens,
             int tokenIndex,
-            out bool commentRunStartsAfterLineContinuation)
+            out bool commentRunStartsAfterLineContinuation,
+            out bool commentRunStartsAfterPipeline)
         {
             commentRunStartsAfterLineContinuation = false;
             if (HasCodeAfterCommentOnSameLine(tokens, tokenIndex))
@@ -396,6 +405,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             commentRunStartsAfterLineContinuation =
                 firstCommentIndex > 0 &&
                 tokens[firstCommentIndex - 1].Kind == TokenKind.LineContinuation;
+            commentRunStartsAfterPipeline =
+                PreviousLineEndedWithPipe(tokens, firstCommentIndex, tokens[firstCommentIndex]);
             int leastIndentedColumn = tokens[firstCommentIndex].Extent.StartColumnNumber;
             for (int nextCommentIndex = firstCommentIndex + 2;
                 nextCommentIndex < tokens.Length &&
