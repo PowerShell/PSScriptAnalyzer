@@ -275,17 +275,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 ++tempIndentationLevel;
                             }
 
-                            // check for comments in between multi-line commands with line continuation
+                            // Check for comments in between multi-line commands with line continuation.
                             if (tokenIndex > 2 && tokens[tokenIndex - 1].Kind == TokenKind.NewLine
                                 && tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                             {
-                                int searchForPrecedingLineContinuationIndex = tokenIndex - 2;
-                                while (searchForPrecedingLineContinuationIndex  > 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.Comment)
-                                {
-                                    searchForPrecedingLineContinuationIndex--;
-                                }
-
-                                if (searchForPrecedingLineContinuationIndex >= 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.LineContinuation)
+                                GetCommentRunIndentationOffset(
+                                    tokens,
+                                    tokenIndex - 2,
+                                    out bool commentRunStartsAfterLineContinuation);
+                                if (commentRunStartsAfterLineContinuation)
                                 {
                                     tempIndentationLevel++;
                                 }
