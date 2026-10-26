@@ -703,6 +703,26 @@ foo |
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
         }
 
+        It "Should not inherit pipeline indentation from a trailing comment with PipelineIndentation None" {
+            $def = @'
+function test {
+    foo | bar # trailing
+        <# note #> baz
+}
+'@
+            $expected = @'
+function test {
+    foo | bar # trailing
+    <# note #> baz
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $expected -Settings $settings | Should -Be $expected
+        }
+
         It "Should indent properly after line continuation (backtick) character with pipeline" {
             $def = @'
 foo |

@@ -369,7 +369,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (tokenIndex > 2 &&
                     (tokens[tokenIndex - 1].Kind == TokenKind.NewLine ||
                         tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation) &&
-                    tokens[tokenIndex - 2].Kind == TokenKind.Comment)
+                    tokens[tokenIndex - 2].Kind == TokenKind.Comment &&
+                    (tokens[tokenIndex - 3].Kind == TokenKind.NewLine ||
+                        tokens[tokenIndex - 3].Kind == TokenKind.LineContinuation))
                 {
                     GetCommentRunIndentationOffset(
                         tokens,
