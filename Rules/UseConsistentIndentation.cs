@@ -350,6 +350,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int tokenIndex,
             out bool commentRunStartsAfterLineContinuation)
         {
+            commentRunStartsAfterLineContinuation = false;
+            if (HasCodeAfterCommentOnSameLine(tokens, tokenIndex))
+            {
+                return 0;
+            }
+
             int firstCommentIndex = tokenIndex;
             int currentLine = tokens[tokenIndex].Extent.StartLineNumber;
             int precedingIndex = tokenIndex - 1;
@@ -360,6 +366,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 precedingIndex--;
                 if (precedingIndex < 0 ||
                     tokens[precedingIndex].Kind != TokenKind.Comment ||
+                    HasCodeAfterCommentOnSameLine(tokens, precedingIndex) ||
                     tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1 ||
                     (precedingIndex > 0 &&
                         tokens[precedingIndex - 1].Kind != TokenKind.NewLine &&
@@ -382,6 +389,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     (tokens[nextCommentIndex - 1].Kind == TokenKind.NewLine ||
                         tokens[nextCommentIndex - 1].Kind == TokenKind.LineContinuation) &&
                     tokens[nextCommentIndex].Kind == TokenKind.Comment &&
+                    !HasCodeAfterCommentOnSameLine(tokens, nextCommentIndex) &&
                     tokens[nextCommentIndex].Extent.StartLineNumber == tokens[nextCommentIndex - 2].Extent.EndLineNumber + 1;
                 nextCommentIndex += 2)
             {
@@ -392,6 +400,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return tokens[tokenIndex].Extent.StartColumnNumber -
                 leastIndentedColumn;
+        }
+
+        private static bool HasCodeAfterCommentOnSameLine(Token[] tokens, int commentIndex)
+        {
+            int nextTokenIndex = commentIndex + 1;
+            if (nextTokenIndex >= tokens.Length)
+            {
+                return false;
+            }
+
+            Token nextToken = tokens[nextTokenIndex];
+            return nextToken.Kind != TokenKind.NewLine &&
+                nextToken.Kind != TokenKind.LineContinuation &&
+                nextToken.Kind != TokenKind.EndOfInput &&
+                nextToken.Kind != TokenKind.Comment &&
+                nextToken.Extent.StartLineNumber <= tokens[commentIndex].Extent.EndLineNumber;
         }
 
         /// <summary>
