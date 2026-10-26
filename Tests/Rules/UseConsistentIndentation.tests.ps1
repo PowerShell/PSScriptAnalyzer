@@ -1,4 +1,4 @@
-﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
@@ -282,6 +282,57 @@ Write-Output `
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve a comment run containing an internal line continuation with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                '<# first #> `'
+                "$Indentation<# second #>"
+                "Write-Output 'after'"
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 0
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $scriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $formatted
+        }
+
+        It 'Should shift a comment run containing an internal line continuation uniformly with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                '<# first #> `'
+                "$Indentation<# second #>"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $expectedScriptDefinition = @(
+                'if ($a) {'
+                "$Indentation<# first #> ``"
+                "$Indentation$Indentation<# second #>"
+                "$($Indentation)Write-Output 'after'"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 2
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $expectedScriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $formatted
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $formatted -Settings $settings
+            $violations.Count | Should -Be 0
         }
     }
 

@@ -303,10 +303,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     tokens,
                                     tokenIndex,
                                     out bool commentRunStartsAfterLineContinuation);
-                                if (commentRunStartsAfterLineContinuation)
-                                {
-                                    tempIndentationLevel = indentationLevel + 1;
-                                }
+                                tempIndentationLevel = indentationLevel +
+                                    (commentRunStartsAfterLineContinuation ? 1 : 0);
                             }
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken, commentIndentationOffset);
