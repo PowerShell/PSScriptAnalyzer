@@ -666,6 +666,7 @@ foo |
 foo |
     # first comment
         # second comment
+bar
 '@
             $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
