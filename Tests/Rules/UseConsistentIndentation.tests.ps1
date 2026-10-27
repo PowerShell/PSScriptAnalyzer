@@ -254,6 +254,70 @@ function foo {
                 Should -Be $expectedScriptDefinition
         }
 
+        It 'Should treat a blank line as a boundary between comment runs with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# first"
+                "$Indentation$Indentation# nested"
+                ''
+                "$Indentation$Indentation# second"
+                "$Indentation$Indentation$Indentation# nested"
+                '}'
+            ) -join "`n"
+            $expectedScriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# first"
+                "$Indentation$Indentation# nested"
+                ''
+                "$Indentation# second"
+                "$Indentation$Indentation# nested"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $expectedScriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+
+        It 'Should restart comment-run indentation after executable code with <Kind> indentation' -TestCases @(
+            @{ Kind = 'space'; Indentation = '    ' }
+            @{ Kind = 'tab'; Indentation = "`t" }
+        ) {
+            param([string] $Kind, [string] $Indentation)
+            $scriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# first"
+                "$Indentation$Indentation# nested"
+                "${Indentation}Write-Output 'between'"
+                "$Indentation$Indentation# second"
+                "$Indentation$Indentation$Indentation# nested"
+                '}'
+            ) -join "`n"
+            $expectedScriptDefinition = @(
+                'if ($a) {'
+                "$Indentation# first"
+                "$Indentation$Indentation# nested"
+                "${Indentation}Write-Output 'between'"
+                "$Indentation# second"
+                "$Indentation$Indentation# nested"
+                '}'
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.Kind = $Kind
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $expectedScriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+
         It 'Should preserve relative indentation in comments after a line continuation' {
             $scriptDefinition = @'
 Write-Output `
