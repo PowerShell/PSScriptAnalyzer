@@ -284,6 +284,25 @@ Write-Output `
                 Should -Be $scriptDefinition
         }
 
+        It 'Should not include a block comment followed by code in a comment run' {
+            $scriptDefinition = @'
+if ($a) {
+    # comment
+        <# note #> Write-Output 'value'
+}
+'@
+            $expectedScriptDefinition = @'
+if ($a) {
+    # comment
+    <# note #> Write-Output 'value'
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+
         It 'Should preserve a comment run containing an internal line continuation with <Kind> indentation' -TestCases @(
             @{ Kind = 'space'; Indentation = '    ' }
             @{ Kind = 'tab'; Indentation = "`t" }
@@ -672,6 +691,36 @@ bar
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations | Should -BeNullOrEmpty
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
+        }
+
+        It "Should preserve pipeline indentation across a comment line continuation with PipelineIndentation None" {
+            $def = @'
+foo |
+    <# comment #> `
+        <# note #> bar
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
+        }
+
+        It "Should not inherit pipeline indentation from a trailing comment with PipelineIndentation None" {
+            $def = @'
+function test {
+    foo | bar # trailing
+        <# note #> baz
+}
+'@
+            $expected = @'
+function test {
+    foo | bar # trailing
+    <# note #> baz
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $expected -Settings $settings | Should -Be $expected
         }
 
         It "Should indent properly after line continuation (backtick) character with pipeline" {
