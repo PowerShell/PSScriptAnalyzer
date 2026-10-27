@@ -173,27 +173,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             try
             {
-                PSModuleInfo importedModule = _pwsh.AddCommand(s_ipmoInfo)
-                    .AddParameter("ModuleInfo", module)
-                    .AddParameter("PassThru")
-                    .AddParameter("ErrorAction", "Stop")
-                    .InvokeAndClear<PSModuleInfo>()
-                    .FirstOrDefault();
-
-                if (importedModule == null)
-                {
-                    error = null;
-                    return null;
-                }
-
-                Tuple<string, Version, ModuleData> moduleData = GetSingleModuleData(importedModule);
-
-                _pwsh.AddCommand(s_rmoInfo)
-                    .AddParameter("ModuleInfo", importedModule)
-                    .InvokeAndClear();
-
                 error = null;
-                return moduleData;
+                return ImportAndGetModuleData(module);
             }
             catch (RuntimeException e)
             {
@@ -206,6 +187,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                        _pwsh.AddCommand("Remove-TypeData")
                             .AddParameter("TypeName", typeDataName)
                             .InvokeAndClear();
+                   }
+
+                   // Retry now that the conflicting type data is gone.
+                   // A new runspace would load the same default type data again (e.g. for Microsoft.PowerShell.Diagnostics on PowerShell 7).
+                   try
+                   {
+                       error = null;
+                       return ImportAndGetModuleData(module);
+                   }
+                   catch (RuntimeException)
+                   {
+                       // Fall back to a new runspace below
                    }
                 }
 
@@ -232,6 +225,29 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     return null;
                 }
             }
+        }
+
+        private Tuple<string, Version, ModuleData> ImportAndGetModuleData(PSModuleInfo module)
+        {
+            PSModuleInfo importedModule = _pwsh.AddCommand(s_ipmoInfo)
+                .AddParameter("ModuleInfo", module)
+                .AddParameter("PassThru")
+                .AddParameter("ErrorAction", "Stop")
+                .InvokeAndClear<PSModuleInfo>()
+                .FirstOrDefault();
+
+            if (importedModule == null)
+            {
+                return null;
+            }
+
+            Tuple<string, Version, ModuleData> moduleData = GetSingleModuleData(importedModule);
+
+            _pwsh.AddCommand(s_rmoInfo)
+                .AddParameter("ModuleInfo", importedModule)
+                .InvokeAndClear();
+
+            return moduleData;
         }
 
         /// <summary>

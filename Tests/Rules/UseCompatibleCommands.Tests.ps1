@@ -17,6 +17,10 @@ BeforeDiscovery {
     $Win10_7_profile = 'win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core'
     $Ubuntu1804_6_2_profile = 'ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core'
     $Ubuntu1804_7_profile = 'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core'
+    $Win11_5_profile = 'win-4_x64_10.0.26200.0_5.1.26100.9711_x64_4.0.30319.42000_framework'
+    $Win11_7_4_profile = 'win-4_x64_10.0.26200.0_7.4.21_x64_8.0.32_core'
+    $Win11_7_5_profile = 'win-4_x64_10.0.26200.0_7.5.12_x64_9.0.21_core'
+    $Win11_7_6_profile = 'win-4_x64_10.0.26200.0_7.6.7_x64_10.0.13_core'
 
     $CompatibilityTestCases = @(
         @{ Target = $Srv2012_3_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -181,6 +185,16 @@ BeforeDiscovery {
         @{ Target = $Srv2019_7_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $Srv2019_7_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
         @{ Target = $Srv2019_7_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+
+        @{ Target = $Win11_5_profile; Script = "Get-Uptime"; Commands = @("Get-Uptime"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $Win11_5_profile; Script = 'gci .'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+
+        @{ Target = $Win11_7_4_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "7.4"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $Win11_7_4_profile; Script = "Get-Uptime"; Commands = @(); Version = "7.4"; OS = "Windows"; ProblemCount = 0 }
+        @{ Target = $Win11_7_5_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "7.5"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $Win11_7_5_profile; Script = "Get-Uptime"; Commands = @(); Version = "7.5"; OS = "Windows"; ProblemCount = 0 }
+        @{ Target = $Win11_7_6_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "7.6"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $Win11_7_6_profile; Script = "Get-Uptime"; Commands = @(); Version = "7.6"; OS = "Windows"; ProblemCount = 0 }
     )
 
     $ParameterCompatibilityTestCases = @(
@@ -231,6 +245,9 @@ BeforeDiscovery {
 
         @{ Target = $Srv2019_7_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @(); Parameters = @(); Version = "7.0"; OS = 'Windows'; ProblemCount = 0 }
         @{ Target = $Srv2019_7_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = "7.0"; OS = 'Windows'; ProblemCount = 1 }
+
+        @{ Target = $Win11_5_profile; Script = '$obj = ConvertFrom-Json $json -AsHashtable'; Commands = @('ConvertFrom-Json'); Parameters = @('AsHashtable'); Version = '5.1'; OS = 'Windows'; ProblemCount = 1 }
+        @{ Target = $Win11_7_6_profile; Script = '$obj = ConvertFrom-Json $json -AsHashtable'; Commands = @(); Parameters = @(); Version = '7.6'; OS = 'Windows'; ProblemCount = 0 }
     )
 }
 

@@ -159,9 +159,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return new DotnetData()
             {
                 ClrVersion = Environment.Version, // TODO: This might be better recording the last part of RuntimeInformation.FrameworkDescription
-                Runtime = RuntimeInformation.FrameworkDescription.StartsWith(".NET Core")
-                    ? DotnetRuntime.Core
-                    : DotnetRuntime.Framework,
+                // .NET 5 and later report ".NET <version>" rather than ".NET Core <version>"
+                Runtime = RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework")
+                    ? DotnetRuntime.Framework
+                    : DotnetRuntime.Core,
             };
 #endif
         }
