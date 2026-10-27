@@ -376,8 +376,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     GetCommentRunIndentationOffset(
                         tokens,
                         tokenIndex - 2,
-                        out _,
+                        out bool precedingCommentRunStartsAfterLineContinuation,
                         out commentRunStartsAfterPipeline);
+                    commentRunStartsAfterLineContinuation |= precedingCommentRunStartsAfterLineContinuation;
                 }
 
                 return 0;

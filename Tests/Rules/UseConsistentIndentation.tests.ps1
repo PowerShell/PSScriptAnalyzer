@@ -268,6 +268,18 @@ Write-Output `
                 Should -Be $scriptDefinition
         }
 
+        It 'Should preserve continuation indentation before a block-comment-prefixed argument' {
+            $scriptDefinition = @'
+Write-Output `
+    # comment
+    <# note #> -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve indentation when the first comment is not the least-indented with <Kind> indentation' -TestCases @(
             @{ Kind = 'space'; Indentation = '    ' }
             @{ Kind = 'tab'; Indentation = "`t" }
