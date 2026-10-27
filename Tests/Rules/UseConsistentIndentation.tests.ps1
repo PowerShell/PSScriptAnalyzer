@@ -268,12 +268,51 @@ Write-Output `
                 Should -Be $scriptDefinition
         }
 
+        It 'Should preserve indentation when a comment-only line contains multiple block comments' {
+            $scriptDefinition = @'
+if ($a) {
+    <# first #> <# second #>
+        # nested
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve continuation indentation before a block-comment-prefixed argument' {
             $scriptDefinition = @'
 Write-Output `
     # comment
     <# note #> -InputObject 'value'
 '@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve continuation indentation after multiple inline block comments' {
+            $scriptDefinition = @'
+Write-Output `
+    <# first #> <# second #>
+    -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve indentation with many adjacent block comments' {
+            $comments = (1..16 | ForEach-Object { "<# comment $_ #>" }) -join ' '
+            $scriptDefinition = @(
+                'if ($a) {'
+                "    $comments"
+                '        # nested'
+                '}'
+            ) -join "`n"
             $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
