@@ -1221,6 +1221,18 @@
   <data name="AvoidMultipleTypeAttributesName" xml:space="preserve">
     <value>AvoidMultipleTypeAttributes</value>
   </data>
+  <data name="AvoidValidateRangeTypeMismatchCommonName" xml:space="preserve">
+    <value>Avoid mismatched ValidateRange boundary types.</value>
+  </data>
+  <data name="AvoidValidateRangeTypeMismatchDescription" xml:space="preserve">
+    <value>Integer ValidateRange boundaries can allow fractional values for floating-point and decimal parameters. Use floating-point or decimal boundaries that match the parameter type.</value>
+  </data>
+  <data name="AvoidValidateRangeTypeMismatchError" xml:space="preserve">
+    <value>ValidateRange boundaries should match the type of parameter '{0}' ({1}) to correctly restrict fractional values.</value>
+  </data>
+  <data name="AvoidValidateRangeTypeMismatchName" xml:space="preserve">
+    <value>AvoidValidateRangeTypeMismatch</value>
+  </data>
   <data name="AvoidUsingBrokenHashAlgorithmsCommonName" xml:space="preserve">
     <value>Avoid Using Broken Hash Algorithms</value>
   </data>
