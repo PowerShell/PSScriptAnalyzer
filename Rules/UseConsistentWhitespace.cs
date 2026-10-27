@@ -362,6 +362,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                // The verbatim argument after --% owns any trailing whitespace before the pipe.
+                if (pipe.Previous.Previous?.Value.Text == "--%")
+                {
+                    continue;
+                }
+
                 if (!IsPreviousTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
                 {
                     if (CheckPipeForRedundantWhitespace && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
