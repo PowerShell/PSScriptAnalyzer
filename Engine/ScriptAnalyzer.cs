@@ -1485,7 +1485,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
             // Add parse errors first if requested!
-            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            if ( relevantParseErrors != null )
             {
                 var results = new List<DiagnosticRecord>();
                 foreach ( ParseError parseError in relevantParseErrors )
@@ -1505,7 +1505,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // now, analyze the script definition
             diagnosticRecords.AddRange(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, null, skipVariableAnalysis, emitSuppressionErrors));
-            return diagnosticRecords;
+            return FilterDiagnosticsBySeverity(diagnosticRecords).ToList();
         }
 
         /// <summary>
@@ -1876,7 +1876,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // no parsing can really be done, but there are other rules to run (specifically encoding).
             if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
             {
-                return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
+                return FilterDiagnosticsBySeverity(diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath)));
             }
 
             // Process script
@@ -1899,7 +1899,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
             // First, add all parse errors if they've been requested
-            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            if ( relevantParseErrors != null )
             {
                 List<DiagnosticRecord> results = new List<DiagnosticRecord>();
                 foreach ( ParseError parseError in relevantParseErrors )
@@ -1916,7 +1916,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 diagnosticRecords.AddRange(results);
             }
 
-            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
+            return FilterDiagnosticsBySeverity(diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath)));
         }
 
         private bool IsModuleNotFoundError(ParseError error)
@@ -1925,13 +1925,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 && error.ErrorId.Equals("ModuleNotFoundDuringParse", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool IsSeverityAllowed(IEnumerable<uint> allowedSeverities, IRule rule)
+        private bool IsDiagnosticSeverityAllowed(DiagnosticRecord diagnostic)
         {
             return severity == null
-                || (allowedSeverities != null
-                    && rule != null
-                    && HasGetSeverity(rule)
-                    && allowedSeverities.Contains((uint)rule.GetSeverity()));
+                || (diagnostic != null
+                    && severity.Contains(diagnostic.Severity.ToString(), StringComparer.OrdinalIgnoreCase));
+        }
+
+        private IEnumerable<DiagnosticRecord> FilterDiagnosticsBySeverity(IEnumerable<DiagnosticRecord> diagnostics)
+        {
+            return severity == null ? diagnostics : diagnostics.Where(IsDiagnosticSeverityAllowed);
         }
 
         private static bool IsRuleEnabled(IRule rule)
@@ -1940,27 +1943,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return configurableRule == null || configurableRule.Enable;
         }
 
-        IEnumerable<uint> GetAllowedSeveritiesInInt()
-        {
-            return severity != null
-                ? severity.Select(item => (uint)Enum.Parse(typeof(DiagnosticSeverity), item, true))
-                : null;
-        }
-
-        bool HasMethod<T>(T obj, string methodName)
-        {
-            var type = obj.GetType();
-            return type.GetMethod(methodName) != null;
-        }
-
-        bool HasGetSeverity<T>(T obj)
-        {
-            return HasMethod<T>(obj, "GetSeverity");
-        }
-
         bool IsRuleAllowed(IRule rule)
         {
-            IEnumerable<uint> allowedSeverities = GetAllowedSeveritiesInInt();
             bool includeRegexMatch = false;
             bool excludeRegexMatch = false;
             foreach (Regex include in includeRegexList)
@@ -1981,12 +1965,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            bool helpRule = String.Equals(rule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
-            bool includeSeverity = IsSeverityAllowed(allowedSeverities, rule);
-
             return (includeRule == null || includeRegexMatch)
                     && (excludeRule == null || !excludeRegexMatch)
-                    && IsSeverityAllowed(allowedSeverities, rule)
                     && IsRuleEnabled(rule);
         }
 
@@ -2358,13 +2338,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
 
-            return _suppressionPreference switch
+            IEnumerable<DiagnosticRecord> selectedDiagnostics = _suppressionPreference switch
             {
                 SuppressionPreference.SuppressedOnly => suppressed.OfType<DiagnosticRecord>(),
                 SuppressionPreference.Omit => diagnosticsList,
                 SuppressionPreference.Include => diagnosticsList.Concat(suppressed.OfType<DiagnosticRecord>()),
                 _ => throw new ArgumentException($"SuppressionPreference has invalid value '{_suppressionPreference}'"),
             };
+            return FilterDiagnosticsBySeverity(selectedDiagnostics);
         }
     }
 }

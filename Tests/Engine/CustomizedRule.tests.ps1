@@ -157,6 +157,30 @@ Describe "Test importing correct customized rules" {
             $customizedRulePath.Count | Should -Be 0
 		}
 
+        It "filters custom rule diagnostics by diagnostic severity" {
+            $customRuleContent = @'
+function ReportError {
+    param (
+        [System.Management.Automation.Language.CommandAst]$ast
+    )
+
+    if ($ast.GetCommandName() -eq 'Invoke-Something') {
+        New-Object -Typename 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord' `
+            -ArgumentList 'This is an error', $ast.Extent, 'ReportError', Error, $ast.Extent.File, $null, $null
+    }
+}
+'@
+            $customRuleScriptPath = Join-Path $TestDrive 'SeverityRule.psm1'
+            Set-Content -Path $customRuleScriptPath -Value $customRuleContent
+
+            $errors = Invoke-ScriptAnalyzer -ScriptDefinition 'Invoke-Something' -CustomRulePath $customRuleScriptPath -Severity Error
+            $errors.Count | Should -Be 1
+            $errors[0].Severity | Should -Be 'Error'
+
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'Invoke-Something' -CustomRulePath $customRuleScriptPath -Severity Warning
+            $warnings.Count | Should -Be 0
+        }
+
         It "can suppress custom rule with rule name expression '<RuleNameExpression>'" -TestCases @(
             @{RuleNameExpression = '$MyInvocation.MyCommand.Name'; RuleName = 'WarningAboutDoSomething' }
             @{RuleNameExpression = '$MyInvocation.InvocationName'; RuleName = 'MyCustomRule\WarningAboutDoSomething' }
