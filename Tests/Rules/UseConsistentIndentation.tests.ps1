@@ -1027,6 +1027,48 @@ $(
 '@
             Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
         }
+
+        It "Should not double-indent attribute that opens a scriptblock: [ArgumentCompleter({" {
+            $def = @'
+[ArgumentCompleter({
+        Param($commandName, $parameterName)
+        $validKeys = @('a', 'b')
+        $validKeys | Where-Object { $_ } | ForEach-Object { "$_=" }
+    })]
+'@
+            $expected = @'
+[ArgumentCompleter({
+    Param($commandName, $parameterName)
+    $validKeys = @('a', 'b')
+    $validKeys | Where-Object { $_ } | ForEach-Object { "$_=" }
+})]
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should not double-indent attribute that opens a scriptblock inside a param block: [ValidateScript({" {
+            $def = @'
+function Test-Function {
+    param(
+        [ValidateScript({
+                $_ -gt 0
+            })]
+        $Value
+    )
+}
+'@
+            $expected = @'
+function Test-Function {
+    param(
+        [ValidateScript({
+            $_ -gt 0
+        })]
+        $Value
+    )
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
     }
 
     Context "When tabs instead of spaces are used for indentation" {
