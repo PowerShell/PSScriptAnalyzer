@@ -1,6 +1,6 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json
 {
-    "name": "C# (.NET 8.0)",
+    "name": "C# (.NET 10.0)",
     "dockerFile": "Dockerfile",
     "customizations": {
         "vscode": {
