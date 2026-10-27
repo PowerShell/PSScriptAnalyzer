@@ -296,6 +296,7 @@ function Test-ScriptAnalyzer
     [CmdletBinding()]
     param (
         [switch] $InProcess,
+        [string] $TestPath,
         [string] $WithPowerShell
     )
 
@@ -318,7 +319,16 @@ function Test-ScriptAnalyzer
         #
         #
         $testModulePath = Join-Path "${projectRoot}" -ChildPath out
-        $testScripts = "'${projectRoot}\Tests\Build','${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
+        if ($TestPath) {
+            $resolvedTestPath = (Resolve-Path -LiteralPath $TestPath -ErrorAction Stop).ProviderPath
+            if ((Get-Item -LiteralPath $resolvedTestPath).PSIsContainer) {
+                throw "TestPath must point to a test file."
+            }
+            $testScripts = "'{0}'" -f $resolvedTestPath.Replace("'", "''")
+        }
+        else {
+            $testScripts = "'${projectRoot}\Tests\Build','${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
+        }
         try {
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator

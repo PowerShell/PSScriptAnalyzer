@@ -31,6 +31,9 @@ param(
     [switch] $Test,
 
     [Parameter(ParameterSetName='Test')]
+    [string] $TestPath,
+
+    [Parameter(ParameterSetName='Test')]
     [switch] $InProcess,
     [string] $WithPowerShell,
 
@@ -88,6 +91,7 @@ END {
         "Test" {
             $testArgs = @{
                 InProcess = $InProcess
+                TestPath = $TestPath
                 WithPowerShell = $WithPowerShell
                 Verbose = $verboseWanted
             }

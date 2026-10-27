@@ -48,6 +48,56 @@ Describe "Build Module Tests" {
         }
     }
 
+    Context "Test-ScriptAnalyzer test path selection" {
+        BeforeEach {
+            Mock Invoke-Pester { $Path } -ModuleName build
+        }
+
+        It "selects only the supplied test file" {
+            $testPath = Join-Path $TestDrive "single.tests.ps1"
+            New-Item -Path $testPath -ItemType File | Out-Null
+
+            $selectedPaths = @(Test-ScriptAnalyzer -InProcess -TestPath $testPath)
+
+            $selectedPaths.Count | Should -Be 1
+            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).ProviderPath
+        }
+
+        It "passes test paths containing apostrophes intact" {
+            $testPath = Join-Path $TestDrive "one'two.tests.ps1"
+            New-Item -Path $testPath -ItemType File | Out-Null
+
+            $selectedPaths = @(Test-ScriptAnalyzer -InProcess -TestPath $testPath)
+
+            $selectedPaths.Count | Should -Be 1
+            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).ProviderPath
+        }
+
+        It "fails when the supplied test path does not exist" {
+            { Test-ScriptAnalyzer -InProcess -TestPath (Join-Path $TestDrive "missing.tests.ps1") } | Should -Throw
+        }
+
+        It "fails when the supplied test path is a directory" {
+            { Test-ScriptAnalyzer -InProcess -TestPath $TestDrive } | Should -Throw "TestPath must point to a test file."
+        }
+
+        It "selects the four default test suite directories when no path is supplied" {
+            $selectedPaths = @(Test-ScriptAnalyzer -InProcess)
+            $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+            $expectedPaths = @(
+                "${repoRoot}\Tests\Build"
+                "${repoRoot}\Tests\Engine"
+                "${repoRoot}\Tests\Rules"
+                "${repoRoot}\Tests\Documentation"
+            )
+
+            $selectedPaths.Count | Should -Be 4
+            foreach ($expectedPath in $expectedPaths) {
+                $selectedPaths | Should -Contain $expectedPath
+            }
+        }
+    }
+
     Context "Test result functions" {
         BeforeAll {
             $xmlFile = @'
