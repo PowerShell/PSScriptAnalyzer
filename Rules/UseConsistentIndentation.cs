@@ -391,6 +391,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 tokens[precedingIndex].Kind == TokenKind.Comment &&
                 tokens[precedingIndex].Extent.StartLineNumber == currentLine)
             {
+                firstCommentIndex = precedingIndex;
                 precedingIndex--;
             }
 
@@ -414,11 +415,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokens[precedingCommentIndex].Kind == TokenKind.Comment &&
                     tokens[precedingCommentIndex].Extent.StartLineNumber == previousCommentLine)
                 {
-                    if (HasCodeAfterCommentOnSameLine(tokens, precedingCommentIndex))
-                    {
-                        break;
-                    }
-
                     firstCommentOnPreviousLine = precedingCommentIndex;
                     precedingCommentIndex--;
                 }
