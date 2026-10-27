@@ -320,7 +320,7 @@ function Test-ScriptAnalyzer
         #
         $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         if ($TestPath) {
-            $resolvedTestPath = (Resolve-Path -LiteralPath $TestPath -ErrorAction Stop).Path
+            $resolvedTestPath = (Resolve-Path -LiteralPath $TestPath -ErrorAction Stop).ProviderPath
             if ((Get-Item -LiteralPath $resolvedTestPath).PSIsContainer) {
                 throw "TestPath must point to a test file."
             }

@@ -60,7 +60,7 @@ Describe "Build Module Tests" {
             $selectedPaths = @(Test-ScriptAnalyzer -InProcess -TestPath $testPath)
 
             $selectedPaths.Count | Should -Be 1
-            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).Path
+            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).ProviderPath
         }
 
         It "passes test paths containing apostrophes intact" {
@@ -70,7 +70,7 @@ Describe "Build Module Tests" {
             $selectedPaths = @(Test-ScriptAnalyzer -InProcess -TestPath $testPath)
 
             $selectedPaths.Count | Should -Be 1
-            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).Path
+            $selectedPaths[0] | Should -Be (Resolve-Path -LiteralPath $testPath).ProviderPath
         }
 
         It "fails when the supplied test path does not exist" {
