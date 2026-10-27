@@ -323,7 +323,7 @@ Write-Output |
     <# first #> <# second #>
     <# note #> -InputObject 'value'
 '@
-            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
 
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
                 Should -Be $scriptDefinition

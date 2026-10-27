@@ -606,7 +606,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool PreviousLineEndedWithPipe(Token[] tokens, int tokenIndex, Token token)
         {
-            if (tokenIndex < 2 || token.Extent.StartLineNumber == 1)
+            if (tokenIndex < 2 ||
+                (tokens[tokenIndex - 1].Kind != TokenKind.NewLine &&
+                    tokens[tokenIndex - 1].Kind != TokenKind.LineContinuation) ||
+                token.Extent.StartLineNumber == 1)
             {
                 return false;
             }
