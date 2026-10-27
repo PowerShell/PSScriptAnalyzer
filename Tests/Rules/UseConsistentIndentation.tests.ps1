@@ -408,6 +408,25 @@ if ($a) {
                 Should -Be $expectedScriptDefinition
         }
 
+        It 'Should not include a trailing inline comment in the following comment run' {
+            $scriptDefinition = @'
+function test {
+    $value = 1 # trailing
+        # standalone
+}
+'@
+            $expectedScriptDefinition = @'
+function test {
+    $value = 1 # trailing
+    # standalone
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+
         It 'Should not include a multiline block-comment group followed by code in a comment run' {
             $scriptDefinition = @'
 if ($a) {

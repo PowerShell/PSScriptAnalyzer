@@ -426,6 +426,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (precedingIndex < 0 ||
                     tokens[precedingIndex].Kind != TokenKind.Comment ||
                     HasCodeAfterCommentOnSameLine(tokens, precedingIndex) ||
+                    HasCodeBeforeCommentOnSameLine(tokens, precedingIndex) ||
                     tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1)
                 {
                     break;
@@ -518,6 +519,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 nextToken.Kind != TokenKind.LineContinuation &&
                 nextToken.Kind != TokenKind.EndOfInput &&
                 nextToken.Extent.StartLineNumber <= commentGroupEndLine;
+        }
+
+        private static bool HasCodeBeforeCommentOnSameLine(Token[] tokens, int commentIndex)
+        {
+            int commentStartLine = tokens[commentIndex].Extent.StartLineNumber;
+            int precedingIndex = commentIndex - 1;
+            while (precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind == TokenKind.Comment &&
+                tokens[precedingIndex].Extent.EndLineNumber >= commentStartLine)
+            {
+                precedingIndex--;
+            }
+
+            return precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind != TokenKind.NewLine &&
+                tokens[precedingIndex].Kind != TokenKind.LineContinuation &&
+                tokens[precedingIndex].Extent.EndLineNumber == commentStartLine;
         }
 
         /// <summary>
