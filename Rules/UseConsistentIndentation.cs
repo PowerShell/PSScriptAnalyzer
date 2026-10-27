@@ -404,6 +404,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return 0;
             }
 
+            if (HasCodeBeforeCommentOnSameLine(tokens, tokenIndex))
+            {
+                return 0;
+            }
+
             int firstCommentIndex = tokenIndex;
             int currentLine = tokens[tokenIndex].Extent.StartLineNumber;
             int precedingIndex = tokenIndex - 1;
