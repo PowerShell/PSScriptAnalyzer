@@ -84,6 +84,22 @@ function foo {
     }
 
     Context "When no settings are given" {
+        It "Should preserve verbatim arguments across repeated formatting passes: <ScriptDefinition>" -TestCases @(
+            @{ ScriptDefinition = 'cmd --% raw | text & stuff' }
+            @{ ScriptDefinition = 'cmd --% raw| text' }
+            @{ ScriptDefinition = 'cmd --% raw   | text' }
+            @{ ScriptDefinition = "cmd --% raw`t| text" }
+            @{ ScriptDefinition = 'cmd --% | text' }
+        ) {
+            param($ScriptDefinition)
+
+            $formatted = $ScriptDefinition
+            1..3 | ForEach-Object {
+                $formatted = Invoke-Formatter $formatted
+                $formatted | Should -BeExactly $ScriptDefinition
+            }
+        }
+
         It "Should format using default settings" {
             $def = @'
 function foo

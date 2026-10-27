@@ -358,6 +358,19 @@ $x = "abc";
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "Should still correct whitespace after a pipe following a verbatim argument" {
+            $def = 'cmd --% raw |text'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            @($violations).Count | Should -Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly 'cmd --% raw | text'
+        }
+
+        It "Should still format other pipes around a command with verbatim arguments" {
+            $def = 'foo|cmd --% raw |text|more'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly 'foo | cmd --% raw | text | more'
+        }
+
         It "Should not find a violation if a backtick is before the pipe" {
             $def = @'
 Get-Item `
@@ -402,6 +415,11 @@ foo
         It "Should not find a violation if there is exactly one space around pipe" {
             $def = 'foo | bar'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should preserve whitespace in verbatim arguments while removing redundant whitespace after the pipe" {
+            $def = 'cmd --% raw   |  text'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly 'cmd --% raw   | text'
         }
 
         It "Should find a violation if there is one space too much before pipe" {
