@@ -33,6 +33,19 @@ Describe "AvoidUsingAlias" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'verb' | Where-Object { $_.RuleName -eq $violationName }
             $violations.Count | Should -Be 1
         }
+
+        It "still expands aliases with resource-shaped arguments" {
+            $target = 'icm Server01 { Get-Process }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Invoke-Command'
+        }
+
+        It "still adds the Get prefix to ordinary commands with resource-shaped arguments" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Verb Argument {}' -IncludeRule $violationName
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
     }
 
     Context "Violation Extent" {
@@ -64,6 +77,69 @@ Configuration MyDscConfiguration {
             Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName | `
                 Get-Count | `
                 Should -Be 0
+        }
+
+        It "does not expand DSC resource names during formatting" -skip:($IsLinux -or $IsMacOS) {
+            $target = @'
+Configuration PackageTest {
+    Package PackageExample
+    {
+        Name = "TestPackage"
+    }
+}
+'@
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName |
+                Get-Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+    }
+
+    Context "DSC resource ASTs" {
+        It "ignores resource declarations but not executable commands" {
+            $target = @'
+{
+    Verb VerbExample {}
+    Verb NextLineExample
+    {
+    }
+    icm Server01 { Verb Argument {} }
+    & Verb Argument {}
+    function Get-Example {
+        Verb Argument {}
+    }
+    Node localhost
+    {
+        Verb NestedExample {}
+        Script ScriptExample {
+            SetScript = {
+                icm Server01 {}
+                Verb Argument {}
+            }
+        }
+    }
+    $scriptProperties = @{
+        SetScript = { Verb Argument {} }
+    }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 7
+            $violations[0].Extent.Text | Should -Be 'icm'
+            $violations[1].Extent.Text | Should -Be 'Verb'
+            $violations[2].Extent.Text | Should -Be 'Verb'
+            $violations[3].Extent.Text | Should -Be 'Verb'
+            $violations[4].Extent.Text | Should -Be 'icm'
+            $violations[5].Extent.Text | Should -Be 'Verb'
+            $violations[6].Extent.Text | Should -Be 'Verb'
         }
     }
 

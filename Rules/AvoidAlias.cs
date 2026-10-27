@@ -138,6 +138,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                if (IsDscResourceDeclaration(cmdAst))
+                {
+                    continue;
+                }
+
                 var commdNameWithGetPrefix = $"Get-{commandName}";
                 var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo(name: commdNameWithGetPrefix,
                     commandType: CommandTypes.Cmdlet | CommandTypes.Function | CommandTypes.Script);
@@ -184,6 +189,82 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return false;
+        }
+
+        private bool IsDscResourceDeclaration(CommandAst cmdAst)
+        {
+            if (GetDscResourceBody(cmdAst) == null)
+            {
+                return false;
+            }
+
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ConfigurationDefinitionAst)
+                {
+                    return true;
+                }
+
+                if (parent is FunctionDefinitionAst || parent is HashtableAst)
+                {
+                    return false;
+                }
+
+                // Script resource properties contain executable code, not resource declarations.
+                if (parent is ScriptBlockExpressionAst scriptBlock)
+                {
+                    if (scriptBlock.Parent is CommandAst enclosingCommand)
+                    {
+                        if (GetDscResourceBody(enclosingCommand) != scriptBlock
+                            || !String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(enclosingCommand.GetCommandName()))
+                            || Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null)
+                        {
+                            return false;
+                        }
+                    }
+                    else if (!(scriptBlock.Parent is ConfigurationDefinitionAst)
+                        && !(scriptBlock.Parent is DynamicKeywordStatementAst)
+                        && !(scriptBlock.Parent is CommandExpressionAst))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)
+        {
+            if (cmdAst.InvocationOperator != TokenKind.Unknown
+                || cmdAst.CommandElements.Count < 2
+                || !(cmdAst.CommandElements[1] is ExpressionAst)
+                || cmdAst.CommandElements[1].Extent.Text == "=")
+            {
+                return null;
+            }
+
+            if (cmdAst.CommandElements.Count == 3)
+            {
+                return cmdAst.CommandElements[2] as ScriptBlockExpressionAst;
+            }
+
+            // A resource's opening brace can be on the following line.
+            if (cmdAst.CommandElements.Count == 2 && cmdAst.Parent is PipelineAst pipeline)
+            {
+                var statements = (pipeline.Parent as NamedBlockAst)?.Statements
+                    ?? (pipeline.Parent as StatementBlockAst)?.Statements;
+                int index = statements == null ? -1 : statements.IndexOf(pipeline);
+                if (index >= 0 && index + 1 < statements.Count
+                    && statements[index + 1] is PipelineAst bodyPipeline
+                    && bodyPipeline.PipelineElements.Count == 1
+                    && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
+                {
+                    return bodyExpression.Expression as ScriptBlockExpressionAst;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
