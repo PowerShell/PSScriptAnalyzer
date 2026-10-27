@@ -505,11 +505,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static bool HasCodeAfterCommentOnSameLine(Token[] tokens, int commentIndex)
         {
             Token nextToken = NextTokenIgnoringComments(tokens, commentIndex);
+            int commentGroupEndLine = tokens[commentIndex].Extent.EndLineNumber;
+            for (int i = commentIndex + 1; i < tokens.Length &&
+                tokens[i].Kind == TokenKind.Comment &&
+                tokens[i].Extent.StartLineNumber <= commentGroupEndLine; i++)
+            {
+                commentGroupEndLine = Math.Max(commentGroupEndLine, tokens[i].Extent.EndLineNumber);
+            }
+
             return nextToken != null &&
                 nextToken.Kind != TokenKind.NewLine &&
                 nextToken.Kind != TokenKind.LineContinuation &&
                 nextToken.Kind != TokenKind.EndOfInput &&
-                nextToken.Extent.StartLineNumber <= tokens[commentIndex].Extent.EndLineNumber;
+                nextToken.Extent.StartLineNumber <= commentGroupEndLine;
         }
 
         /// <summary>

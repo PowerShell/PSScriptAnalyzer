@@ -408,6 +408,27 @@ if ($a) {
                 Should -Be $expectedScriptDefinition
         }
 
+        It 'Should not include a multiline block-comment group followed by code in a comment run' {
+            $scriptDefinition = @'
+if ($a) {
+    # comment
+<# first #> <# second
+#> Write-Output 'value'
+}
+'@
+            $expectedScriptDefinition = @'
+if ($a) {
+    # comment
+    <# first #> <# second
+#> Write-Output 'value'
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $expectedScriptDefinition
+        }
+
         It 'Should preserve a comment run containing an internal line continuation with <Kind> indentation' -TestCases @(
             @{ Kind = 'space'; Indentation = '    ' }
             @{ Kind = 'tab'; Indentation = "`t" }
