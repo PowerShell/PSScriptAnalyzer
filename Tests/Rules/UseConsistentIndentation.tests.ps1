@@ -305,6 +305,44 @@ Write-Output `
                 Should -Be $scriptDefinition
         }
 
+        It 'Should preserve continuation indentation after multiple block comments before an argument' {
+            $scriptDefinition = @'
+Write-Output `
+    <# first #> <# second #>
+    <# note #> -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve pipeline context after multiple block comments before an argument' {
+            $scriptDefinition = @'
+Write-Output |
+    <# first #> <# second #>
+    <# note #> -InputObject 'value'
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
+        It 'Should preserve nested indentation across a multiline block comment' {
+            $scriptDefinition = @'
+if ($a) {
+    <# first
+    #> <# second #>
+        # nested
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve indentation with many adjacent block comments' {
             $comments = (1..16 | ForEach-Object { "<# comment $_ #>" }) -join ' '
             $scriptDefinition = @(

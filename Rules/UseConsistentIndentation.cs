@@ -279,9 +279,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             if (tokenIndex > 2 && tokens[tokenIndex - 1].Kind == TokenKind.NewLine
                                 && tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                             {
+                                int precedingCommentIndex = tokenIndex - 2;
+                                while (precedingCommentIndex > 0 &&
+                                    tokens[precedingCommentIndex - 1].Kind == TokenKind.Comment &&
+                                    tokens[precedingCommentIndex - 1].Extent.EndLineNumber >=
+                                        tokens[precedingCommentIndex].Extent.StartLineNumber)
+                                {
+                                    precedingCommentIndex--;
+                                }
+
                                 GetCommentRunIndentationOffset(
                                     tokens,
-                                    tokenIndex - 2,
+                                    precedingCommentIndex,
                                     out bool commentRunStartsAfterLineContinuation,
                                     out _);
                                 if (commentRunStartsAfterLineContinuation)
@@ -366,19 +375,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 commentRunStartsAfterLineContinuation =
                     tokenIndex > 0 &&
                     tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation;
-                if (tokenIndex > 2 &&
-                    (tokens[tokenIndex - 1].Kind == TokenKind.NewLine ||
-                        tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation) &&
-                    tokens[tokenIndex - 2].Kind == TokenKind.Comment &&
-                    (tokens[tokenIndex - 3].Kind == TokenKind.NewLine ||
-                        tokens[tokenIndex - 3].Kind == TokenKind.LineContinuation))
+                int precedingCommentIndex = tokenIndex - 1;
+                if (precedingCommentIndex >= 0 &&
+                    (tokens[precedingCommentIndex].Kind == TokenKind.NewLine ||
+                        tokens[precedingCommentIndex].Kind == TokenKind.LineContinuation))
                 {
-                    GetCommentRunIndentationOffset(
-                        tokens,
-                        tokenIndex - 2,
-                        out bool precedingCommentRunStartsAfterLineContinuation,
-                        out commentRunStartsAfterPipeline);
-                    commentRunStartsAfterLineContinuation |= precedingCommentRunStartsAfterLineContinuation;
+                    precedingCommentIndex--;
+                    if (precedingCommentIndex >= 0 &&
+                        tokens[precedingCommentIndex].Kind == TokenKind.Comment)
+                    {
+                        while (precedingCommentIndex > 0 &&
+                            tokens[precedingCommentIndex - 1].Kind == TokenKind.Comment &&
+                            tokens[precedingCommentIndex - 1].Extent.EndLineNumber >=
+                                tokens[precedingCommentIndex].Extent.StartLineNumber)
+                        {
+                            precedingCommentIndex--;
+                        }
+
+                        GetCommentRunIndentationOffset(
+                            tokens,
+                            precedingCommentIndex,
+                            out bool precedingCommentRunStartsAfterLineContinuation,
+                            out commentRunStartsAfterPipeline);
+                        commentRunStartsAfterLineContinuation |= precedingCommentRunStartsAfterLineContinuation;
+                    }
                 }
 
                 return 0;
@@ -389,12 +409,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int precedingIndex = tokenIndex - 1;
             while (precedingIndex >= 0 &&
                 tokens[precedingIndex].Kind == TokenKind.Comment &&
-                tokens[precedingIndex].Extent.StartLineNumber == currentLine)
+                (tokens[precedingIndex].Extent.StartLineNumber == currentLine ||
+                    tokens[precedingIndex].Extent.EndLineNumber >=
+                        tokens[firstCommentIndex].Extent.StartLineNumber))
             {
                 firstCommentIndex = precedingIndex;
                 precedingIndex--;
             }
 
+            currentLine = tokens[firstCommentIndex].Extent.StartLineNumber;
             while (precedingIndex >= 0 &&
                 (tokens[precedingIndex].Kind == TokenKind.NewLine ||
                     tokens[precedingIndex].Kind == TokenKind.LineContinuation))
@@ -413,7 +436,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 int precedingCommentIndex = precedingIndex - 1;
                 while (precedingCommentIndex >= 0 &&
                     tokens[precedingCommentIndex].Kind == TokenKind.Comment &&
-                    tokens[precedingCommentIndex].Extent.StartLineNumber == previousCommentLine)
+                    (tokens[precedingCommentIndex].Extent.StartLineNumber == previousCommentLine ||
+                        tokens[precedingCommentIndex].Extent.EndLineNumber >=
+                            tokens[firstCommentOnPreviousLine].Extent.StartLineNumber))
                 {
                     firstCommentOnPreviousLine = precedingCommentIndex;
                     precedingCommentIndex--;
@@ -427,7 +452,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 firstCommentIndex = firstCommentOnPreviousLine;
-                currentLine = previousCommentLine;
+                currentLine = tokens[firstCommentOnPreviousLine].Extent.StartLineNumber;
                 precedingIndex = precedingCommentIndex;
             }
 
@@ -441,14 +466,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             while (nextCommentIndex < tokens.Length &&
                 tokens[nextCommentIndex].Kind == TokenKind.Comment)
             {
-                int currentCommentLine = tokens[nextCommentIndex].Extent.StartLineNumber;
+                int currentCommentEndLine = tokens[nextCommentIndex].Extent.EndLineNumber;
                 while (nextCommentIndex < tokens.Length &&
                     tokens[nextCommentIndex].Kind == TokenKind.Comment &&
-                    tokens[nextCommentIndex].Extent.StartLineNumber == currentCommentLine)
+                    tokens[nextCommentIndex].Extent.StartLineNumber <= currentCommentEndLine)
                 {
                     leastIndentedColumn = Math.Min(
                         leastIndentedColumn,
                         tokens[nextCommentIndex].Extent.StartColumnNumber);
+                    currentCommentEndLine = Math.Max(
+                        currentCommentEndLine,
+                        tokens[nextCommentIndex].Extent.EndLineNumber);
                     nextCommentIndex++;
                 }
 
@@ -458,7 +486,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokens[nextCommentIndex + 1].Kind != TokenKind.Comment ||
                     HasCodeAfterCommentOnSameLine(tokens, nextCommentIndex + 1) ||
                     tokens[nextCommentIndex + 1].Extent.StartLineNumber !=
-                        tokens[nextCommentIndex - 1].Extent.EndLineNumber + 1)
+                        currentCommentEndLine + 1)
                 {
                     break;
                 }
