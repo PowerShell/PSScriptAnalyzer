@@ -466,14 +466,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             while (nextCommentIndex < tokens.Length &&
                 tokens[nextCommentIndex].Kind == TokenKind.Comment)
             {
+                int firstCommentInGroup = nextCommentIndex;
                 int currentCommentEndLine = tokens[nextCommentIndex].Extent.EndLineNumber;
                 while (nextCommentIndex < tokens.Length &&
                     tokens[nextCommentIndex].Kind == TokenKind.Comment &&
                     tokens[nextCommentIndex].Extent.StartLineNumber <= currentCommentEndLine)
                 {
-                    leastIndentedColumn = Math.Min(
-                        leastIndentedColumn,
-                        tokens[nextCommentIndex].Extent.StartColumnNumber);
+                    if (nextCommentIndex == firstCommentInGroup)
+                    {
+                        leastIndentedColumn = Math.Min(
+                            leastIndentedColumn,
+                            tokens[nextCommentIndex].Extent.StartColumnNumber);
+                    }
                     currentCommentEndLine = Math.Max(
                         currentCommentEndLine,
                         tokens[nextCommentIndex].Extent.EndLineNumber);
