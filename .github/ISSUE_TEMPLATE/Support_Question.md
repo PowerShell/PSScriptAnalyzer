@@ -1,9 +1,11 @@
 ---
 name: Support Question ❓
-about: If you have a question, you can try asking in the scriptanalyzer channel of the international PowerShell Slack channel first.
+about: Ask a question about using PSScriptAnalyzer.
 
 ---
 
-* Slack Community Chat: https://powershell.slack.com (you can sign-up at http://slack.poshcode.org/ for an invite)
-* Also have a look at the `RoleDocumentation` folder for more information on each rule:
-https://github.com/PowerShell/PSScriptAnalyzer/tree/development/RuleDocumentation
+Before asking a question, check the current documentation:
+
+* [PSScriptAnalyzer overview](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview)
+* [Rules overview](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules/readme)
+* [Cmdlet reference](https://learn.microsoft.com/powershell/module/psscriptanalyzer)
