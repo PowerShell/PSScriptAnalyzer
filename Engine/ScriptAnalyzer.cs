@@ -1556,7 +1556,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             range = isRangeNull ? null : SnapToEdges(text, range);
-            var previousLineCount = text.LineCount;
             var previousUnusedCorrections = 0;
             do
             {
@@ -1578,7 +1577,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
                 int unusedCorrections;
-                Fix(text, corrections, out unusedCorrections);
+                Fix(text, corrections, out unusedCorrections, ref range);
                 var numberOfFixedViolatons = corrections.Count - unusedCorrections;
                 fixesWereApplied = numberOfFixedViolatons > 0;
                 this.outputWriter.WriteVerbose($"Fixed {numberOfFixedViolatons} violations.");
@@ -1595,16 +1594,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
-                var lineCount = text.LineCount;
-                if (!isRangeNull && lineCount != previousLineCount)
-                {
-                    range = new Range(
-                        range.Start,
-                        range.End.Shift(lineCount - previousLineCount, 0));
-                    range = SnapToEdges(text, range);
-                }
-
-                previousLineCount = lineCount;
             } while (previousUnusedCorrections > 0);
 
             updatedRange = range;
@@ -1728,7 +1717,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private static EditableText Fix(
             EditableText text,
             List<CorrectionExtent> correctionExtents,
-            out int unusedCorrections)
+            out int unusedCorrections,
+            ref Range range)
         {
             var correctionsToUse = GetCorrectionExtentsForFix(correctionExtents);
             var count = 0;
@@ -1736,6 +1726,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 count++;
                 text.ApplyEdit(correction);
+                if (range != null)
+                {
+                    var lineDelta = correction.Lines.Length - 1
+                        - (correction.EndLineNumber - correction.StartLineNumber);
+                    var columnDelta = 0;
+                    if (correction.EndLineNumber == range.End.Line)
+                    {
+                        var replacementEndColumn = correction.Lines.Last().TrimEnd('\r').Length
+                            + (correction.Lines.Length == 1 ? correction.StartColumnNumber : 1);
+                        columnDelta = replacementEndColumn - correction.EndColumnNumber;
+                    }
+
+                    range = new Range(range.Start, range.End.Shift(lineDelta, columnDelta));
+                }
             }
 
             unusedCorrections = correctionExtents.Count - count;

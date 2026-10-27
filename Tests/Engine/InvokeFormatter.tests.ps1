@@ -81,6 +81,51 @@ function foo {
 
             Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should -Be $expected
         }
+
+        It "Should apply all corrections when earlier fixes expand the selected line" {
+            $def = "if(`$a){'x'}`nif(`$b){'y'}"
+            $expected = "if(`$a){'x'}`nif (`$b) { 'y' }"
+
+            Invoke-Formatter -ScriptDefinition $def -Range @(2, 1, 2, 12) | Should -Be $expected
+        }
+
+        It "Should track the selected lines when fixes <Name>" -TestCases @(
+            @{
+                Name = 'expand the last line'
+                Selected = "if(`$b){'y'}"
+                Expected = "if (`$b) { 'y' }"
+            }
+            @{
+                Name = 'shorten the last line'
+                Selected = "if  (`$b)  {  'y'  }"
+                Expected = "if (`$b) { 'y' }"
+            }
+            @{
+                Name = 'expand multiple lines'
+                Selected = "if(`$b){'y'}`nif(`$c){'z'}"
+                Expected = "if (`$b) { 'y' }`nif (`$c) { 'z' }"
+            }
+            @{
+                Name = 'remove a line'
+                Selected = "if(`$b)`n{`n'y'`n}"
+                Expected = "if (`$b) {`n    'y'`n}"
+            }
+            @{
+                Name = 'add a line'
+                Selected = "if(`$b) {`n'y'`n}"
+                Expected = "if (`$b)`n{`n    'y'`n}"
+                Settings = 'CodeFormattingAllman'
+            }
+        ) {
+            param($Selected, $Expected, $Settings = 'CodeFormatting')
+
+            $def = "if(`$a){'x'}`n$Selected`nif(`$d){'w'}"
+            $lines = $Selected -split "`n"
+            $range = @(2, 1, (1 + $lines.Count), (1 + $lines[-1].Length))
+
+            Invoke-Formatter -ScriptDefinition $def -Range $range -Settings $Settings |
+                Should -Be "if(`$a){'x'}`n$Expected`nif(`$d){'w'}"
+        }
     }
 
     Context "When no settings are given" {
