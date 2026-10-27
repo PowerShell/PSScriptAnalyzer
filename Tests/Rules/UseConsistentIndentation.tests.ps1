@@ -902,6 +902,37 @@ bar
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $def
         }
 
+        It "Should preserve comment-run indentation in a multiline pipeline using <PipelineIndentation>" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                ExpectedFinalCommandIndentation = '    '
+            }
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                ExpectedFinalCommandIndentation = '        '
+            }
+        ) {
+            param(
+                [string] $PipelineIndentation,
+                [string] $ExpectedFinalCommandIndentation
+            )
+            $def = @(
+                'foo |'
+                '    # first comment'
+                '        # nested comment'
+                '    bar |'
+                "${ExpectedFinalCommandIndentation}baz"
+            ) -join "`n"
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Should -BeNullOrEmpty
+            $formatted = Invoke-Formatter -ScriptDefinition $def -Settings $settings
+            $formatted | Should -Be $def
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $def
+        }
+
         It "Should preserve pipeline indentation across a comment line continuation with PipelineIndentation None" {
             $def = @'
 foo |
