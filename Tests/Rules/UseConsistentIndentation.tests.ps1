@@ -932,6 +932,31 @@ function test {
             Invoke-Formatter -ScriptDefinition $expected -Settings $settings | Should -Be $expected
         }
 
+        It "Should exclude a trailing comment after a line-leading pipe from comment runs" {
+            $def = @'
+function test {
+    foo `
+    | # trailing
+# standalone
+    bar
+}
+'@
+            $expected = @'
+function test {
+    foo `
+    | # trailing
+    # standalone
+    bar
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+            $formatted = Invoke-Formatter -ScriptDefinition $def -Settings $settings
+
+            $formatted | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $expected
+        }
+
         It "Should indent properly after line continuation (backtick) character with pipeline" {
             $def = @'
 foo |
