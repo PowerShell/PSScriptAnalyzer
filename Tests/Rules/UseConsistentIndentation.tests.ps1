@@ -268,6 +268,19 @@ Write-Output `
                 Should -Be $scriptDefinition
         }
 
+        It 'Should preserve indentation when a comment-only line contains multiple block comments' {
+            $scriptDefinition = @'
+if ($a) {
+    <# first #> <# second #>
+        # nested
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve continuation indentation before a block-comment-prefixed argument' {
             $scriptDefinition = @'
 Write-Output `

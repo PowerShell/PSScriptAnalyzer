@@ -388,6 +388,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int currentLine = tokens[tokenIndex].Extent.StartLineNumber;
             int precedingIndex = tokenIndex - 1;
             while (precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind == TokenKind.Comment &&
+                tokens[precedingIndex].Extent.StartLineNumber == currentLine)
+            {
+                precedingIndex--;
+            }
+
+            while (precedingIndex >= 0 &&
                 (tokens[precedingIndex].Kind == TokenKind.NewLine ||
                     tokens[precedingIndex].Kind == TokenKind.LineContinuation))
             {
@@ -395,17 +402,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (precedingIndex < 0 ||
                     tokens[precedingIndex].Kind != TokenKind.Comment ||
                     HasCodeAfterCommentOnSameLine(tokens, precedingIndex) ||
-                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1 ||
-                    (precedingIndex > 0 &&
-                        tokens[precedingIndex - 1].Kind != TokenKind.NewLine &&
-                        tokens[precedingIndex - 1].Kind != TokenKind.LineContinuation))
+                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1)
                 {
                     break;
                 }
 
-                firstCommentIndex = precedingIndex;
-                currentLine = tokens[precedingIndex].Extent.StartLineNumber;
-                precedingIndex--;
+                int previousCommentLine = tokens[precedingIndex].Extent.StartLineNumber;
+                int firstCommentOnPreviousLine = precedingIndex;
+                int precedingCommentIndex = precedingIndex - 1;
+                while (precedingCommentIndex >= 0 &&
+                    tokens[precedingCommentIndex].Kind == TokenKind.Comment &&
+                    tokens[precedingCommentIndex].Extent.StartLineNumber == previousCommentLine)
+                {
+                    if (HasCodeAfterCommentOnSameLine(tokens, precedingCommentIndex))
+                    {
+                        break;
+                    }
+
+                    firstCommentOnPreviousLine = precedingCommentIndex;
+                    precedingCommentIndex--;
+                }
+
+                if (precedingCommentIndex >= 0 &&
+                    tokens[precedingCommentIndex].Kind != TokenKind.NewLine &&
+                    tokens[precedingCommentIndex].Kind != TokenKind.LineContinuation)
+                {
+                    break;
+                }
+
+                firstCommentIndex = firstCommentOnPreviousLine;
+                currentLine = previousCommentLine;
+                precedingIndex = precedingCommentIndex;
             }
 
             commentRunStartsAfterLineContinuation =
@@ -413,19 +440,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 tokens[firstCommentIndex - 1].Kind == TokenKind.LineContinuation;
             commentRunStartsAfterPipeline =
                 PreviousLineEndedWithPipe(tokens, firstCommentIndex, tokens[firstCommentIndex]);
-            int leastIndentedColumn = tokens[firstCommentIndex].Extent.StartColumnNumber;
-            for (int nextCommentIndex = firstCommentIndex + 2;
-                nextCommentIndex < tokens.Length &&
-                    (tokens[nextCommentIndex - 1].Kind == TokenKind.NewLine ||
-                        tokens[nextCommentIndex - 1].Kind == TokenKind.LineContinuation) &&
-                    tokens[nextCommentIndex].Kind == TokenKind.Comment &&
-                    !HasCodeAfterCommentOnSameLine(tokens, nextCommentIndex) &&
-                    tokens[nextCommentIndex].Extent.StartLineNumber == tokens[nextCommentIndex - 2].Extent.EndLineNumber + 1;
-                nextCommentIndex += 2)
+            int leastIndentedColumn = int.MaxValue;
+            int nextCommentIndex = firstCommentIndex;
+            while (nextCommentIndex < tokens.Length &&
+                tokens[nextCommentIndex].Kind == TokenKind.Comment)
             {
-                leastIndentedColumn = Math.Min(
-                    leastIndentedColumn,
-                    tokens[nextCommentIndex].Extent.StartColumnNumber);
+                int currentCommentLine = tokens[nextCommentIndex].Extent.StartLineNumber;
+                while (nextCommentIndex < tokens.Length &&
+                    tokens[nextCommentIndex].Kind == TokenKind.Comment &&
+                    tokens[nextCommentIndex].Extent.StartLineNumber == currentCommentLine)
+                {
+                    leastIndentedColumn = Math.Min(
+                        leastIndentedColumn,
+                        tokens[nextCommentIndex].Extent.StartColumnNumber);
+                    nextCommentIndex++;
+                }
+
+                if (nextCommentIndex + 1 >= tokens.Length ||
+                    (tokens[nextCommentIndex].Kind != TokenKind.NewLine &&
+                        tokens[nextCommentIndex].Kind != TokenKind.LineContinuation) ||
+                    tokens[nextCommentIndex + 1].Kind != TokenKind.Comment ||
+                    HasCodeAfterCommentOnSameLine(tokens, nextCommentIndex + 1) ||
+                    tokens[nextCommentIndex + 1].Extent.StartLineNumber !=
+                        tokens[nextCommentIndex - 1].Extent.EndLineNumber + 1)
+                {
+                    break;
+                }
+
+                nextCommentIndex++;
             }
 
             return tokens[tokenIndex].Extent.StartColumnNumber -
