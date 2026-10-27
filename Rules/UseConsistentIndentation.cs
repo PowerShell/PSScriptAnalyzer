@@ -275,17 +275,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 ++tempIndentationLevel;
                             }
 
-                            // check for comments in between multi-line commands with line continuation
+                            // Check for comments in between multi-line commands with line continuation.
                             if (tokenIndex > 2 && tokens[tokenIndex - 1].Kind == TokenKind.NewLine
                                 && tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                             {
-                                int searchForPrecedingLineContinuationIndex = tokenIndex - 2;
-                                while (searchForPrecedingLineContinuationIndex  > 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.Comment)
+                                int precedingCommentIndex = tokenIndex - 2;
+                                while (precedingCommentIndex > 0 &&
+                                    tokens[precedingCommentIndex - 1].Kind == TokenKind.Comment &&
+                                    tokens[precedingCommentIndex - 1].Extent.EndLineNumber >=
+                                        tokens[precedingCommentIndex].Extent.StartLineNumber)
                                 {
-                                    searchForPrecedingLineContinuationIndex--;
+                                    precedingCommentIndex--;
                                 }
 
-                                if (searchForPrecedingLineContinuationIndex >= 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.LineContinuation)
+                                GetCommentRunIndentationOffset(
+                                    tokens,
+                                    precedingCommentIndex,
+                                    out bool commentRunStartsAfterLineContinuation,
+                                    out _);
+                                if (commentRunStartsAfterLineContinuation)
                                 {
                                     tempIndentationLevel++;
                                 }
@@ -298,7 +306,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
 
                             bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
-                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
+                            int commentIndentationOffset = 0;
+                            if (token.Kind == TokenKind.Comment)
+                            {
+                                commentIndentationOffset = GetCommentRunIndentationOffset(
+                                    tokens,
+                                    tokenIndex,
+                                    out bool commentRunStartsAfterLineContinuation,
+                                    out bool commentRunStartsAfterPipeline);
+                                if (pipelineIndentationStyle == PipelineIndentationStyle.None &&
+                                    commentRunStartsAfterPipeline)
+                                {
+                                    onNewLine = false;
+                                    continue;
+                                }
+                                tempIndentationLevel = indentationLevel +
+                                    (commentRunStartsAfterLineContinuation ? 1 : 0);
+                            }
+
+                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken, commentIndentationOffset);
                         }
                         break;
                 }
@@ -334,6 +360,187 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static int GetCommentRunIndentationOffset(
+            Token[] tokens,
+            int tokenIndex,
+            out bool commentRunStartsAfterLineContinuation,
+            out bool commentRunStartsAfterPipeline)
+        {
+            commentRunStartsAfterLineContinuation = false;
+            commentRunStartsAfterPipeline = false;
+            if (HasCodeAfterCommentOnSameLine(tokens, tokenIndex))
+            {
+                commentRunStartsAfterLineContinuation =
+                    tokenIndex > 0 &&
+                    tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation;
+                int precedingCommentIndex = tokenIndex - 1;
+                if (precedingCommentIndex >= 0 &&
+                    (tokens[precedingCommentIndex].Kind == TokenKind.NewLine ||
+                        tokens[precedingCommentIndex].Kind == TokenKind.LineContinuation))
+                {
+                    precedingCommentIndex--;
+                    if (precedingCommentIndex >= 0 &&
+                        tokens[precedingCommentIndex].Kind == TokenKind.Comment)
+                    {
+                        while (precedingCommentIndex > 0 &&
+                            tokens[precedingCommentIndex - 1].Kind == TokenKind.Comment &&
+                            tokens[precedingCommentIndex - 1].Extent.EndLineNumber >=
+                                tokens[precedingCommentIndex].Extent.StartLineNumber)
+                        {
+                            precedingCommentIndex--;
+                        }
+
+                        GetCommentRunIndentationOffset(
+                            tokens,
+                            precedingCommentIndex,
+                            out bool precedingCommentRunStartsAfterLineContinuation,
+                            out commentRunStartsAfterPipeline);
+                        commentRunStartsAfterLineContinuation |= precedingCommentRunStartsAfterLineContinuation;
+                    }
+                }
+
+                return 0;
+            }
+
+            if (HasCodeBeforeCommentOnSameLine(tokens, tokenIndex))
+            {
+                return 0;
+            }
+
+            int firstCommentIndex = tokenIndex;
+            int currentLine = tokens[tokenIndex].Extent.StartLineNumber;
+            int precedingIndex = tokenIndex - 1;
+            while (precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind == TokenKind.Comment &&
+                (tokens[precedingIndex].Extent.StartLineNumber == currentLine ||
+                    tokens[precedingIndex].Extent.EndLineNumber >=
+                        tokens[firstCommentIndex].Extent.StartLineNumber))
+            {
+                firstCommentIndex = precedingIndex;
+                precedingIndex--;
+            }
+
+            currentLine = tokens[firstCommentIndex].Extent.StartLineNumber;
+            while (precedingIndex >= 0 &&
+                (tokens[precedingIndex].Kind == TokenKind.NewLine ||
+                    tokens[precedingIndex].Kind == TokenKind.LineContinuation))
+            {
+                precedingIndex--;
+                if (precedingIndex < 0 ||
+                    tokens[precedingIndex].Kind != TokenKind.Comment ||
+                    HasCodeAfterCommentOnSameLine(tokens, precedingIndex) ||
+                    HasCodeBeforeCommentOnSameLine(tokens, precedingIndex) ||
+                    tokens[precedingIndex].Extent.EndLineNumber != currentLine - 1)
+                {
+                    break;
+                }
+
+                int previousCommentLine = tokens[precedingIndex].Extent.StartLineNumber;
+                int firstCommentOnPreviousLine = precedingIndex;
+                int precedingCommentIndex = precedingIndex - 1;
+                while (precedingCommentIndex >= 0 &&
+                    tokens[precedingCommentIndex].Kind == TokenKind.Comment &&
+                    (tokens[precedingCommentIndex].Extent.StartLineNumber == previousCommentLine ||
+                        tokens[precedingCommentIndex].Extent.EndLineNumber >=
+                            tokens[firstCommentOnPreviousLine].Extent.StartLineNumber))
+                {
+                    firstCommentOnPreviousLine = precedingCommentIndex;
+                    precedingCommentIndex--;
+                }
+
+                if (precedingCommentIndex >= 0 &&
+                    tokens[precedingCommentIndex].Kind != TokenKind.NewLine &&
+                    tokens[precedingCommentIndex].Kind != TokenKind.LineContinuation)
+                {
+                    break;
+                }
+
+                firstCommentIndex = firstCommentOnPreviousLine;
+                currentLine = tokens[firstCommentOnPreviousLine].Extent.StartLineNumber;
+                precedingIndex = precedingCommentIndex;
+            }
+
+            commentRunStartsAfterLineContinuation =
+                firstCommentIndex > 0 &&
+                tokens[firstCommentIndex - 1].Kind == TokenKind.LineContinuation;
+            commentRunStartsAfterPipeline =
+                PreviousLineEndedWithPipe(tokens, firstCommentIndex, tokens[firstCommentIndex]);
+            int leastIndentedColumn = int.MaxValue;
+            int nextCommentIndex = firstCommentIndex;
+            while (nextCommentIndex < tokens.Length &&
+                tokens[nextCommentIndex].Kind == TokenKind.Comment)
+            {
+                int firstCommentInGroup = nextCommentIndex;
+                int currentCommentEndLine = tokens[nextCommentIndex].Extent.EndLineNumber;
+                while (nextCommentIndex < tokens.Length &&
+                    tokens[nextCommentIndex].Kind == TokenKind.Comment &&
+                    tokens[nextCommentIndex].Extent.StartLineNumber <= currentCommentEndLine)
+                {
+                    if (nextCommentIndex == firstCommentInGroup)
+                    {
+                        leastIndentedColumn = Math.Min(
+                            leastIndentedColumn,
+                            tokens[nextCommentIndex].Extent.StartColumnNumber);
+                    }
+                    currentCommentEndLine = Math.Max(
+                        currentCommentEndLine,
+                        tokens[nextCommentIndex].Extent.EndLineNumber);
+                    nextCommentIndex++;
+                }
+
+                if (nextCommentIndex + 1 >= tokens.Length ||
+                    (tokens[nextCommentIndex].Kind != TokenKind.NewLine &&
+                        tokens[nextCommentIndex].Kind != TokenKind.LineContinuation) ||
+                    tokens[nextCommentIndex + 1].Kind != TokenKind.Comment ||
+                    HasCodeAfterCommentOnSameLine(tokens, nextCommentIndex + 1) ||
+                    tokens[nextCommentIndex + 1].Extent.StartLineNumber !=
+                        currentCommentEndLine + 1)
+                {
+                    break;
+                }
+
+                nextCommentIndex++;
+            }
+
+            return tokens[tokenIndex].Extent.StartColumnNumber -
+                leastIndentedColumn;
+        }
+
+        private static bool HasCodeAfterCommentOnSameLine(Token[] tokens, int commentIndex)
+        {
+            Token nextToken = NextTokenIgnoringComments(tokens, commentIndex);
+            int commentGroupEndLine = tokens[commentIndex].Extent.EndLineNumber;
+            for (int i = commentIndex + 1; i < tokens.Length &&
+                tokens[i].Kind == TokenKind.Comment &&
+                tokens[i].Extent.StartLineNumber <= commentGroupEndLine; i++)
+            {
+                commentGroupEndLine = Math.Max(commentGroupEndLine, tokens[i].Extent.EndLineNumber);
+            }
+
+            return nextToken != null &&
+                nextToken.Kind != TokenKind.NewLine &&
+                nextToken.Kind != TokenKind.LineContinuation &&
+                nextToken.Kind != TokenKind.EndOfInput &&
+                nextToken.Extent.StartLineNumber <= commentGroupEndLine;
+        }
+
+        private static bool HasCodeBeforeCommentOnSameLine(Token[] tokens, int commentIndex)
+        {
+            int commentStartLine = tokens[commentIndex].Extent.StartLineNumber;
+            int precedingIndex = commentIndex - 1;
+            while (precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind == TokenKind.Comment &&
+                tokens[precedingIndex].Extent.EndLineNumber >= commentStartLine)
+            {
+                precedingIndex--;
+            }
+
+            return precedingIndex >= 0 &&
+                tokens[precedingIndex].Kind != TokenKind.NewLine &&
+                tokens[precedingIndex].Kind != TokenKind.LineContinuation &&
+                tokens[precedingIndex].Extent.EndLineNumber == commentStartLine;
         }
 
         /// <summary>
@@ -434,7 +641,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool PreviousLineEndedWithPipe(Token[] tokens, int tokenIndex, Token token)
         {
-            if (tokenIndex < 2 || token.Extent.StartLineNumber == 1)
+            if (tokenIndex < 2 ||
+                (tokens[tokenIndex - 1].Kind != TokenKind.NewLine &&
+                    tokens[tokenIndex - 1].Kind != TokenKind.LineContinuation) ||
+                token.Extent.StartLineNumber == 1)
             {
                 return false;
             }
@@ -612,12 +822,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int expectedIndentationLevel,
             List<DiagnosticRecord> diagnosticRecords,
             ref bool onNewLine,
-            bool lineHasPipelineBeforeToken = false)
+            bool lineHasPipelineBeforeToken = false,
+            int indentationOffset = 0)
         {
             if (onNewLine)
             {
                 onNewLine = false;
-                if (token.Extent.StartColumnNumber - 1 != GetIndentation(expectedIndentationLevel))
+                int expectedIndentation = Math.Max(0, GetIndentation(expectedIndentationLevel) + indentationOffset);
+                if (token.Extent.StartColumnNumber - 1 != expectedIndentation)
                 {
                     var fileName = token.Extent.File;
                     var extent = token.Extent;
@@ -640,14 +852,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            GetSuggestedCorrections(token, expectedIndentationLevel, lineHasPipelineBeforeToken)));
+                            GetSuggestedCorrections(token, expectedIndentation, lineHasPipelineBeforeToken)));
                 }
             }
         }
 
         private List<CorrectionExtent> GetSuggestedCorrections(
             Token token,
-            int indentationLevel,
+            int indentation,
             bool lineHasPipelineBeforeToken = false)
         {
             // TODO Add another constructor for correction extent that takes extent
@@ -661,7 +873,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 token.Extent.EndLineNumber,
                 1,
                 token.Extent.EndColumnNumber,
-                GetIndentationString(indentationLevel) + optionalPipeline + token.Extent.Text,
+                new string(indentationChar, indentation) + optionalPipeline + token.Extent.Text,
                 token.Extent.File));
             return corrections;
         }
@@ -677,9 +889,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return indentationLevel * indentationLevelMultiplier;
         }
 
-        private string GetIndentationString(int indentationLevel)
-        {
-            return new string(indentationChar, GetIndentation(indentationLevel));
-        }
     }
 }

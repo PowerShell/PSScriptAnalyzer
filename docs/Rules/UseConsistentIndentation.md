@@ -15,6 +15,9 @@ title: UseConsistentIndentation
 This rule detects inconsistent indentation patterns within a source file. Indentation should be
 consistent throughout your script.
 
+Consecutive comment lines are shifted together to preserve their relative indentation, including
+when a line continuation occurs within the comment run.
+
 ## Example
 
 ### Noncompliant
