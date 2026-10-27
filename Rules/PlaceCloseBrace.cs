@@ -277,9 +277,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var corrections = new List<CorrectionExtent>();
             var nextToken = tokens[closeBracePos + 1];
             var closeBraceToken = tokens[closeBracePos];
+
+            // Also remove the whitespace between the close brace and the next token
+            // and indent the next token to the same level as the close brace
             corrections.Add(new CorrectionExtent(
-                closeBraceToken.Extent,
-                closeBraceToken.Text + Environment.NewLine,
+                closeBraceToken.Extent.StartLineNumber,
+                nextToken.Extent.StartLineNumber,
+                closeBraceToken.Extent.StartColumnNumber,
+                nextToken.Extent.StartColumnNumber,
+                closeBraceToken.Text + Environment.NewLine + GetIndentation(tokens, closeBracePos, openBracePos),
                 fileName));
             return corrections;
         }
@@ -296,7 +302,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // if open brace follows any keywords use the identation of the first keyword
             // on the line containing the open brace
             Token firstTokenOnOpenBraceLine = openBraceToken;
-            for (int k = openBracePos; k > 0; --k)
+            for (int k = openBracePos; k >= 0; --k)
             {
                 if (tokens[k].Extent.StartLineNumber == firstTokenOnOpenBraceLine.Extent.StartLineNumber)
                 {
@@ -433,10 +439,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var corrections = new List<CorrectionExtent>();
             var closeBraceToken = tokens[closeBracePos];
+
+            // Also remove any whitespace between the preceding token and the close brace
+            // so that the preceding line does not end with a trailing whitespace
+            var startLineNumber = closeBraceToken.Extent.StartLineNumber;
+            var startColumnNumber = closeBraceToken.Extent.StartColumnNumber;
+            var precedingTokenExtent = tokens[closeBracePos - 1].Extent;
+            if (precedingTokenExtent.EndLineNumber == startLineNumber)
+            {
+                startColumnNumber = precedingTokenExtent.EndColumnNumber;
+            }
+
             corrections.Add(new CorrectionExtent(
-                closeBraceToken.Extent.StartLineNumber,
+                startLineNumber,
                 closeBraceToken.Extent.EndLineNumber,
-                closeBraceToken.Extent.StartColumnNumber,
+                startColumnNumber,
                 closeBraceToken.Extent.EndColumnNumber,
                 Environment.NewLine + GetIndentation(tokens, closeBracePos, openBracePos) + closeBraceToken.Extent.Text,
                 fileName));
