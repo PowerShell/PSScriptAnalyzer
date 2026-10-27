@@ -1,6 +1,6 @@
 ---
 description: Use compatible commands
-ms.date: 10/18/2026
+ms.date: 07/21/2026
 ms.topic: reference
 title: UseCompatibleCommands
 ---
