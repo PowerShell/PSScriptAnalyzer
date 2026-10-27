@@ -343,6 +343,22 @@ if ($a) {
                 Should -Be $scriptDefinition
         }
 
+        It 'Should not increase indentation across a multiline block comment when repeatedly formatted' {
+            $scriptDefinition = @'
+if ($a) {
+    <# first
+#> <# second #>
+        # nested
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+
+            $formatted = Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
+            $formatted | Should -Be $scriptDefinition
+            Invoke-Formatter -ScriptDefinition $formatted -Settings $settings |
+                Should -Be $scriptDefinition
+        }
+
         It 'Should preserve indentation with many adjacent block comments' {
             $comments = (1..16 | ForEach-Object { "<# comment $_ #>" }) -join ' '
             $scriptDefinition = @(
