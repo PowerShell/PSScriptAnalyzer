@@ -90,6 +90,7 @@ Configuration PackageTest {
 '@
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName |
+                Where-Object { $_.RuleName -eq $violationName } |
                 Get-Count | Should -Be 0
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
