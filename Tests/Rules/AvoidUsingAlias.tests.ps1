@@ -146,6 +146,45 @@ Configuration PackageTest {
             $violations[5].Extent.Text | Should -Be 'Verb'
             $violations[6].Extent.Text | Should -Be 'Verb'
         }
+
+        It "does not ignore executable commands in assignment and expression contexts or pipelines" {
+            $target = @'
+{
+    $items = ChildItem . {}
+    $result = Verb Argument {}
+    $action = { Verb Argument {} }
+    Name = (Verb Argument {})
+    Script ScriptExample {
+        SetScript =
+        {
+            Verb Argument {}
+        }
+    }
+    Verb Argument {} | Out-Null
+    gci . | Out-Null
+    {
+    }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 7
+            $violations[0].Extent.Text | Should -Be 'ChildItem'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
+            $violations[1].Extent.Text | Should -Be 'Verb'
+            $violations[2].Extent.Text | Should -Be 'Verb'
+            $violations[3].Extent.Text | Should -Be 'Verb'
+            $violations[4].Extent.Text | Should -Be 'Verb'
+            $violations[5].Extent.Text | Should -Be 'Verb'
+            $violations[6].Extent.Text | Should -Be 'gci'
+        }
     }
 
     Context "Settings file provides allowlist" {
