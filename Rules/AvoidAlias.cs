@@ -247,7 +247,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         if (GetDscResourceBody(enclosingCommand) != scriptBlock
                             || !String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(enclosingCommand.GetCommandName()))
-                            || Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null)
+                            || (!String.Equals(enclosingCommand.GetCommandName(), "Node", StringComparison.OrdinalIgnoreCase)
+                                && Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null))
                         {
                             return false;
                         }
