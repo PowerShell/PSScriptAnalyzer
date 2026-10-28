@@ -233,12 +233,14 @@ Configuration PackageTest {
             }
         }
 
-        It "does not pair following-line blocks with commands when the block has redirections or a statement terminator intervenes" {
+        It "does not pair following-line blocks with commands when the block has redirections or a statement separator intervenes" {
             $target = @'
 {
     gci .
     {} > $null
     gci .; {}
+    gci . &
+    {}
 }
 '@
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
@@ -250,7 +252,7 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 2
+            $violations.Count | Should -Be 3
             $violations | ForEach-Object {
                 $_.Extent.Text | Should -Be 'gci'
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
