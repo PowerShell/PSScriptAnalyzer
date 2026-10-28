@@ -10,6 +10,7 @@ Describe 'AvoidValidateRangeTypeMismatch' {
         $scripts = @(
             'function Test { param([double][ValidateRange(1, 2)]$Value) }'
             'function Test { param([single][ValidateRange(-1, 2)]$Value) }'
+            'function Test { param([decimal][ValidateRange(1, 2)]$Value) }'
             'function Test { param([double[]][ValidateRange(1, 2)]$Values) }'
             'function Test { param([double][System.Management.Automation.ValidateRangeAttribute(1, 2)]$Value) }'
             'function Test { param([double][ValidateRange([int]0.0, [int]100.0)]$Value) }'
