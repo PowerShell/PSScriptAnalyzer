@@ -1733,12 +1733,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var columnDelta = 0;
                     if (correction.EndLineNumber == range.End.Line)
                     {
-                        var replacementEndColumn = correction.Lines.Last().TrimEnd('\r').Length
-                            + (correction.Lines.Length == 1 ? correction.StartColumnNumber : 1);
+                        var replacementEndColumn = correction.Lines.Length == 0
+                            ? correction.StartColumnNumber
+                            : correction.Lines.Last().TrimEnd('\r').Length
+                                + (correction.Lines.Length == 1 ? correction.StartColumnNumber : 1);
                         columnDelta = replacementEndColumn - correction.EndColumnNumber;
                     }
 
-                    range = new Range(range.Start, range.End.Shift(lineDelta, columnDelta));
+                    var endLine = range.End.Line + lineDelta;
+                    if (correction.Lines.Length == 0 && endLine < range.Start.Line)
+                    {
+                        if (text.LineCount == 0)
+                        {
+                            range = null;
+                        }
+                        else
+                        {
+                            endLine = Math.Min(Math.Max(endLine, 1), text.LineCount);
+                            var endColumn = Math.Min(
+                                Math.Max(range.End.Column + columnDelta, 1),
+                                text.Lines[endLine - 1].Length + 1);
+                            var end = new Position(endLine, endColumn);
+                            range = new Range(end, end);
+                        }
+                    }
+                    else
+                    {
+                        range = new Range(range.Start, range.End.Shift(lineDelta, columnDelta));
+                    }
                 }
             }
 

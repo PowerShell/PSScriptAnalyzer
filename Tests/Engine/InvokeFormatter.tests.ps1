@@ -82,6 +82,57 @@ function foo {
             Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should -Be $expected
         }
 
+        It "Should track the range when an edit deletes its last line" {
+            $text = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" -ArgumentList "first`n`nlast"
+            $correctionType = "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent" -as [type]
+            $correction = [Activator]::CreateInstance(
+                $correctionType,
+                [object[]]@(2, 2, 1, 1, [string[]]@(), $null, $null))
+            $correctionsType = [System.Collections.Generic.List``1].MakeGenericType($correctionType)
+            $corrections = [Activator]::CreateInstance($correctionsType)
+            $corrections.Add($correction)
+            $range = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.Range" -ArgumentList 1, 1, 2, 1
+            $arguments = [object[]]@(
+                $text.PSObject.BaseObject,
+                $corrections.PSObject.BaseObject,
+                0,
+                $range.PSObject.BaseObject)
+            $fixMethod = ("Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer" -as [type]).GetMethod(
+                'Fix',
+                [Reflection.BindingFlags]'NonPublic, Static')
+
+            $fixMethod.Invoke($null, $arguments) | Out-Null
+
+            $text.ToString() | Should -Be "first`nlast"
+            $arguments[3].End.Line | Should -Be 1
+        }
+
+        It "Should collapse the range when an edit deletes all selected lines" {
+            $text = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" -ArgumentList "first`nlast"
+            $correctionType = "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent" -as [type]
+            $correction = [Activator]::CreateInstance(
+                $correctionType,
+                [object[]]@(2, 2, 1, 5, [string[]]@(), $null, $null))
+            $correctionsType = [System.Collections.Generic.List``1].MakeGenericType($correctionType)
+            $corrections = [Activator]::CreateInstance($correctionsType)
+            $corrections.Add($correction)
+            $range = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.Range" -ArgumentList 2, 1, 2, 5
+            $arguments = [object[]]@(
+                $text.PSObject.BaseObject,
+                $corrections.PSObject.BaseObject,
+                0,
+                $range.PSObject.BaseObject)
+            $fixMethod = ("Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer" -as [type]).GetMethod(
+                'Fix',
+                [Reflection.BindingFlags]'NonPublic, Static')
+
+            $fixMethod.Invoke($null, $arguments) | Out-Null
+
+            $text.ToString() | Should -Be "first"
+            $arguments[3].Start.Line | Should -Be 1
+            $arguments[3].End.Line | Should -Be 1
+        }
+
         It "Should apply all corrections when earlier fixes expand the selected line" {
             $def = "if(`$a){'x'}`nif(`$b){'y'}"
             $expected = "if(`$a){'x'}`nif (`$b) { 'y' }"
