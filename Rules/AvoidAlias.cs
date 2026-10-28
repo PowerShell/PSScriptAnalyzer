@@ -133,13 +133,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                // If we find match of any kind, do not continue with the Get-{commandname} check
-                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                if (IsDscResourceDeclaration(cmdAst))
+                {
                     continue;
                 }
 
-                if (IsDscResourceDeclaration(cmdAst))
-                {
+                // If we find match of any kind, do not continue with the Get-{commandname} check
+                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
                     continue;
                 }
 
