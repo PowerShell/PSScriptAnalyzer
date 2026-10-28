@@ -103,6 +103,10 @@ Configuration PackageTest {
     Verb NextLineExample
     {
     }
+    gci ResourceAliasExample
+    {
+        Name = "Example"
+    }
     icm Server01 { Verb Argument {} }
     & Verb Argument {}
     function Get-Example {

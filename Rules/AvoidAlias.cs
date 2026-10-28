@@ -119,6 +119,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
+                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst);
+                if (isDscResourceDeclaration
+                    && (String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias) || cmdAst.CommandElements.Count == 2))
+                {
+                    continue;
+                }
+
                 if (!String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     yield return new DiagnosticRecord(
@@ -130,11 +137,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         commandName,
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
                     // do not continue the search, but go to the next command
-                    continue;
-                }
-
-                if (IsDscResourceDeclaration(cmdAst))
-                {
                     continue;
                 }
 
