@@ -195,7 +195,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsDscResourceDeclaration(CommandAst cmdAst)
         {
-            if (GetDscResourceBody(cmdAst) == null)
+            bool hasConfigurationAncestor = false;
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ConfigurationDefinitionAst)
+                {
+                    hasConfigurationAncestor = true;
+                    break;
+                }
+
+                if (parent is FunctionDefinitionAst
+                    || parent is HashtableAst
+                    || parent is AssignmentStatementAst
+                    || parent is ParenExpressionAst)
+                {
+                    return false;
+                }
+            }
+
+            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null)
             {
                 return false;
             }
@@ -207,7 +225,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return true;
                 }
 
-                if (parent is FunctionDefinitionAst || parent is HashtableAst)
+                if (parent is FunctionDefinitionAst
+                    || parent is HashtableAst
+                    || parent is AssignmentStatementAst
+                    || parent is ParenExpressionAst)
+                {
+                    return false;
+                }
+
+                if (parent is CommandExpressionAst commandExpression
+                    && (!(commandExpression.Expression is ScriptBlockExpressionAst body)
+                        || !IsFollowingLineDscResourceBody(body)))
                 {
                     return false;
                 }
@@ -236,12 +264,54 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
+        private bool IsFollowingLineDscResourceBody(ScriptBlockExpressionAst body)
+        {
+            if (!(body.Parent is CommandExpressionAst bodyExpression)
+                || !(bodyExpression.Parent is PipelineAst bodyPipeline)
+                || bodyPipeline.PipelineElements.Count != 1
+                || bodyPipeline.PipelineElements[0] != bodyExpression)
+            {
+                return false;
+            }
+
+            Ast statement = bodyPipeline;
+            for (Ast parent = bodyPipeline.Parent; parent != null; parent = parent.Parent)
+            {
+                var statements = (parent as NamedBlockAst)?.Statements
+                    ?? (parent as StatementBlockAst)?.Statements;
+                if (statements == null)
+                {
+                    statement = parent;
+                    continue;
+                }
+
+                int index = statements.IndexOf(statement as StatementAst);
+                if (index <= 0 || !(statements[index - 1] is PipelineAst declarationPipeline)
+                    || declarationPipeline.PipelineElements.Count != 1
+                    || !(declarationPipeline.PipelineElements[0] is CommandAst declaration))
+                {
+                    return false;
+                }
+
+                return GetDscResourceBody(declaration) == body;
+            }
+
+            return false;
+        }
+
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)
         {
             if (cmdAst.InvocationOperator != TokenKind.Unknown
                 || cmdAst.CommandElements.Count < 2
                 || !(cmdAst.CommandElements[1] is ExpressionAst)
                 || cmdAst.CommandElements[1].Extent.Text == "=")
+            {
+                return null;
+            }
+
+            if (!(cmdAst.Parent is PipelineAst commandPipeline)
+                || commandPipeline.PipelineElements.Count != 1
+                || commandPipeline.PipelineElements[0] != cmdAst)
             {
                 return null;
             }
