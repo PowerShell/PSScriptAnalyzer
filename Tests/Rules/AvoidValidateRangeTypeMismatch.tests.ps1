@@ -13,6 +13,17 @@ public class ValidateRangeBoundsBaseForScriptAnalyzer
 public class ValidateRangeBoundsForScriptAnalyzer : ValidateRangeBoundsBaseForScriptAnalyzer
 {
 }
+
+namespace Contoso
+{
+    [System.AttributeUsage(System.AttributeTargets.All)]
+    public class ValidateRangeAttribute : System.Attribute
+    {
+        public ValidateRangeAttribute(int minRange, int maxRange)
+        {
+        }
+    }
+}
 '@
     }
 
