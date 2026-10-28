@@ -4,6 +4,39 @@
 Describe 'AvoidValidateRangeTypeMismatch' {
     BeforeAll {
         $ruleName = 'PSAvoidValidateRangeTypeMismatch'
+        Add-Type -TypeDefinition @'
+public class ValidateRangeBoundsBaseForScriptAnalyzer
+{
+    public const int Max = 100;
+}
+
+public class ValidateRangeBoundsForScriptAnalyzer : ValidateRangeBoundsBaseForScriptAnalyzer
+{
+    public static readonly int ReadonlyIntegral = 100;
+    public const double FloatingPoint = 100.0;
+    public static int ThrowingGetterInvocationCount;
+
+    public static int ThrowingProperty
+    {
+        get
+        {
+            ThrowingGetterInvocationCount++;
+            throw new System.InvalidOperationException();
+        }
+    }
+}
+
+namespace Contoso
+{
+    [System.AttributeUsage(System.AttributeTargets.All)]
+    public class ValidateRangeAttribute : System.Attribute
+    {
+        public ValidateRangeAttribute(int minRange, int maxRange)
+        {
+        }
+    }
+}
+'@
     }
 
     It 'reports integral boundaries for floating-point and decimal parameter types' {
@@ -15,6 +48,9 @@ Describe 'AvoidValidateRangeTypeMismatch' {
             'function Test { param([double][System.Management.Automation.ValidateRangeAttribute(1, 2)]$Value) }'
             'function Test { param([double][ValidateRange([int]0.0, [int]100.0)]$Value) }'
             'function Test { param([double][ValidateRange([int32]0.0, [int32]100.0)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [int]::MaxValue)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::Max)]$Value) }'
+            'function Test { param([double][System.Management.Automation.ValidateRange(0, 100)]$Value) }'
         )
 
         foreach ($scriptDefinition in $scripts) {
@@ -30,11 +66,27 @@ Describe 'AvoidValidateRangeTypeMismatch' {
             'function Test { param([single][ValidateRange(1.0, 2.0)]$Value) }'
             'function Test { param([decimal][ValidateRange(1.0, 2.0)]$Value) }'
             'function Test { param([double][ValidateRange(1, 2.0)]$Value) }'
+            'function Test { param([double][Contoso.ValidateRange(0, 100)]$Value) }'
             'function Test { param([int][ValidateRange(1, 2)]$Value) }'
         )
 
         foreach ($scriptDefinition in $scripts) {
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName | Should -BeNullOrEmpty
         }
+    }
+
+    It 'ignores non-constant static member expressions without invoking getters' {
+        $scripts = @(
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::ThrowingProperty)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::ReadonlyIntegral)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::FloatingPoint)]$Value) }'
+        )
+
+        foreach ($scriptDefinition in $scripts) {
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName |
+                Where-Object RuleName -eq $ruleName | Should -BeNullOrEmpty
+        }
+
+        [ValidateRangeBoundsForScriptAnalyzer]::ThrowingGetterInvocationCount | Should -Be 0
     }
 }

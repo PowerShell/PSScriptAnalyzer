@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -109,16 +110,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return IsIntegralBoundary(unaryExpressionAst.Child);
             }
 
+            if (expressionAst is MemberExpressionAst memberExpressionAst
+                && memberExpressionAst.Static
+                && memberExpressionAst.Expression is TypeExpressionAst typeExpressionAst
+                && memberExpressionAst.Member is StringConstantExpressionAst memberName)
+            {
+                Type type = typeExpressionAst.TypeName.GetReflectionType();
+                FieldInfo field = type?.GetField(memberName.Value, BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy);
+                return field != null && field.IsLiteral && IntegralTypes.Contains(field.FieldType);
+            }
+
             return false;
         }
 
         private static bool IsValidateRangeAttribute(AttributeAst attributeAst)
         {
-            string attributeName = attributeAst.TypeName.FullName;
-            int lastDot = attributeName.LastIndexOf('.');
-            string simpleName = lastDot < 0 ? attributeName : attributeName.Substring(lastDot + 1);
-            return String.Equals(simpleName, "ValidateRange", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(simpleName, "ValidateRangeAttribute", StringComparison.OrdinalIgnoreCase);
+            return attributeAst.TypeName.GetReflectionAttributeType() == typeof(System.Management.Automation.ValidateRangeAttribute);
         }
 
         public string GetName()
