@@ -348,7 +348,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && bodyPipeline.PipelineElements.Count == 1
                         && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
                     {
-                        if (HasStatementTerminator(pipeline, bodyPipeline)
+                        if (HasSemicolonSeparator(pipeline, bodyPipeline)
                             || bodyExpression.Redirections.Count != 0)
                         {
                             return null;
@@ -364,7 +364,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private bool HasStatementTerminator(Ast statement, Ast nextStatement)
+        private bool HasSemicolonSeparator(Ast statement, Ast nextStatement)
         {
             int separatorStart = statement.Extent.EndOffset;
             int separatorLength = nextStatement.Extent.StartOffset - separatorStart;
@@ -375,6 +375,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             string script = statement.Extent.EndScriptPosition.GetFullScript();
             string separator = script.Substring(separatorStart, separatorLength);
+            if (separator.IndexOf(';') < 0)
+            {
+                return false;
+            }
+
             Parser.ParseInput(separator, out Token[] tokens, out ParseError[] errors);
             return tokens.Any(token => token.Kind == TokenKind.Semi);
         }
