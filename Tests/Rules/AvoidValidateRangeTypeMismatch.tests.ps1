@@ -15,6 +15,7 @@ Describe 'AvoidValidateRangeTypeMismatch' {
             'function Test { param([double][System.Management.Automation.ValidateRangeAttribute(1, 2)]$Value) }'
             'function Test { param([double][ValidateRange([int]0.0, [int]100.0)]$Value) }'
             'function Test { param([double][ValidateRange([int32]0.0, [int32]100.0)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [int]::MaxValue)]$Value) }'
         )
 
         foreach ($scriptDefinition in $scripts) {
@@ -30,6 +31,7 @@ Describe 'AvoidValidateRangeTypeMismatch' {
             'function Test { param([single][ValidateRange(1.0, 2.0)]$Value) }'
             'function Test { param([decimal][ValidateRange(1.0, 2.0)]$Value) }'
             'function Test { param([double][ValidateRange(1, 2.0)]$Value) }'
+            'function Test { param([double][Contoso.ValidateRange(0, 100)]$Value) }'
             'function Test { param([int][ValidateRange(1, 2)]$Value) }'
         )
 
