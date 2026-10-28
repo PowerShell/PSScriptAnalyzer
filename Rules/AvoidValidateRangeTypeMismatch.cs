@@ -21,23 +21,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public sealed class AvoidValidateRangeTypeMismatch : IScriptRule
     {
-        private static readonly HashSet<string> FloatingPointAndDecimalTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<Type> FloatingPointAndDecimalTypes = new HashSet<Type>
         {
-            "double", "System.Double",
-            "single", "float", "System.Single",
-            "decimal", "System.Decimal"
+            typeof(double),
+            typeof(float),
+            typeof(decimal)
         };
 
-        private static readonly HashSet<string> IntegralTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<Type> IntegralTypes = new HashSet<Type>
         {
-            "byte", "System.Byte",
-            "sbyte", "System.SByte",
-            "short", "System.Int16",
-            "ushort", "System.UInt16",
-            "int", "System.Int32",
-            "uint", "System.UInt32",
-            "long", "System.Int64",
-            "ulong", "System.UInt64"
+            typeof(byte),
+            typeof(sbyte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong)
         };
 
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
@@ -51,7 +51,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (ParameterAst parameterAst in parameterAsts)
             {
                 TypeConstraintAst typeConstraint = parameterAst.Attributes.OfType<TypeConstraintAst>().FirstOrDefault();
-                if (typeConstraint == null || !FloatingPointAndDecimalTypes.Contains(typeConstraint.TypeName.FullName))
+                if (typeConstraint == null)
+                {
+                    continue;
+                }
+
+                Type parameterType = typeConstraint.TypeName.GetReflectionType();
+                if (parameterType == null)
+                {
+                    continue;
+                }
+
+                if (parameterType.IsArray)
+                {
+                    parameterType = parameterType.GetElementType();
+                }
+
+                if (!FloatingPointAndDecimalTypes.Contains(parameterType))
                 {
                     continue;
                 }
@@ -60,7 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     if (!IsValidateRangeAttribute(attributeAst)
                         || attributeAst.PositionalArguments.Count < 2
-                        || !attributeAst.PositionalArguments.Take(2).Any(IsIntegralBoundary))
+                        || !attributeAst.PositionalArguments.Take(2).All(IsIntegralBoundary))
                     {
                         continue;
                     }
@@ -79,14 +95,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (expressionAst is ConstantExpressionAst constantExpressionAst)
             {
-                return constantExpressionAst.Value != null
-                    && IntegralTypes.Contains(constantExpressionAst.Value.GetType().FullName);
+                return constantExpressionAst.Value != null && IntegralTypes.Contains(constantExpressionAst.Value.GetType());
             }
 
             if (expressionAst is ConvertExpressionAst convertExpressionAst)
             {
-                return IntegralTypes.Contains(convertExpressionAst.Type.TypeName.FullName)
-                    && IsIntegralBoundary(convertExpressionAst.Child);
+                return IntegralTypes.Contains(convertExpressionAst.Type.TypeName.GetReflectionType());
             }
 
             if (expressionAst is UnaryExpressionAst unaryExpressionAst
