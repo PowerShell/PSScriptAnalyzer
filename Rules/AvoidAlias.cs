@@ -252,15 +252,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // A resource's opening brace can be on the following line.
             if (cmdAst.CommandElements.Count == 2 && cmdAst.Parent is PipelineAst pipeline)
             {
-                var statements = (pipeline.Parent as NamedBlockAst)?.Statements
-                    ?? (pipeline.Parent as StatementBlockAst)?.Statements;
-                int index = statements == null ? -1 : statements.IndexOf(pipeline);
-                if (index >= 0 && index + 1 < statements.Count
-                    && statements[index + 1] is PipelineAst bodyPipeline
-                    && bodyPipeline.PipelineElements.Count == 1
-                    && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
+                Ast statement = pipeline;
+                for (Ast parent = pipeline.Parent; parent != null; parent = parent.Parent)
                 {
-                    return bodyExpression.Expression as ScriptBlockExpressionAst;
+                    var statements = (parent as NamedBlockAst)?.Statements
+                        ?? (parent as StatementBlockAst)?.Statements;
+                    if (statements == null)
+                    {
+                        statement = parent;
+                        continue;
+                    }
+
+                    int index = statements.IndexOf(statement as StatementAst);
+                    if (index >= 0 && index + 1 < statements.Count
+                        && statements[index + 1] is PipelineAst bodyPipeline
+                        && bodyPipeline.PipelineElements.Count == 1
+                        && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
+                    {
+                        return bodyExpression.Expression as ScriptBlockExpressionAst;
+                    }
+
+                    break;
                 }
             }
 
