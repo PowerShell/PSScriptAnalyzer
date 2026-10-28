@@ -12,6 +12,18 @@ public class ValidateRangeBoundsBaseForScriptAnalyzer
 
 public class ValidateRangeBoundsForScriptAnalyzer : ValidateRangeBoundsBaseForScriptAnalyzer
 {
+    public static readonly int ReadonlyIntegral = 100;
+    public const double FloatingPoint = 100.0;
+    public static int ThrowingGetterInvocationCount;
+
+    public static int ThrowingProperty
+    {
+        get
+        {
+            ThrowingGetterInvocationCount++;
+            throw new System.InvalidOperationException();
+        }
+    }
 }
 
 namespace Contoso
@@ -61,5 +73,20 @@ namespace Contoso
         foreach ($scriptDefinition in $scripts) {
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName | Should -BeNullOrEmpty
         }
+    }
+
+    It 'ignores non-constant static member expressions without invoking getters' {
+        $scripts = @(
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::ThrowingProperty)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::ReadonlyIntegral)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::FloatingPoint)]$Value) }'
+        )
+
+        foreach ($scriptDefinition in $scripts) {
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $ruleName |
+                Where-Object RuleName -eq $ruleName | Should -BeNullOrEmpty
+        }
+
+        [ValidateRangeBoundsForScriptAnalyzer]::ThrowingGetterInvocationCount | Should -Be 0
     }
 }
