@@ -52,6 +52,7 @@ title: List of PSScriptAnalyzer rules
 | [AvoidUsingUsernameAndPasswordParams][32]          | Error       | Always enabled |              |
 | [AvoidUsingWMICmdlet][33]                          | Warning     | Always enabled |              |
 | [AvoidUsingWriteHost][34]                          | Warning     | Always enabled |              |
+| [AvoidValidateRangeTypeMismatch][81]               | Warning     | Always enabled |              |
 | [DSCDscExamplesPresent][35]                        | Information | Always enabled |              |
 | [DSCDscTestsPresent][36]                           | Information | Always enabled |              |
 | [DSCReturnCorrectTypesForDSCFunctions][37]         | Information | Always enabled |              |
@@ -180,3 +181,4 @@ title: List of PSScriptAnalyzer rules
 [78]: UseToExportFieldsInManifest.md
 [79]: UseUsingScopeModifierInNewRunspaces.md
 [80]: UseUTF8EncodingForHelpFile.md
+[81]: AvoidValidateRangeTypeMismatch.md
