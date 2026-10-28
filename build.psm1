@@ -144,7 +144,7 @@ function Start-ScriptAnalyzerBuild
 
         $framework = 'net462'
         if ($PSVersion -eq 7) {
-            $framework = 'net8'
+            $framework = 'net10.0'
         }
 
         Push-Location -Path $projectRoot

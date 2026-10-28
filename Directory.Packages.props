@@ -10,7 +10,7 @@
     <PackageVersion Include="Pluralize.NET" Version="1.0.2" />
     <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
     <!-- Please update minimumPowerShellCoreVersion in PSScriptAnalyzer.psm1 when updating below SMA major or minor version (but not patch) for better user-facing error message -->
-    <PackageVersion Include="System.Management.Automation" Version="7.4.14" />
+    <PackageVersion Include="System.Management.Automation" Version="7.6.9" />
     <PackageVersion Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
 </Project>
