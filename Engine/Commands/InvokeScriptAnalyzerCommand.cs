@@ -146,7 +146,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private string[] includeRule;
 
         /// <summary>
-        /// IncludeRule: Array of the severity types to be enabled.
+        /// Severity levels of the diagnostic records to include.
         /// </summary>
         [ValidateSet("Warning", "Error", "Information", "ParseError", IgnoreCase = true)]
         [Parameter(Mandatory = false)]
