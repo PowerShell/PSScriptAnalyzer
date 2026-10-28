@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && memberExpressionAst.Member is StringConstantExpressionAst memberName)
             {
                 Type type = typeExpressionAst.TypeName.GetReflectionType();
-                FieldInfo field = type?.GetField(memberName.Value, BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
+                FieldInfo field = type?.GetField(memberName.Value, BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy);
                 return field != null && field.IsLiteral && IntegralTypes.Contains(field.FieldType);
             }
 
@@ -125,7 +125,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool IsValidateRangeAttribute(AttributeAst attributeAst)
         {
-            return attributeAst.TypeName.GetReflectionType() == typeof(System.Management.Automation.ValidateRangeAttribute);
+            return attributeAst.TypeName.GetReflectionAttributeType() == typeof(System.Management.Automation.ValidateRangeAttribute);
         }
 
         public string GetName()

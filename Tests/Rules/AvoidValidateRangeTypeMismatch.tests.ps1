@@ -4,6 +4,16 @@
 Describe 'AvoidValidateRangeTypeMismatch' {
     BeforeAll {
         $ruleName = 'PSAvoidValidateRangeTypeMismatch'
+        Add-Type -TypeDefinition @'
+public class ValidateRangeBoundsBaseForScriptAnalyzer
+{
+    public const int Max = 100;
+}
+
+public class ValidateRangeBoundsForScriptAnalyzer : ValidateRangeBoundsBaseForScriptAnalyzer
+{
+}
+'@
     }
 
     It 'reports integral boundaries for floating-point and decimal parameter types' {
@@ -16,6 +26,8 @@ Describe 'AvoidValidateRangeTypeMismatch' {
             'function Test { param([double][ValidateRange([int]0.0, [int]100.0)]$Value) }'
             'function Test { param([double][ValidateRange([int32]0.0, [int32]100.0)]$Value) }'
             'function Test { param([double][ValidateRange(0, [int]::MaxValue)]$Value) }'
+            'function Test { param([double][ValidateRange(0, [ValidateRangeBoundsForScriptAnalyzer]::Max)]$Value) }'
+            'function Test { param([double][System.Management.Automation.ValidateRange(0, 100)]$Value) }'
         )
 
         foreach ($scriptDefinition in $scripts) {
