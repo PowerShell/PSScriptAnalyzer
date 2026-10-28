@@ -226,6 +226,25 @@ function Test {
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
         }
 
+        It "Should preserve tab indentation before a close brace" {
+            $def = @'
+if ($true) {
+    $true
+	}	else {
+	    $false
+	}
+'@
+            $expected = @'
+if ($true) {
+    $true
+	}
+	else {
+	    $false
+	}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
         It "Should find a violation for a close brace followed by elseif" {
             $def = @'
 if (Test-Path "blah") {

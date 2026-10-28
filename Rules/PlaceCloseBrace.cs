@@ -278,7 +278,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var nextToken = tokens[closeBracePos + 1];
             var closeBraceToken = tokens[closeBracePos];
             var indentation = tokens[closeBracePos - 1].Kind == TokenKind.NewLine
-                ? new String(' ', closeBraceToken.Extent.StartColumnNumber - 1)
+                ? closeBraceToken.Extent.StartScriptPosition.Line.Substring(0, closeBraceToken.Extent.StartColumnNumber - 1)
                 : GetIndentation(tokens, closeBracePos, openBracePos);
 
             // Also remove the whitespace between the close brace and the next token
