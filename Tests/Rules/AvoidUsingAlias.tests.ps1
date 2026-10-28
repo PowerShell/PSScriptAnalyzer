@@ -97,6 +97,22 @@ Configuration PackageTest {
     }
 
     Context "DSC resource ASTs" {
+        It "does not expand nested resource names in a same-line Node declaration when node is discoverable" -skip:(!(Get-Command node -CommandType Application -ErrorAction Ignore)) {
+            $target = @'
+{
+    Node localhost { Package PackageExample {} }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
         It "ignores resource declarations but not executable commands" {
             $target = @'
 {
