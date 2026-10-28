@@ -180,6 +180,52 @@ if (Test-Path "blah") {
             Test-CorrectionExtentFromContent @params
         }
 
+        It "Should preserve close brace indentation after a multiline if condition" {
+            $def = @'
+if (
+    $true) {
+    $true
+} else {
+    $false
+}
+'@
+            $expected = @'
+if (
+    $true) {
+    $true
+}
+else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should preserve nested close brace indentation after a multiline if condition" {
+            $def = @'
+function Test {
+    if (
+        $true) {
+        $true
+    } else {
+        $false
+    }
+}
+'@
+            $expected = @'
+function Test {
+    if (
+        $true) {
+        $true
+    }
+    else {
+        $false
+    }
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
         It "Should find a violation for a close brace followed by elseif" {
             $def = @'
 if (Test-Path "blah") {
