@@ -277,6 +277,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var corrections = new List<CorrectionExtent>();
             var nextToken = tokens[closeBracePos + 1];
             var closeBraceToken = tokens[closeBracePos];
+            var indentation = tokens[closeBracePos - 1].Kind == TokenKind.NewLine
+                ? new String(' ', closeBraceToken.Extent.StartColumnNumber - 1)
+                : GetIndentation(tokens, closeBracePos, openBracePos);
 
             // Also remove the whitespace between the close brace and the next token
             // and indent the next token to the same level as the close brace
@@ -285,7 +288,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 nextToken.Extent.StartLineNumber,
                 closeBraceToken.Extent.StartColumnNumber,
                 nextToken.Extent.StartColumnNumber,
-                closeBraceToken.Text + Environment.NewLine + GetIndentation(tokens, closeBracePos, openBracePos),
+                closeBraceToken.Text + Environment.NewLine + indentation,
                 fileName));
             return corrections;
         }
