@@ -68,6 +68,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     parameterType = parameterType.GetElementType();
                 }
 
+                parameterType = Nullable.GetUnderlyingType(parameterType) ?? parameterType;
+
                 if (!FloatingPointAndDecimalTypes.Contains(parameterType))
                 {
                     continue;
