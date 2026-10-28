@@ -208,6 +208,7 @@ Configuration PackageTest {
     Write-Output $(Verb Argument {})
     @(Verb Argument {})
     Verb Argument {} > $null
+    Verb Argument {} &
     if (Verb Argument {}) {}
     return Verb Argument {}
     if ($true) {
@@ -227,7 +228,7 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 5
+            $violations.Count | Should -Be 6
             $violations | ForEach-Object {
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
             }
@@ -241,6 +242,8 @@ Configuration PackageTest {
     gci .; {}
     gci . &
     {}
+    gci .
+    {} &
 }
 '@
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
@@ -252,7 +255,7 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 3
+            $violations.Count | Should -Be 4
             $violations | ForEach-Object {
                 $_.Extent.Text | Should -Be 'gci'
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
