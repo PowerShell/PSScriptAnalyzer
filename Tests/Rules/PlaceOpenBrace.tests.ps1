@@ -168,5 +168,14 @@ function foo { }
         It "Should mark only the open brace" {
             $violations[0].Extent.Text | Should -Be '{'
         }
+
+        It "Should remove the whitespace following the open brace when correcting" {
+            $def = "if (`$true) { 'blah' }"
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be ('{' + [System.Environment]::NewLine)
+            $violations[0].SuggestedCorrections[0].StartColumnNumber | Should -Be 12
+            $violations[0].SuggestedCorrections[0].EndColumnNumber | Should -Be 14
+        }
     }
 }

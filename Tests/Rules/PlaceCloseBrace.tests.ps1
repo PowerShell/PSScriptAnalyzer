@@ -174,10 +174,75 @@ if (Test-Path "blah") {
                 RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText    = '}'
+                ViolationText    = '} '
                 CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
+        }
+
+        It "Should preserve close brace indentation after a multiline if condition" {
+            $def = @'
+if (
+    $true) {
+    $true
+} else {
+    $false
+}
+'@
+            $expected = @'
+if (
+    $true) {
+    $true
+}
+else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should preserve nested close brace indentation after a multiline if condition" {
+            $def = @'
+function Test {
+    if (
+        $true) {
+        $true
+    } else {
+        $false
+    }
+}
+'@
+            $expected = @'
+function Test {
+    if (
+        $true) {
+        $true
+    }
+    else {
+        $false
+    }
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
+        }
+
+        It "Should preserve tab indentation before a close brace" {
+            $def = @'
+if ($true) {
+    $true
+	}	else {
+	    $false
+	}
+'@
+            $expected = @'
+if ($true) {
+    $true
+	}
+	else {
+	    $false
+	}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
         }
 
         It "Should find a violation for a close brace followed by elseif" {
@@ -194,7 +259,7 @@ if (Test-Path "blah") {
                 RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText    = '}'
+                ViolationText    = '} '
                 CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
@@ -215,7 +280,7 @@ try {
                 RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText    = '}'
+                ViolationText    = '} '
                 CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
@@ -426,6 +491,75 @@ else {
         It "Stroustrup should place else on a new line after the if closing bracket" {
             Invoke-Formatter -ScriptDefinition $AllmanDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $StroustrupDefinition
             Invoke-Formatter -ScriptDefinition $OTBSDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $StroustrupDefinition
+        }
+    }
+
+    Context "When formatting a one line if/else statement with IgnoreOneLineBlock set to false" {
+        BeforeAll {
+            $oneLineDefinition = "if (`$RegEx) { '-match' } else { '-like' }"
+        }
+
+        It "Should not leave stray whitespace or misplace the close braces" {
+            $formatterSettings = @{
+                Rules = @{
+                    PSPlaceOpenBrace  = @{ Enable = $true; IgnoreOneLineBlock = $false }
+                    PSPlaceCloseBrace = @{ Enable = $true; IgnoreOneLineBlock = $false }
+                }
+            }
+            $expected = @"
+if (`$RegEx) {
+'-match'
+}
+else {
+'-like'
+}
+"@
+            $expected = $expected.Replace("`n", [System.Environment]::NewLine)
+            Invoke-Formatter -ScriptDefinition $oneLineDefinition -Settings $formatterSettings | Should -Be $expected
+        }
+
+        It "Should indent the close brace to the level of its statement" {
+            $formatterSettings = @{
+                Rules = @{
+                    PSPlaceOpenBrace  = @{ Enable = $true; IgnoreOneLineBlock = $false }
+                    PSPlaceCloseBrace = @{ Enable = $true; IgnoreOneLineBlock = $false }
+                }
+            }
+            $def = @"
+function foo {
+    if (`$RegEx) {
+        '-match'
+    } else {
+        '-like'
+    }
+}
+"@
+            $expected = @"
+function foo {
+    if (`$RegEx) {
+        '-match'
+    }
+    else {
+        '-like'
+    }
+}
+"@
+            Invoke-Formatter -ScriptDefinition $def -Settings $formatterSettings | Should -Be $expected
+        }
+
+        It "Should format to OTBS style" {
+            $formatterSettings = Import-PowerShellDataFile (Join-Path (Get-Module PSScriptAnalyzer).ModuleBase 'Settings/CodeFormattingOTBS.psd1')
+            $formatterSettings.Rules.PSPlaceOpenBrace.IgnoreOneLineBlock = $false
+            $formatterSettings.Rules.PSPlaceCloseBrace.IgnoreOneLineBlock = $false
+            $expected = @"
+if (`$RegEx) {
+    '-match'
+} else {
+    '-like'
+}
+"@
+            $expected = $expected.Replace("`n", [System.Environment]::NewLine)
+            Invoke-Formatter -ScriptDefinition $oneLineDefinition -Settings $formatterSettings | Should -Be $expected
         }
     }
 }

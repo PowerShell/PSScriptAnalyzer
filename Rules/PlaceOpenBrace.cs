@@ -288,12 +288,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var corrections = new List<CorrectionExtent>();
             var extent = tokens[openBracePos].Extent;
 
+            // Also remove any whitespace between the open brace and the next token on the same line
+            // so that the next token does not start with a leading whitespace on the new line
+            var endColumnNumber = extent.EndColumnNumber;
+            if (openBracePos + 1 < tokens.Length)
+            {
+                var nextTokenExtent = tokens[openBracePos + 1].Extent;
+                if (nextTokenExtent.StartLineNumber == extent.EndLineNumber)
+                {
+                    endColumnNumber = nextTokenExtent.StartColumnNumber;
+                }
+            }
+
             corrections.Add(
                 new CorrectionExtent(
                     extent.StartLineNumber,
                     extent.EndLineNumber,
                     extent.StartColumnNumber,
-                    extent.EndColumnNumber,
+                    endColumnNumber,
                     new StringBuilder().Append(extent.Text).Append(Environment.NewLine).ToString(),
                     fileName));
             return corrections;
