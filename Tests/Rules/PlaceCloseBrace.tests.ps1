@@ -449,6 +449,7 @@ else {
 '-like'
 }
 "@
+            $expected = $expected.Replace("`n", [System.Environment]::NewLine)
             Invoke-Formatter -ScriptDefinition $oneLineDefinition -Settings $formatterSettings | Should -Be $expected
         }
 
@@ -492,6 +493,7 @@ if (`$RegEx) {
     '-like'
 }
 "@
+            $expected = $expected.Replace("`n", [System.Environment]::NewLine)
             Invoke-Formatter -ScriptDefinition $oneLineDefinition -Settings $formatterSettings | Should -Be $expected
         }
     }
