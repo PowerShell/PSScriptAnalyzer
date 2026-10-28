@@ -232,6 +232,30 @@ Configuration PackageTest {
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
             }
         }
+
+        It "does not pair following-line blocks with commands when the block has redirections or a statement terminator intervenes" {
+            $target = @'
+{
+    gci .
+    {} > $null
+    gci .; {}
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 2
+            $violations | ForEach-Object {
+                $_.Extent.Text | Should -Be 'gci'
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
+            }
+        }
     }
 
     Context "Settings file provides allowlist" {

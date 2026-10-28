@@ -348,6 +348,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && bodyPipeline.PipelineElements.Count == 1
                         && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
                     {
+                        if (HasStatementTerminator(pipeline, bodyPipeline)
+                            || bodyExpression.Redirections.Count != 0)
+                        {
+                            return null;
+                        }
+
                         return bodyExpression.Expression as ScriptBlockExpressionAst;
                     }
 
@@ -356,6 +362,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private bool HasStatementTerminator(Ast statement, Ast nextStatement)
+        {
+            int separatorStart = statement.Extent.EndOffset;
+            int separatorLength = nextStatement.Extent.StartOffset - separatorStart;
+            if (separatorLength <= 0)
+            {
+                return false;
+            }
+
+            string script = statement.Extent.EndScriptPosition.GetFullScript();
+            string separator = script.Substring(separatorStart, separatorLength);
+            Parser.ParseInput(separator, out Token[] tokens, out ParseError[] errors);
+            return tokens.Any(token => token.Kind == TokenKind.Semi);
         }
 
         /// <summary>
