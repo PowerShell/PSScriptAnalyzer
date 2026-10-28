@@ -207,7 +207,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (parent is FunctionDefinitionAst
                     || parent is HashtableAst
                     || parent is AssignmentStatementAst
-                    || parent is ParenExpressionAst)
+                    || parent is ParenExpressionAst
+                    || parent is SubExpressionAst
+                    || parent is ArrayExpressionAst)
                 {
                     return false;
                 }
@@ -228,7 +230,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (parent is FunctionDefinitionAst
                     || parent is HashtableAst
                     || parent is AssignmentStatementAst
-                    || parent is ParenExpressionAst)
+                    || parent is ParenExpressionAst
+                    || parent is SubExpressionAst
+                    || parent is ArrayExpressionAst)
                 {
                     return false;
                 }
@@ -305,14 +309,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (cmdAst.InvocationOperator != TokenKind.Unknown
                 || cmdAst.CommandElements.Count < 2
                 || !(cmdAst.CommandElements[1] is ExpressionAst)
-                || cmdAst.CommandElements[1].Extent.Text == "=")
+                || cmdAst.CommandElements[1].Extent.Text == "="
+                || cmdAst.Redirections.Count != 0)
             {
                 return null;
             }
 
             if (!(cmdAst.Parent is PipelineAst commandPipeline)
                 || commandPipeline.PipelineElements.Count != 1
-                || commandPipeline.PipelineElements[0] != cmdAst)
+                || commandPipeline.PipelineElements[0] != cmdAst
+                || !(commandPipeline.Parent is NamedBlockAst || commandPipeline.Parent is StatementBlockAst))
             {
                 return null;
             }
