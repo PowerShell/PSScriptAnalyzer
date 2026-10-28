@@ -348,7 +348,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && bodyPipeline.PipelineElements.Count == 1
                         && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
                     {
-                        if (HasStatementSeparator(pipeline, bodyPipeline)
+                        if (HasStatementSeparator(cmdAst, bodyPipeline)
                             || bodyExpression.Redirections.Count != 0)
                         {
                             return null;
@@ -364,9 +364,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private bool HasStatementSeparator(Ast statement, Ast nextStatement)
+        private bool HasStatementSeparator(CommandAst statement, Ast nextStatement)
         {
-            int separatorStart = statement.Extent.EndOffset;
+            int separatorStart = statement.CommandElements[statement.CommandElements.Count - 1].Extent.EndOffset;
             int separatorLength = nextStatement.Extent.StartOffset - separatorStart;
             if (separatorLength <= 0)
             {
