@@ -201,6 +201,37 @@ Configuration PackageTest {
             $violations[5].Extent.Text | Should -Be 'Verb'
             $violations[6].Extent.Text | Should -Be 'gci'
         }
+
+        It "does not mistake executable pipelines for DSC resources in fallback configuration ASTs" {
+            $target = @'
+{
+    Write-Output $(Verb Argument {})
+    @(Verb Argument {})
+    Verb Argument {} > $null
+    if (Verb Argument {}) {}
+    return Verb Argument {}
+    if ($true) {
+        Verb SameLineResource {}
+        Verb NextLineResource
+        {
+        }
+    }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 5
+            $violations | ForEach-Object {
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
+        }
     }
 
     Context "Settings file provides allowlist" {
