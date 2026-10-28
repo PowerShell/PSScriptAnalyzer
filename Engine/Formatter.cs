@@ -54,6 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ScriptBlockAst scriptAst = null;
             Token[] scriptTokens = null;
             bool skipParsing = false;
+            bool isRangeSpecified = range != null;
             foreach (var rule in ruleOrder)
             {
                 if (!settings.RuleArguments.ContainsKey(rule))
@@ -68,6 +69,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 text = ScriptAnalyzer.Instance.Fix(text, range, skipParsing, out Range updatedRange, out bool fixesWereApplied, ref scriptAst, ref scriptTokens, skipVariableAnalysis: true);
                 skipParsing = !fixesWereApplied;
                 range = updatedRange;
+                if (isRangeSpecified && range == null)
+                {
+                    break;
+                }
             }
 
             return text.ToString();

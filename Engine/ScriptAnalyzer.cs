@@ -1594,7 +1594,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
-            } while (previousUnusedCorrections > 0);
+            } while (previousUnusedCorrections > 0 && (isRangeNull || range != null));
 
             updatedRange = range;
             return text;
@@ -1743,19 +1743,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var endLine = range.End.Line + lineDelta;
                     if (correction.Lines.Length == 0 && endLine < range.Start.Line)
                     {
-                        if (text.LineCount == 0)
-                        {
-                            range = null;
-                        }
-                        else
-                        {
-                            endLine = Math.Min(Math.Max(endLine, 1), text.LineCount);
-                            var endColumn = Math.Min(
-                                Math.Max(range.End.Column + columnDelta, 1),
-                                text.Lines[endLine - 1].Length + 1);
-                            var end = new Position(endLine, endColumn);
-                            range = new Range(end, end);
-                        }
+                        range = null;
+                    }
+                    else if (correction.Lines.Length == 0
+                        && lineDelta < 0
+                        && correction.EndLineNumber == range.End.Line)
+                    {
+                        range = new Range(
+                            range.Start,
+                            new Position(endLine, text.Lines[endLine - 1].Length + 1));
                     }
                     else
                     {

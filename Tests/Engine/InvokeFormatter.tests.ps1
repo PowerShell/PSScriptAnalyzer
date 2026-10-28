@@ -105,9 +105,10 @@ function foo {
 
             $text.ToString() | Should -Be "first`nlast"
             $arguments[3].End.Line | Should -Be 1
+            $arguments[3].End.Column | Should -Be 6
         }
 
-        It "Should collapse the range when an edit deletes all selected lines" {
+        It "Should exhaust the range when an edit deletes all selected lines" {
             $text = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" -ArgumentList "first`nlast"
             $correctionType = "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent" -as [type]
             $correction = [Activator]::CreateInstance(
@@ -127,10 +128,8 @@ function foo {
                 [Reflection.BindingFlags]'NonPublic, Static')
 
             $fixMethod.Invoke($null, $arguments) | Out-Null
-
             $text.ToString() | Should -Be "first"
-            $arguments[3].Start.Line | Should -Be 1
-            $arguments[3].End.Line | Should -Be 1
+            $arguments[3] | Should -BeNullOrEmpty
         }
 
         It "Should apply all corrections when earlier fixes expand the selected line" {
