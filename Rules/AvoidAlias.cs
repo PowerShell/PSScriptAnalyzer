@@ -298,7 +298,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return false;
                 }
 
-                return GetDscResourceBody(declaration) == body;
+                string declarationCommandName = declaration.GetCommandName();
+                return GetDscResourceBody(declaration) == body
+                    && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(declarationCommandName))
+                    && (String.Equals(declarationCommandName, "Node", StringComparison.OrdinalIgnoreCase)
+                        || Helper.Instance.GetCommandInfo(declarationCommandName) == null);
             }
 
             return false;
