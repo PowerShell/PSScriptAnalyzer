@@ -75,12 +75,15 @@ gci -Path C:\
         }
 
         It "respects private function visibility" {
-            $target = 'function private:Verb {}; Verb; & { Verb }'
+            $target = 'function private:Verb {}; Verb; . { Verb }; & { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('& { Verb }', '& { Get-Verb }'))
         }
 
         It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
@@ -161,15 +164,21 @@ $scriptFunction
             }
         }
 
-        It "does not treat functions declared in unrelated scopes as executable commands" {
-            $target = @'
+        It "does not treat functions declared in unrelated scopes as executable commands" -TestCases @(
+            @{ FunctionName = 'Verb' }
+            @{ FunctionName = 'script:Verb' }
+            @{ FunctionName = 'global:Verb' }
+        ) {
+            param($FunctionName)
+
+            $target = @"
 {
     function Get-Example {
-        function Verb {}
+        function $FunctionName {}
     }
     Verb ResourceExample { ChildItem NestedResource {} }
 }
-'@
+"@
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
             $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
             $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(

@@ -329,7 +329,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (parent is ScriptBlockAst scope)
                 {
-                    if (currentScope == null)
+                    if (currentScope == null
+                        && !(scope.Parent is ScriptBlockExpressionAst scriptBlock
+                            && scriptBlock.Parent is CommandAst dotSource
+                            && dotSource.InvocationOperator == TokenKind.Dot))
                     {
                         currentScope = scope;
                     }
@@ -368,12 +371,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 bool isPrivate = function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase);
-                if (function.Name.StartsWith("script:", StringComparison.OrdinalIgnoreCase)
-                    || function.Name.StartsWith("global:", StringComparison.OrdinalIgnoreCase))
-                {
-                    scope = GetRootScriptBlock(scope);
-                }
-
                 if (!functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames))
                 {
                     functionNames = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -404,20 +401,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
-        }
-
-        private ScriptBlockAst GetRootScriptBlock(ScriptBlockAst scope)
-        {
-            ScriptBlockAst rootScope = scope;
-            for (Ast parent = scope.Parent; parent != null; parent = parent.Parent)
-            {
-                if (parent is ScriptBlockAst ancestor)
-                {
-                    rootScope = ancestor;
-                }
-            }
-
-            return rootScope;
         }
 
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)
