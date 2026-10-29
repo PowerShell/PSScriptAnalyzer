@@ -64,7 +64,7 @@ gci -Path C:\
         }
 
         It "does not add the Get prefix to script-defined functions or skip their script block arguments" {
-            $target = 'function vErB {}; Verb Instance { ChildItem . {} }'
+            $target = 'function script:vErB {}; Verb Instance { ChildItem . {} }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
@@ -72,6 +72,15 @@ gci -Path C:\
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings |
                 Should -Be ($target.Replace('ChildItem', 'Get-ChildItem'))
+        }
+
+        It "respects private function visibility" {
+            $target = 'function private:Verb {}; Verb; & { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
         It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
@@ -114,7 +123,7 @@ Configuration PackageTest {
         ) {
             param($Scope)
 
-            $scriptFunction = if ($Scope -eq 'script') { 'function vErB {}' }
+            $scriptFunction = if ($Scope -eq 'script') { 'function script:vErB {}' }
             $configurationFunction = if ($Scope -eq 'configuration') { 'function vErB {}' }
             $target = @"
 $scriptFunction

@@ -97,6 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex = GetFunctionNameIndex(ast);
 
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in foundAsts)
@@ -119,7 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
-                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst);
+                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst, functionNameIndex);
                 if (isDscResourceDeclaration && String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     continue;
@@ -140,7 +141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst)) {
+                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst, functionNameIndex)) {
                     continue;
                 }
 
@@ -192,7 +193,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool IsDscResourceDeclaration(CommandAst cmdAst)
+        private bool IsDscResourceDeclaration(
+            CommandAst cmdAst,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             bool hasConfigurationAncestor = false;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
@@ -215,7 +218,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null
-                || !IsDscResourceCommand(cmdAst))
+                || !IsDscResourceCommand(cmdAst, functionNameIndex))
             {
                 return false;
             }
@@ -239,7 +242,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (parent is CommandExpressionAst commandExpression
                     && (!(commandExpression.Expression is ScriptBlockExpressionAst body)
-                        || !IsFollowingLineDscResourceBody(body)))
+                        || !IsFollowingLineDscResourceBody(body, functionNameIndex)))
                 {
                     return false;
                 }
@@ -250,7 +253,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (scriptBlock.Parent is CommandAst enclosingCommand)
                     {
                         if (GetDscResourceBody(enclosingCommand) != scriptBlock
-                            || !IsDscResourceCommand(enclosingCommand))
+                            || !IsDscResourceCommand(enclosingCommand, functionNameIndex))
                         {
                             return false;
                         }
@@ -267,7 +270,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool IsFollowingLineDscResourceBody(ScriptBlockExpressionAst body)
+        private bool IsFollowingLineDscResourceBody(
+            ScriptBlockExpressionAst body,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             if (!(body.Parent is CommandExpressionAst bodyExpression)
                 || !(bodyExpression.Parent is PipelineAst bodyPipeline)
@@ -297,37 +302,122 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 return GetDscResourceBody(declaration) == body
-                    && IsDscResourceCommand(declaration);
+                    && IsDscResourceCommand(declaration, functionNameIndex);
             }
 
             return false;
         }
 
-        private bool IsDscResourceCommand(CommandAst cmdAst)
+        private bool IsDscResourceCommand(
+            CommandAst cmdAst,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             string commandName = cmdAst.GetCommandName();
-            return !IsScriptDefinedFunction(cmdAst)
+            return !IsScriptDefinedFunction(cmdAst, functionNameIndex)
                 && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName))
                 && (String.Equals(commandName, "Node", StringComparison.OrdinalIgnoreCase)
                     || Helper.Instance.GetCommandInfo(commandName) == null);
         }
 
-        private bool IsScriptDefinedFunction(CommandAst cmdAst)
+        private bool IsScriptDefinedFunction(
+            CommandAst cmdAst,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             string commandName = cmdAst.GetCommandName();
-            // Command discovery runs in a separate runspace and cannot see script-local functions.
+            ScriptBlockAst currentScope = null;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
             {
-                if (parent is ScriptBlockAst scope
-                    && scope.Find(candidate => candidate is FunctionDefinitionAst function
-                        && String.Equals(function.Name, commandName, StringComparison.OrdinalIgnoreCase),
-                        searchNestedScriptBlocks: false) != null)
+                if (parent is ScriptBlockAst scope)
                 {
-                    return true;
+                    if (currentScope == null)
+                    {
+                        currentScope = scope;
+                    }
+
+                    if (functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames)
+                        && functionNames.TryGetValue(commandName, out bool isPrivate)
+                        && (!isPrivate || currentScope == scope))
+                    {
+                        return true;
+                    }
                 }
             }
 
             return false;
+        }
+
+        private Dictionary<ScriptBlockAst, Dictionary<string, bool>> GetFunctionNameIndex(Ast ast)
+        {
+            var functionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, bool>>();
+            IEnumerable<FunctionDefinitionAst> functionDefinitions = ast.FindAll(
+                candidate => candidate is FunctionDefinitionAst,
+                true).OfType<FunctionDefinitionAst>();
+
+            foreach (FunctionDefinitionAst function in functionDefinitions)
+            {
+                string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
+                if (String.IsNullOrEmpty(functionName))
+                {
+                    continue;
+                }
+
+                ScriptBlockAst scope = GetFunctionScope(function);
+                if (scope == null)
+                {
+                    continue;
+                }
+
+                bool isPrivate = function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase);
+                if (function.Name.StartsWith("script:", StringComparison.OrdinalIgnoreCase)
+                    || function.Name.StartsWith("global:", StringComparison.OrdinalIgnoreCase))
+                {
+                    scope = GetRootScriptBlock(scope);
+                }
+
+                if (!functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames))
+                {
+                    functionNames = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                    functionNameIndex.Add(scope, functionNames);
+                }
+
+                if (functionNames.TryGetValue(functionName, out bool existingIsPrivate))
+                {
+                    functionNames[functionName] = existingIsPrivate && isPrivate;
+                }
+                else
+                {
+                    functionNames.Add(functionName, isPrivate);
+                }
+            }
+
+            return functionNameIndex;
+        }
+
+        private ScriptBlockAst GetFunctionScope(FunctionDefinitionAst function)
+        {
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope)
+                {
+                    return scope;
+                }
+            }
+
+            return null;
+        }
+
+        private ScriptBlockAst GetRootScriptBlock(ScriptBlockAst scope)
+        {
+            ScriptBlockAst rootScope = scope;
+            for (Ast parent = scope.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst ancestor)
+                {
+                    rootScope = ancestor;
+                }
+            }
+
+            return rootScope;
         }
 
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)
