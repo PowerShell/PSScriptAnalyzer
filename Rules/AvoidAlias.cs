@@ -120,8 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
                 bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst);
-                if (isDscResourceDeclaration
-                    && (String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias) || cmdAst.CommandElements.Count == 2))
+                if (isDscResourceDeclaration && String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     continue;
                 }
