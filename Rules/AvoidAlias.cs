@@ -329,10 +329,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (parent is ScriptBlockAst scope)
                 {
-                    if (currentScope == null
-                        && !(scope.Parent is ScriptBlockExpressionAst scriptBlock
-                            && scriptBlock.Parent is CommandAst dotSource
-                            && dotSource.InvocationOperator == TokenKind.Dot))
+                    if (currentScope == null && !IsDotSourcedScriptBlock(scope))
                     {
                         currentScope = scope;
                     }
@@ -394,13 +391,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
-                if (parent is ScriptBlockAst scope)
+                if (parent is ScriptBlockAst scope && !IsDotSourcedScriptBlock(scope))
                 {
                     return scope;
                 }
             }
 
             return null;
+        }
+
+        private bool IsDotSourcedScriptBlock(ScriptBlockAst scope)
+        {
+            return scope.Parent is ScriptBlockExpressionAst scriptBlock
+                && scriptBlock.Parent is CommandAst dotSource
+                && dotSource.InvocationOperator == TokenKind.Dot
+                && dotSource.CommandElements.Count == 1
+                && dotSource.CommandElements[0] == scriptBlock;
         }
 
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)

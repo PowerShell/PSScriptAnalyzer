@@ -86,6 +86,24 @@ gci -Path C:\
                 Should -Be ($target.Replace('& { Verb }', '& { Get-Verb }'))
         }
 
+        It "does not apply caller scope to script-block arguments of dot-invoked commands" {
+            $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "indexes declarations in directly dot-sourced blocks in the caller scope" {
+            $target = '. { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
             $target = @'
 Configuration MyDscConfiguration {
