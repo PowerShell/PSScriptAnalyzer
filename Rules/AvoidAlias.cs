@@ -405,7 +405,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return scope.Parent is ScriptBlockExpressionAst scriptBlock
                 && scriptBlock.Parent is CommandAst dotSource
                 && dotSource.InvocationOperator == TokenKind.Dot
-                && dotSource.CommandElements.Count == 1
                 && dotSource.CommandElements[0] == scriptBlock;
         }
 
