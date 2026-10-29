@@ -318,6 +318,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (!(cmdAst.Parent is PipelineAst commandPipeline)
                 || commandPipeline.PipelineElements.Count != 1
                 || commandPipeline.PipelineElements[0] != cmdAst
+#if CORECLR
+                || commandPipeline.Background
+#endif
                 || !(commandPipeline.Parent is NamedBlockAst || commandPipeline.Parent is StatementBlockAst))
             {
                 return null;
@@ -346,6 +349,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (index >= 0 && index + 1 < statements.Count
                         && statements[index + 1] is PipelineAst bodyPipeline
                         && bodyPipeline.PipelineElements.Count == 1
+#if CORECLR
+                        && !bodyPipeline.Background
+#endif
                         && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
                     {
                         if (HasStatementSeparator(cmdAst, bodyPipeline)
