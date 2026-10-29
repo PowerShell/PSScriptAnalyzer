@@ -281,8 +281,7 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $expectedViolations = if ($PSVersionTable.PSVersion.Major -ge 7) { 4 } else { 3 }
-            $violations.Count | Should -Be $expectedViolations
+            $violations.Count | Should -Be 4
             $violations | ForEach-Object {
                 $_.Extent.Text | Should -Be 'gci'
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
