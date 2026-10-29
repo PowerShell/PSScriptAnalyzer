@@ -228,7 +228,8 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 6
+            $expectedViolations = if ($PSVersionTable.PSVersion.Major -ge 7) { 6 } else { 5 }
+            $violations.Count | Should -Be $expectedViolations
             $violations | ForEach-Object {
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
             }
@@ -255,7 +256,8 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 4
+            $expectedViolations = if ($PSVersionTable.PSVersion.Major -ge 7) { 4 } else { 3 }
+            $violations.Count | Should -Be $expectedViolations
             $violations | ForEach-Object {
                 $_.Extent.Text | Should -Be 'gci'
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
