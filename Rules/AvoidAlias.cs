@@ -329,7 +329,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (parent is ScriptBlockAst scope)
                 {
-                    if (currentScope == null && !IsDotSourcedScriptBlock(scope))
+                    if (currentScope == null && !IsCallerScopedScriptBlock(scope))
                     {
                         currentScope = scope;
                     }
@@ -355,6 +355,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
+                if (IsInConstantFalseBranch(function))
+                {
+                    continue;
+                }
+
                 string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
                 if (String.IsNullOrEmpty(functionName))
                 {
@@ -391,7 +396,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
-                if (parent is ScriptBlockAst scope && !IsDotSourcedScriptBlock(scope))
+                if (parent is ScriptBlockAst scope && !IsCallerScopedScriptBlock(scope))
                 {
                     return scope;
                 }
@@ -400,12 +405,99 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private bool IsDotSourcedScriptBlock(ScriptBlockAst scope)
+        private bool IsCallerScopedScriptBlock(ScriptBlockAst scope)
         {
-            return scope.Parent is ScriptBlockExpressionAst scriptBlock
-                && scriptBlock.Parent is CommandAst dotSource
-                && dotSource.InvocationOperator == TokenKind.Dot
-                && dotSource.CommandElements[0] == scriptBlock;
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
+                || !(scriptBlock.Parent is CommandAst commandAst))
+            {
+                return false;
+            }
+
+            if (commandAst.InvocationOperator == TokenKind.Dot
+                && commandAst.CommandElements[0] == scriptBlock)
+            {
+                return true;
+            }
+
+            string commandName = commandAst.GetCommandName();
+            if (commandName == null)
+            {
+                return false;
+            }
+
+            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(commandName);
+            if (!String.IsNullOrEmpty(cmdletName))
+            {
+                commandName = cmdletName;
+            }
+
+            if (!String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase)
+                && !String.Equals(commandName, "Where-Object", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase)
+                && commandAst.CommandElements.OfType<CommandParameterAst>()
+                    .Any(parameter => parameter.ParameterName.Length > 0
+                        && "Parallel".StartsWith(parameter.ParameterName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            return commandAst.CommandElements.Contains(scriptBlock);
+        }
+
+        private bool IsInConstantFalseBranch(FunctionDefinitionAst function)
+        {
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (!(parent is IfStatementAst ifStatement))
+                {
+                    continue;
+                }
+
+                foreach (Tuple<PipelineBaseAst, StatementBlockAst> clause in ifStatement.Clauses)
+                {
+                    if (IsDescendantOf(function, clause.Item2) && IsConstantFalseCondition(clause.Item1))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDescendantOf(Ast ast, Ast ancestor)
+        {
+            for (Ast parent = ast.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent == ancestor)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsConstantFalseCondition(PipelineBaseAst condition)
+        {
+            ExpressionAst expression = condition.GetPureExpression();
+            if (expression == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return !LanguagePrimitives.IsTrue(expression.SafeGetValue());
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)

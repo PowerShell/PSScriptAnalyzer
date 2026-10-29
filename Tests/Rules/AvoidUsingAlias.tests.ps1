@@ -113,6 +113,37 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "respects caller scope in <Command> callbacks" -TestCases @(
+            @{ Command = 'ForEach-Object' }
+            @{ Command = 'Where-Object' }
+        ) {
+            param($Command)
+
+            $target = "function private:Verb {}; 1 | $Command { Verb }"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not apply caller scope to ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index functions in constant-false branches" {
+            $target = 'if ($false) { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "indexes declarations in parameterized dot-sourced blocks in the caller scope" {
             $target = '. { param($value) function private:Verb {}; Verb } 1; Verb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -215,6 +246,23 @@ $scriptFunction
     Verb ResourceExample { ChildItem NestedResource {} }
 }
 "@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
+        It "does not index functions in constant-false branches when identifying DSC resources" {
+            $target = @'
+{
+    if ($false) { function Verb {} }
+    Verb ResourceExample { ChildItem NestedResource {} }
+}
+'@
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
             $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
             $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
