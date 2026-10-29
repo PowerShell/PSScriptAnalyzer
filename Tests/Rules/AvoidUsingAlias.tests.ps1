@@ -153,14 +153,16 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $violations.Count | Should -Be 7
-            $violations[0].Extent.Text | Should -Be 'icm'
-            $violations[1].Extent.Text | Should -Be 'Verb'
+            $violations.Count | Should -Be 8
+            $violations[0].Extent.Text | Should -Be 'gci'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
+            $violations[1].Extent.Text | Should -Be 'icm'
             $violations[2].Extent.Text | Should -Be 'Verb'
             $violations[3].Extent.Text | Should -Be 'Verb'
-            $violations[4].Extent.Text | Should -Be 'icm'
-            $violations[5].Extent.Text | Should -Be 'Verb'
+            $violations[4].Extent.Text | Should -Be 'Verb'
+            $violations[5].Extent.Text | Should -Be 'icm'
             $violations[6].Extent.Text | Should -Be 'Verb'
+            $violations[7].Extent.Text | Should -Be 'Verb'
         }
 
         It "does not ignore executable commands in assignment and expression contexts or pipelines" {
@@ -279,8 +281,7 @@ Configuration PackageTest {
 
             $violations = @($rule.AnalyzeScript($configuration, $null))
 
-            $expectedViolations = if ($PSVersionTable.PSVersion.Major -ge 7) { 4 } else { 3 }
-            $violations.Count | Should -Be $expectedViolations
+            $violations.Count | Should -Be 4
             $violations | ForEach-Object {
                 $_.Extent.Text | Should -Be 'gci'
                 $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
