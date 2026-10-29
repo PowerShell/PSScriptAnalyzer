@@ -119,6 +119,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
+                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst);
+                if (isDscResourceDeclaration && String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
+                {
+                    continue;
+                }
+
                 if (!String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     yield return new DiagnosticRecord(
@@ -184,6 +190,207 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return false;
+        }
+
+        private bool IsDscResourceDeclaration(CommandAst cmdAst)
+        {
+            bool hasConfigurationAncestor = false;
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ConfigurationDefinitionAst)
+                {
+                    hasConfigurationAncestor = true;
+                    break;
+                }
+
+                if (parent is FunctionDefinitionAst
+                    || parent is HashtableAst
+                    || parent is AssignmentStatementAst
+                    || parent is ParenExpressionAst
+                    || parent is SubExpressionAst
+                    || parent is ArrayExpressionAst)
+                {
+                    return false;
+                }
+            }
+
+            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null)
+            {
+                return false;
+            }
+
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ConfigurationDefinitionAst)
+                {
+                    return true;
+                }
+
+                if (parent is FunctionDefinitionAst
+                    || parent is HashtableAst
+                    || parent is AssignmentStatementAst
+                    || parent is ParenExpressionAst
+                    || parent is SubExpressionAst
+                    || parent is ArrayExpressionAst)
+                {
+                    return false;
+                }
+
+                if (parent is CommandExpressionAst commandExpression
+                    && (!(commandExpression.Expression is ScriptBlockExpressionAst body)
+                        || !IsFollowingLineDscResourceBody(body)))
+                {
+                    return false;
+                }
+
+                // Script resource properties contain executable code, not resource declarations.
+                if (parent is ScriptBlockExpressionAst scriptBlock)
+                {
+                    if (scriptBlock.Parent is CommandAst enclosingCommand)
+                    {
+                        if (GetDscResourceBody(enclosingCommand) != scriptBlock
+                            || !String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(enclosingCommand.GetCommandName()))
+                            || (!String.Equals(enclosingCommand.GetCommandName(), "Node", StringComparison.OrdinalIgnoreCase)
+                                && Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null))
+                        {
+                            return false;
+                        }
+                    }
+                    else if (!(scriptBlock.Parent is ConfigurationDefinitionAst)
+                        && !(scriptBlock.Parent is DynamicKeywordStatementAst)
+                        && !(scriptBlock.Parent is CommandExpressionAst))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsFollowingLineDscResourceBody(ScriptBlockExpressionAst body)
+        {
+            if (!(body.Parent is CommandExpressionAst bodyExpression)
+                || !(bodyExpression.Parent is PipelineAst bodyPipeline)
+                || bodyPipeline.PipelineElements.Count != 1
+                || bodyPipeline.PipelineElements[0] != bodyExpression)
+            {
+                return false;
+            }
+
+            Ast statement = bodyPipeline;
+            for (Ast parent = bodyPipeline.Parent; parent != null; parent = parent.Parent)
+            {
+                var statements = (parent as NamedBlockAst)?.Statements
+                    ?? (parent as StatementBlockAst)?.Statements;
+                if (statements == null)
+                {
+                    statement = parent;
+                    continue;
+                }
+
+                int index = statements.IndexOf(statement as StatementAst);
+                if (index <= 0 || !(statements[index - 1] is PipelineAst declarationPipeline)
+                    || declarationPipeline.PipelineElements.Count != 1
+                    || !(declarationPipeline.PipelineElements[0] is CommandAst declaration))
+                {
+                    return false;
+                }
+
+                string declarationCommandName = declaration.GetCommandName();
+                return GetDscResourceBody(declaration) == body
+                    && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(declarationCommandName))
+                    && (String.Equals(declarationCommandName, "Node", StringComparison.OrdinalIgnoreCase)
+                        || Helper.Instance.GetCommandInfo(declarationCommandName) == null);
+            }
+
+            return false;
+        }
+
+        private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)
+        {
+            if (cmdAst.InvocationOperator != TokenKind.Unknown
+                || cmdAst.CommandElements.Count < 2
+                || !(cmdAst.CommandElements[1] is ExpressionAst)
+                || cmdAst.CommandElements[1].Extent.Text == "="
+                || cmdAst.Redirections.Count != 0)
+            {
+                return null;
+            }
+
+            if (!(cmdAst.Parent is PipelineAst commandPipeline)
+                || commandPipeline.PipelineElements.Count != 1
+                || commandPipeline.PipelineElements[0] != cmdAst
+#if CORECLR
+                || commandPipeline.Background
+#endif
+                || !(commandPipeline.Parent is NamedBlockAst || commandPipeline.Parent is StatementBlockAst))
+            {
+                return null;
+            }
+
+            if (cmdAst.CommandElements.Count == 3)
+            {
+                return cmdAst.CommandElements[2] as ScriptBlockExpressionAst;
+            }
+
+            // A resource's opening brace can be on the following line.
+            if (cmdAst.CommandElements.Count == 2 && cmdAst.Parent is PipelineAst pipeline)
+            {
+                Ast statement = pipeline;
+                for (Ast parent = pipeline.Parent; parent != null; parent = parent.Parent)
+                {
+                    var statements = (parent as NamedBlockAst)?.Statements
+                        ?? (parent as StatementBlockAst)?.Statements;
+                    if (statements == null)
+                    {
+                        statement = parent;
+                        continue;
+                    }
+
+                    int index = statements.IndexOf(statement as StatementAst);
+                    if (index >= 0 && index + 1 < statements.Count
+                        && statements[index + 1] is PipelineAst bodyPipeline
+                        && bodyPipeline.PipelineElements.Count == 1
+#if CORECLR
+                        && !bodyPipeline.Background
+#endif
+                        && bodyPipeline.PipelineElements[0] is CommandExpressionAst bodyExpression)
+                    {
+                        if (HasStatementSeparator(cmdAst, bodyPipeline)
+                            || bodyExpression.Redirections.Count != 0)
+                        {
+                            return null;
+                        }
+
+                        return bodyExpression.Expression as ScriptBlockExpressionAst;
+                    }
+
+                    break;
+                }
+            }
+
+            return null;
+        }
+
+        private bool HasStatementSeparator(CommandAst statement, Ast nextStatement)
+        {
+            int separatorStart = statement.CommandElements[statement.CommandElements.Count - 1].Extent.EndOffset;
+            int separatorLength = nextStatement.Extent.StartOffset - separatorStart;
+            if (separatorLength <= 0)
+            {
+                return false;
+            }
+
+            string script = statement.Extent.EndScriptPosition.GetFullScript();
+            string separator = script.Substring(separatorStart, separatorLength);
+            if (separator.IndexOf(';') < 0 && separator.IndexOf('&') < 0)
+            {
+                return false;
+            }
+
+            Parser.ParseInput(separator, out Token[] tokens, out ParseError[] errors);
+            return tokens.Any(token => token.Kind == TokenKind.Semi || token.Kind == TokenKind.Ampersand);
         }
 
         /// <summary>
