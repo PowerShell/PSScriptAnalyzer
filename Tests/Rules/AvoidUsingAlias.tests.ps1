@@ -63,6 +63,17 @@ gci -Path C:\
             $noViolations.Count | Should -Be 0
         }
 
+        It "does not add the Get prefix to script-defined functions or skip their script block arguments" {
+            $target = 'function vErB {}; Verb Instance { ChildItem . {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'ChildItem'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('ChildItem', 'Get-ChildItem'))
+        }
+
         It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
             $target = @'
 Configuration MyDscConfiguration {
@@ -97,6 +108,69 @@ Configuration PackageTest {
     }
 
     Context "DSC resource ASTs" {
+        It "recognizes functions declared in the <Scope> scope as executable commands" -TestCases @(
+            @{ Scope = 'script' }
+            @{ Scope = 'configuration' }
+        ) {
+            param($Scope)
+
+            $scriptFunction = if ($Scope -eq 'script') { 'function vErB {}' }
+            $configurationFunction = if ($Scope -eq 'configuration') { 'function vErB {}' }
+            $target = @"
+$scriptFunction
+{
+    $configurationFunction
+    Verb SameLine { ChildItem . {} }
+    Verb FollowingLine
+    {
+        ChildItem . {}
+    }
+    Package PackageExample {}
+}
+"@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[-1].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            [System.Management.Automation.Language.StatementAst[]]$statements = if ($Scope -eq 'script') {
+                @($ast.EndBlock.Statements[0].Copy(), $configuration)
+            } else {
+                @($configuration)
+            }
+            $scriptAst = [System.Management.Automation.Language.ScriptBlockAst]::new(
+                $ast.Extent, $null,
+                [System.Management.Automation.Language.StatementBlockAst]::new($ast.Extent, $statements, $null), $false)
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($scriptAst, $null))
+
+            $violations.Count | Should -Be 2
+            $violations | ForEach-Object {
+                $_.Extent.Text | Should -Be 'ChildItem'
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
+            }
+        }
+
+        It "does not treat functions declared in unrelated scopes as executable commands" {
+            $target = @'
+{
+    function Get-Example {
+        function Verb {}
+    }
+    Verb ResourceExample { ChildItem NestedResource {} }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
         It "does not expand nested resource names in a same-line Node declaration when node is discoverable" -skip:(!(Get-Command node -CommandType Application -ErrorAction Ignore)) {
             $target = @'
 {

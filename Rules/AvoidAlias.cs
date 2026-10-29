@@ -140,7 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst)) {
                     continue;
                 }
 
@@ -214,7 +214,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null)
+            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null
+                || !IsDscResourceCommand(cmdAst))
             {
                 return false;
             }
@@ -249,9 +250,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (scriptBlock.Parent is CommandAst enclosingCommand)
                     {
                         if (GetDscResourceBody(enclosingCommand) != scriptBlock
-                            || !String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(enclosingCommand.GetCommandName()))
-                            || (!String.Equals(enclosingCommand.GetCommandName(), "Node", StringComparison.OrdinalIgnoreCase)
-                                && Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null))
+                            || !IsDscResourceCommand(enclosingCommand))
                         {
                             return false;
                         }
@@ -297,11 +296,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return false;
                 }
 
-                string declarationCommandName = declaration.GetCommandName();
                 return GetDscResourceBody(declaration) == body
-                    && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(declarationCommandName))
-                    && (String.Equals(declarationCommandName, "Node", StringComparison.OrdinalIgnoreCase)
-                        || Helper.Instance.GetCommandInfo(declarationCommandName) == null);
+                    && IsDscResourceCommand(declaration);
+            }
+
+            return false;
+        }
+
+        private bool IsDscResourceCommand(CommandAst cmdAst)
+        {
+            string commandName = cmdAst.GetCommandName();
+            return !IsScriptDefinedFunction(cmdAst)
+                && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName))
+                && (String.Equals(commandName, "Node", StringComparison.OrdinalIgnoreCase)
+                    || Helper.Instance.GetCommandInfo(commandName) == null);
+        }
+
+        private bool IsScriptDefinedFunction(CommandAst cmdAst)
+        {
+            string commandName = cmdAst.GetCommandName();
+            // Command discovery runs in a separate runspace and cannot see script-local functions.
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope
+                    && scope.Find(candidate => candidate is FunctionDefinitionAst function
+                        && String.Equals(function.Name, commandName, StringComparison.OrdinalIgnoreCase),
+                        searchNestedScriptBlocks: false) != null)
+                {
+                    return true;
+                }
             }
 
             return false;
