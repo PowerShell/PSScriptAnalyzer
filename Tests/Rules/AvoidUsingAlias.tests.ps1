@@ -95,6 +95,19 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "respects execution order across caller-scoped blocks" -TestCases @(
+            @{ Target = 'Verb; . { function Verb {} }' }
+            @{ Target = '. { Verb }; function Verb {}' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -227,6 +240,8 @@ Script Test {
             @{ Boundary = 'Start-Job { Verb }' }
             @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command -Session $session -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command localhost { Verb }' }
+            @{ Boundary = 'Invoke-Command -ConnectionUri http://server:5985/wsman -ScriptBlock { Verb }' }
             @{ Boundary = 'InlineScript { Verb }' }
             @{ Boundary = 'Script Test { GetScript = { Verb } }' }
         ) {
@@ -271,6 +286,15 @@ Script Test {
 
         It "respects caller scope for script blocks inside array callback arguments" {
             $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects caller scope for callbacks in array subexpressions" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Process @({ Verb })'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
@@ -333,6 +357,24 @@ Script Test {
 
         It "does not classify Where-Object comparison values as executable callbacks" {
             $target = 'Where-Object -Property Name -EQ { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not classify ForEach-Object MemberName arguments as executable callbacks" {
+            $target = '1 | ForEach-Object -MemberName Equals { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not treat an explicitly disabled NoNewScope switch as caller-scoped" {
+            $target = 'function private:Verb {}; Invoke-Command -NoNewScope:$false -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1

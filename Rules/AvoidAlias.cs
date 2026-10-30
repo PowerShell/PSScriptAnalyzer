@@ -375,7 +375,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && functionDefinitions.Any(function =>
                             (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
                                 || currentScope == scope)
-                            && !IsFunctionDeclaredAfterCommand(function, cmdAst)))
+                            && !IsFunctionDeclaredAfterCommand(function, cmdAst, currentScope, functionAnalysis)))
                     {
                         functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = true;
                         return true;
@@ -392,19 +392,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool IsFunctionDeclaredAfterCommand(FunctionDefinitionAst function, CommandAst cmdAst)
+        private bool IsFunctionDeclaredAfterCommand(
+            FunctionDefinitionAst function,
+            CommandAst cmdAst,
+            ScriptBlockAst commandScope,
+            FunctionAnalysisContext functionAnalysis)
         {
-            ScriptBlockAst commandScope = null;
-            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
-            {
-                if (parent is ScriptBlockAst scope)
-                {
-                    commandScope = scope;
-                    break;
-                }
-            }
-
-            return commandScope == GetNearestFunctionScope(function)
+            return commandScope != null
+                && commandScope == GetFunctionScope(function, functionAnalysis)
                 && function.Extent.StartOffset > cmdAst.Extent.StartOffset;
         }
 
@@ -562,6 +557,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string commandName = GetCallbackCommandName(commandAst);
             if (IsForEachObjectCommand(commandName))
             {
+                if (HasCommandParameter(commandAst, "MemberName"))
+                {
+                    functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+                    return result;
+                }
+
                 string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
                 result = !IsParameter(parameterName, "Parallel")
                     && (IsParameter(parameterName, "Begin")
@@ -576,9 +577,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             else if (IsInvokeCommand(commandName)
                 && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "ScriptBlock"))
             {
-                result = HasCommandParameter(commandAst, "NoNewScope")
-                    && !HasCommandParameter(commandAst, "ComputerName")
-                    && !HasCommandParameter(commandAst, "Session");
+                result = HasEnabledCommandParameter(commandAst, "NoNewScope")
+                    && !IsRemoteInvokeCommand(commandAst);
             }
             }
 
@@ -630,8 +630,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         else if (String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase)
             && IsParameter(parameterName, "ScriptBlock")
-            && (HasCommandParameter(commandAst, "ComputerName")
-                || HasCommandParameter(commandAst, "Session")))
+            && IsRemoteInvokeCommand(commandAst))
         {
             result = true;
         }
@@ -706,6 +705,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (current.Parent is ArrayLiteralAst arrayLiteral)
                 {
                     current = arrayLiteral;
+                    continue;
+                }
+
+                if (current.Parent is ArrayExpressionAst arrayExpression)
+                {
+                    current = arrayExpression;
+                    continue;
+                }
+
+                if (current.Parent is CommandExpressionAst
+                    || current.Parent is PipelineAst
+                    || current.Parent is StatementBlockAst)
+                {
+                    current = current.Parent;
                     continue;
                 }
 
@@ -928,6 +941,107 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             && IsInvokeCommand(GetCallbackCommandName(commandAst))
                             && IsInvokeCommandParameter(parameter.ParameterName, parameterName));
                 });
+        }
+
+        private bool HasEnabledCommandParameter(CommandAst commandAst, string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            foreach (CommandParameterAst parameter in commandAst.CommandElements.OfType<CommandParameterAst>())
+            {
+                string resolvedName = parameters == null
+                    ? null
+                    : ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                if (!String.Equals(resolvedName, parameterName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (parameter.Argument == null)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    return LanguagePrimitives.IsTrue(parameter.Argument.SafeGetValue());
+                }
+                catch (InvalidOperationException)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsRemoteInvokeCommand(CommandAst commandAst)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
+            if (parameters == null)
+            {
+                return false;
+            }
+
+            string[] remoteTargetParameters =
+            {
+                "ComputerName",
+                "Session",
+                "ConnectionUri",
+                "HostName",
+                "VMId",
+                "VMName",
+                "ContainerId"
+            };
+
+            foreach (CommandParameterAst parameter in commandAst.CommandElements.OfType<CommandParameterAst>())
+            {
+                string parameterName = ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                if (remoteTargetParameters.Contains(parameterName, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i < commandAst.CommandElements.Count; i++)
+            {
+                CommandElementAst element = commandAst.CommandElements[i];
+                if (element is CommandParameterAst parameter)
+                {
+                    if (parameter.Argument != null
+                        || (i + 1 < commandAst.CommandElements.Count
+                            && !(commandAst.CommandElements[i + 1] is CommandParameterAst)))
+                    {
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                bool isScriptBlock = element is ScriptBlockExpressionAst
+                    || element.FindAll(candidate => candidate is ScriptBlockExpressionAst, true).Any();
+                if (!isScriptBlock
+                    && remoteTargetParameters.Any(name =>
+                        parameters.TryGetValue(name, out ParameterMetadata metadata)
+                        && metadata.Attributes.OfType<ParameterAttribute>()
+                            .Any(attribute => attribute.Position == positionalIndex)))
+                {
+                    return true;
+                }
+
+                positionalIndex++;
+            }
+
+            return false;
         }
 
         private Dictionary<string, ParameterMetadata> GetCommandParameters(CommandInfo commandInfo)
