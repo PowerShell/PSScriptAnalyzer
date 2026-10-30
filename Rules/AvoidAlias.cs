@@ -624,25 +624,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            Dictionary<string, ParameterMetadata> parameters;
-            try
-            {
-                parameters = commandInfo.Parameters;
-            }
-            catch (InvalidOperationException)
-            {
-                parameters = Helper.Instance.GetCommandInfo(commandInfo.Name, bypassCache: true)?.Parameters;
-                if (parameters == null)
-                {
-                    return null;
-                }
-            }
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
 
             CommandParameterAst attachedParameter = commandAst.CommandElements
                 .OfType<CommandParameterAst>()
                 .FirstOrDefault(parameter => parameter.Argument != null
                     && (parameter.Argument == scriptBlock
                         || IsDescendantOf(scriptBlock, parameter.Argument)));
+            if (parameters == null)
+            {
+                return IsInvokeCommand(GetCallbackCommandName(commandAst))
+                    && attachedParameter != null
+                    && IsInvokeCommandScriptBlockParameter(attachedParameter.ParameterName)
+                        ? "ScriptBlock"
+                        : null;
+            }
+
             if (attachedParameter != null)
             {
                 return ResolveParameter(parameters, attachedParameter.ParameterName)?.Name;
@@ -778,10 +775,89 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
             return commandAst.CommandElements
                 .OfType<CommandParameterAst>()
-                .Any(parameter => ResolveParameter(commandInfo.Parameters, parameter.ParameterName)?.Name
-                    .Equals(parameterName, StringComparison.OrdinalIgnoreCase) == true);
+                .Any(parameter =>
+                {
+                    string resolvedName = parameters == null
+                        ? null
+                        : ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                    return resolvedName?.Equals(parameterName, StringComparison.OrdinalIgnoreCase) == true
+                        || (resolvedName == null
+                            && IsInvokeCommand(GetCallbackCommandName(commandAst))
+                            && IsInvokeCommandParameter(parameter.ParameterName, parameterName));
+                });
+        }
+
+        private Dictionary<string, ParameterMetadata> GetCommandParameters(CommandInfo commandInfo)
+        {
+            if ((commandInfo.CommandType & CommandTypes.Application) != 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                return commandInfo.Parameters;
+            }
+            catch (InvalidOperationException)
+            {
+                return GetCommandParametersWithoutCache(commandInfo);
+            }
+            catch (NotSupportedException)
+            {
+                return GetCommandParametersWithoutCache(commandInfo);
+            }
+        }
+
+        private Dictionary<string, ParameterMetadata> GetCommandParametersWithoutCache(CommandInfo commandInfo)
+        {
+            try
+            {
+                return Helper.Instance.GetCommandInfo(commandInfo.Name, bypassCache: true)?.Parameters;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+        }
+
+        private bool IsInvokeCommand(string commandName)
+        {
+            return String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInvokeCommandScriptBlockParameter(string parameterName)
+        {
+            return String.Equals(parameterName, "ScriptBlock", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(parameterName, "Command", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInvokeCommandParameter(string parameterName, string expectedName)
+        {
+            if (String.Equals(expectedName, "ScriptBlock", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsInvokeCommandScriptBlockParameter(parameterName);
+            }
+
+            if (String.Equals(expectedName, "ComputerName", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Equals(parameterName, "ComputerName", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(parameterName, "Cn", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (String.Equals(expectedName, "Session", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Equals(parameterName, "Session", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(parameterName, "PSSession", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
 
         private bool IsParameter(string parameter, string parameterName)
