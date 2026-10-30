@@ -108,6 +108,27 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "respects execution order across ForEach-Object callback phases" -TestCases @(
+            @{
+                Target = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
+                ExpectedViolations = 0
+                ExpectedText = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
+            }
+            @{
+                Target = '1 | ForEach-Object -Begin { Verb } -Process { function Verb {} }'
+                ExpectedViolations = 1
+                ExpectedText = '1 | ForEach-Object -Begin { Get-Verb } -Process { function Verb {} }'
+            }
+        ) {
+            param($Target, $ExpectedViolations, $ExpectedText)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be $ExpectedViolations
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $ExpectedText
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -241,6 +262,8 @@ Script Test {
             @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command -Session $session -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command localhost { Verb }' }
+            @{ Boundary = 'Invoke-Command -Verbose localhost -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command -Verbose:$true localhost -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command -ConnectionUri http://server:5985/wsman -ScriptBlock { Verb }' }
             @{ Boundary = 'InlineScript { Verb }' }
             @{ Boundary = 'Script Test { GetScript = { Verb } }' }

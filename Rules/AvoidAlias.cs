@@ -398,9 +398,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ScriptBlockAst commandScope,
             FunctionAnalysisContext functionAnalysis)
         {
-            return commandScope != null
-                && commandScope == GetFunctionScope(function, functionAnalysis)
-                && function.Extent.StartOffset > cmdAst.Extent.StartOffset;
+            if (commandScope == null || commandScope != GetFunctionScope(function, functionAnalysis))
+            {
+                return false;
+            }
+
+            int functionPhase = GetForEachObjectExecutionPhase(function, out CommandAst functionCallback);
+            int commandPhase = GetForEachObjectExecutionPhase(cmdAst, out CommandAst commandCallback);
+            if (functionCallback == commandCallback
+                && functionPhase >= 0
+                && commandPhase >= 0
+                && functionPhase != commandPhase)
+            {
+                return functionPhase > commandPhase;
+            }
+
+            return function.Extent.StartOffset > cmdAst.Extent.StartOffset;
+        }
+
+        private int GetForEachObjectExecutionPhase(Ast ast, out CommandAst callbackCommand)
+        {
+            callbackCommand = null;
+            for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (!(current is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    continue;
+                }
+
+                CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+                if (commandAst == null
+                    || !IsForEachObjectCommand(GetCallbackCommandName(commandAst)))
+                {
+                    continue;
+                }
+
+                string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+                if (IsParameter(parameterName, "Begin"))
+                {
+                    callbackCommand = commandAst;
+                    return 0;
+                }
+
+                if (IsParameter(parameterName, "Process"))
+                {
+                    callbackCommand = commandAst;
+                    return 1;
+                }
+
+                if (IsParameter(parameterName, "End"))
+                {
+                    callbackCommand = commandAst;
+                    return 2;
+                }
+            }
+
+            return -1;
         }
 
         private FunctionAnalysisContext GetFunctionNameIndex(Ast ast)
@@ -1017,8 +1071,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 CommandElementAst element = commandAst.CommandElements[i];
                 if (element is CommandParameterAst parameter)
                 {
-                    if (parameter.Argument != null
-                        || (i + 1 < commandAst.CommandElements.Count
+                    ParameterMetadata metadata = ResolveParameter(parameters, parameter.ParameterName);
+                    if (parameter.Argument == null
+                        && metadata?.ParameterType != typeof(SwitchParameter)
+                        && (i + 1 < commandAst.CommandElements.Count
                             && !(commandAst.CommandElements[i + 1] is CommandParameterAst)))
                     {
                         i++;
