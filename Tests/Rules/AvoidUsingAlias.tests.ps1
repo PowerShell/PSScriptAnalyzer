@@ -86,6 +86,15 @@ gci -Path C:\
                 Should -Be ($target.Replace('& { Verb }', '& { Get-Verb }'))
         }
 
+        It "does not resolve function declarations before their execution" {
+            $target = 'Verb; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -113,6 +122,36 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "recognizes caller scope for local Invoke-Command NoNewScope callbacks" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            $target = 'function private:Verb {}; Invoke-Command -NoNewScope -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'Invoke-Command -NoNewScope -ScriptBlock { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat a newline-separated DSC script property as caller-scoped" {
+            $target = @'
+function Verb {};
+Script Test {
+    SetScript =
+    { Verb }
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "respects caller scope in <Command> callbacks" -TestCases @(
             @{ Command = 'ForEach-Object' }
             @{ Command = 'Where-Object' }
@@ -127,6 +166,17 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "preserves caller scope when an alias takes precedence over a same-named function" {
+            $target = 'function where {}; function private:Verb {}; 1 | where { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'where'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('1 | where', '1 | Where-Object'))
         }
 
         It "respects caller scope for colon-attached callback arguments" {
@@ -207,6 +257,18 @@ gci -Path C:\
                 Should -Be ($target.Replace('{ Verb }', '{ Get-Verb }'))
         }
 
+        It "resolves dot-sourced callback commands before classifying nested callbacks" {
+            $target = '. { function ForEach-Object { param([scriptblock]$Process) & $Process } }; ForEach-Object { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Substring(0, $target.LastIndexOf(' Verb')) + ' Get-Verb')
+        }
+
         It "respects caller scope for script blocks inside array callback arguments" {
             $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -267,6 +329,24 @@ gci -Path C:\
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not classify Where-Object comparison values as executable callbacks" {
+            $target = 'Where-Object -Property Name -EQ { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "handles deeply nested caller-scoped callbacks without repeated visibility scans" {
+            $depth = 12
+            $target = ('1 | ForEach-Object { ' * $depth) + 'Verb' + (' }' * $depth)
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
         }
 
         It "indexes declarations in parameterized dot-sourced blocks in the caller scope" {

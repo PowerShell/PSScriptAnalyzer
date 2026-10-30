@@ -22,6 +22,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidAlias : IScriptRule
     {
+        private sealed class FunctionAnalysisContext
+        {
+            public Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>> FunctionNameIndex { get; set; }
+
+            public Dictionary<CommandAst, bool?> ScriptDefinedFunctionCache { get; } = new Dictionary<CommandAst, bool?>();
+
+            public Dictionary<ScriptBlockAst, bool?> CallerScopedScriptBlockCache { get; } = new Dictionary<ScriptBlockAst, bool?>();
+
+            public Dictionary<ScriptBlockAst, bool?> IsolatedRunspaceScriptBlockCache { get; } = new Dictionary<ScriptBlockAst, bool?>();
+
+            public void ClearCaches()
+            {
+                ScriptDefinedFunctionCache.Clear();
+                CallerScopedScriptBlockCache.Clear();
+                IsolatedRunspaceScriptBlockCache.Clear();
+            }
+        }
+
         private readonly string allowListArgName = "allowlist";
         // keep legacy argument name for next version to allow customers to transition but remove later
         private readonly string allowListLegacyArgName = "whitelist";
@@ -97,7 +115,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex = GetFunctionNameIndex(ast);
+            FunctionAnalysisContext functionAnalysis = GetFunctionNameIndex(ast);
 
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in foundAsts)
@@ -120,7 +138,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
-                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst, functionNameIndex);
+                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst, functionAnalysis);
                 if (isDscResourceDeclaration && String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     continue;
@@ -141,7 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst, functionNameIndex)) {
+                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst, functionAnalysis)) {
                     continue;
                 }
 
@@ -195,7 +213,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsDscResourceDeclaration(
             CommandAst cmdAst,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+            FunctionAnalysisContext functionAnalysis)
         {
             bool hasConfigurationAncestor = false;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
@@ -218,7 +236,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null
-                || !IsDscResourceCommand(cmdAst, functionNameIndex))
+                || !IsDscResourceCommand(cmdAst, functionAnalysis))
             {
                 return false;
             }
@@ -242,7 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (parent is CommandExpressionAst commandExpression
                     && (!(commandExpression.Expression is ScriptBlockExpressionAst body)
-                        || !IsFollowingLineDscResourceBody(body, functionNameIndex)))
+                        || !IsFollowingLineDscResourceBody(body, functionAnalysis)))
                 {
                     return false;
                 }
@@ -253,7 +271,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (scriptBlock.Parent is CommandAst enclosingCommand)
                     {
                         if (GetDscResourceBody(enclosingCommand) != scriptBlock
-                            || !IsDscResourceCommand(enclosingCommand, functionNameIndex))
+                            || !IsDscResourceCommand(enclosingCommand, functionAnalysis))
                         {
                             return false;
                         }
@@ -272,7 +290,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsFollowingLineDscResourceBody(
             ScriptBlockExpressionAst body,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+            FunctionAnalysisContext functionAnalysis)
         {
             if (!(body.Parent is CommandExpressionAst bodyExpression)
                 || !(bodyExpression.Parent is PipelineAst bodyPipeline)
@@ -302,7 +320,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 return GetDscResourceBody(declaration) == body
-                    && IsDscResourceCommand(declaration, functionNameIndex);
+                    && IsDscResourceCommand(declaration, functionAnalysis);
             }
 
             return false;
@@ -310,10 +328,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsDscResourceCommand(
             CommandAst cmdAst,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+            FunctionAnalysisContext functionAnalysis)
         {
             string commandName = cmdAst.GetCommandName();
-            return !IsScriptDefinedFunction(cmdAst, functionNameIndex)
+            return !IsScriptDefinedFunction(cmdAst, functionAnalysis)
                 && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName))
                 && (String.Equals(commandName, "Node", StringComparison.OrdinalIgnoreCase)
                     || Helper.Instance.GetCommandInfo(commandName) == null);
@@ -321,7 +339,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsScriptDefinedFunction(
             CommandAst cmdAst,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+            FunctionAnalysisContext functionAnalysis)
         {
             string commandName = cmdAst.GetCommandName();
             if (commandName == null)
@@ -329,41 +347,78 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
+            if (!String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName)))
+            {
+                return false;
+            }
+
+            if (functionAnalysis.ScriptDefinedFunctionCache.TryGetValue(cmdAst, out bool? cachedResult))
+            {
+                return cachedResult.GetValueOrDefault();
+            }
+
+            functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = null;
             ScriptBlockAst currentScope = null;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope)
                 {
-                    if (currentScope == null && !IsCallerScopedScriptBlock(scope, functionNameIndex))
+                    if (currentScope == null && !IsCallerScopedScriptBlock(scope, functionAnalysis))
                     {
                         currentScope = scope;
                     }
 
-                    if (functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames)
-                        && functionNames.TryGetValue(commandName, out bool isPrivate)
-                        && (!isPrivate || currentScope == scope))
+                    if (functionAnalysis.FunctionNameIndex.TryGetValue(
+                        scope,
+                        out Dictionary<string, List<FunctionDefinitionAst>> functionNames)
+                        && functionNames.TryGetValue(commandName, out List<FunctionDefinitionAst> functionDefinitions)
+                        && functionDefinitions.Any(function =>
+                            (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
+                                || currentScope == scope)
+                            && !IsFunctionDeclaredAfterCommand(function, cmdAst)))
                     {
+                        functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = true;
                         return true;
                     }
 
-                    if (IsIsolatedRunspaceScriptBlock(scope, functionNameIndex))
+                    if (IsIsolatedRunspaceScriptBlock(scope, functionAnalysis))
                     {
                         break;
                     }
                 }
             }
 
+            functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = false;
             return false;
         }
 
-        private Dictionary<ScriptBlockAst, Dictionary<string, bool>> GetFunctionNameIndex(Ast ast)
+        private bool IsFunctionDeclaredAfterCommand(FunctionDefinitionAst function, CommandAst cmdAst)
         {
-            var functionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, bool>>();
+            ScriptBlockAst commandScope = null;
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope)
+                {
+                    commandScope = scope;
+                    break;
+                }
+            }
+
+            return commandScope == GetNearestFunctionScope(function)
+                && function.Extent.StartOffset > cmdAst.Extent.StartOffset;
+        }
+
+        private FunctionAnalysisContext GetFunctionNameIndex(Ast ast)
+        {
             FunctionDefinitionAst[] functionDefinitions = ast.FindAll(
                 candidate => candidate is FunctionDefinitionAst,
                 true).OfType<FunctionDefinitionAst>().ToArray();
 
-            var lexicalFunctionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, bool>>();
+            var functionAnalysis = new FunctionAnalysisContext
+            {
+                FunctionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>>()
+            };
+
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
                 if (IsInConstantFalseBranch(function))
@@ -371,66 +426,76 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
                 ScriptBlockAst scope = GetNearestFunctionScope(function);
-                if (!String.IsNullOrEmpty(functionName) && scope != null)
+                if (scope != null)
                 {
-                    AddFunctionToIndex(
-                        lexicalFunctionNameIndex,
-                        scope,
-                        functionName,
-                        function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase));
+                    AddFunctionToIndex(functionAnalysis.FunctionNameIndex, scope, function);
                 }
             }
 
+            var previousScopes = new Dictionary<FunctionDefinitionAst, ScriptBlockAst>();
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
-                if (IsInConstantFalseBranch(function))
+                if (!IsInConstantFalseBranch(function))
                 {
-                    continue;
+                    previousScopes[function] = GetNearestFunctionScope(function);
                 }
-
-                string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
-                if (String.IsNullOrEmpty(functionName))
-                {
-                    continue;
-                }
-
-                ScriptBlockAst scope = GetFunctionScope(function, lexicalFunctionNameIndex);
-                if (scope == null)
-                {
-                    continue;
-                }
-
-                AddFunctionToIndex(
-                    functionNameIndex,
-                    scope,
-                    functionName,
-                    function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase));
             }
 
-            return functionNameIndex;
+            for (int iteration = 0; iteration <= previousScopes.Count; iteration++)
+            {
+                functionAnalysis.ClearCaches();
+                var functionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>>();
+                var currentScopes = new Dictionary<FunctionDefinitionAst, ScriptBlockAst>();
+                foreach (FunctionDefinitionAst function in previousScopes.Keys)
+                {
+                    ScriptBlockAst scope = GetFunctionScope(function, functionAnalysis);
+                    currentScopes[function] = scope;
+                    if (scope != null)
+                    {
+                        AddFunctionToIndex(functionNameIndex, scope, function);
+                    }
+                }
+
+                bool scopesChanged = previousScopes.Any(pair => currentScopes[pair.Key] != pair.Value);
+                functionAnalysis.FunctionNameIndex = functionNameIndex;
+                previousScopes = currentScopes;
+                if (!scopesChanged)
+                {
+                    break;
+                }
+            }
+
+            functionAnalysis.ClearCaches();
+            return functionAnalysis;
         }
 
         private void AddFunctionToIndex(
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex,
+            Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>> functionNameIndex,
             ScriptBlockAst scope,
-            string functionName,
-            bool isPrivate)
+            FunctionDefinitionAst function)
         {
-            if (!functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames))
+            string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
+            if (String.IsNullOrEmpty(functionName))
             {
-                functionNames = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                return;
+            }
+
+            if (!functionNameIndex.TryGetValue(
+                scope,
+                out Dictionary<string, List<FunctionDefinitionAst>> functionNames))
+            {
+                functionNames = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
                 functionNameIndex.Add(scope, functionNames);
             }
 
-            if (functionNames.TryGetValue(functionName, out bool existingIsPrivate))
+            if (functionNames.TryGetValue(functionName, out List<FunctionDefinitionAst> functionDefinitions))
             {
-                functionNames[functionName] = existingIsPrivate && isPrivate;
+                functionDefinitions.Add(function);
             }
             else
             {
-                functionNames.Add(functionName, isPrivate);
+                functionNames.Add(functionName, new List<FunctionDefinitionAst> { function });
             }
         }
 
@@ -449,12 +514,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private ScriptBlockAst GetFunctionScope(
             FunctionDefinitionAst function,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+            FunctionAnalysisContext functionAnalysis)
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope
-                    && !IsCallerScopedScriptBlock(scope, functionNameIndex))
+                    && !IsCallerScopedScriptBlock(scope, functionAnalysis))
                 {
                     return scope;
                 }
@@ -464,103 +529,168 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         private bool IsCallerScopedScriptBlock(
-            ScriptBlockAst scope,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+        ScriptBlockAst scope,
+        FunctionAnalysisContext functionAnalysis)
         {
-            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
-            {
-                return false;
-            }
+        if (functionAnalysis.CallerScopedScriptBlockCache.TryGetValue(scope, out bool? cachedResult))
+        {
+            return cachedResult.GetValueOrDefault();
+        }
 
-            CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
-            if (commandAst == null)
-            {
-                return false;
-            }
+        functionAnalysis.CallerScopedScriptBlockCache[scope] = null;
+        bool result = false;
+        if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+        {
+            functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+            return result;
+        }
 
-            if (IsScriptDefinedFunction(commandAst, functionNameIndex))
-            {
-                return false;
-            }
+        CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+        if (commandAst == null || IsScriptDefinedFunction(commandAst, functionAnalysis))
+        {
+            functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+            return result;
+        }
 
-            if (commandAst.InvocationOperator == TokenKind.Dot
-                && commandAst.CommandElements[0] == scriptBlock)
-            {
-                return true;
-            }
-
+        if (commandAst.InvocationOperator == TokenKind.Dot
+            && commandAst.CommandElements[0] == scriptBlock)
+        {
+            result = true;
+        }
+        else
+        {
             string commandName = GetCallbackCommandName(commandAst);
-            if (commandName == null)
-            {
-                return false;
-            }
-
             if (IsForEachObjectCommand(commandName))
             {
                 string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
-                if (IsParameter(parameterName, "Parallel"))
-                {
-                    return false;
-                }
-
-                return IsParameter(parameterName, "Begin")
-                    || IsParameter(parameterName, "Process")
-                    || IsParameter(parameterName, "End")
-                    || IsParameter(parameterName, "RemainingScripts");
+                result = !IsParameter(parameterName, "Parallel")
+                    && (IsParameter(parameterName, "Begin")
+                        || IsParameter(parameterName, "Process")
+                        || IsParameter(parameterName, "End")
+                        || IsParameter(parameterName, "RemainingScripts"));
+            }
+            else if (IsWhereObjectCommand(commandName))
+            {
+                result = IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "FilterScript");
+            }
+            else if (IsInvokeCommand(commandName)
+                && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "ScriptBlock"))
+            {
+                result = HasCommandParameter(commandAst, "NoNewScope")
+                    && !HasCommandParameter(commandAst, "ComputerName")
+                    && !HasCommandParameter(commandAst, "Session");
+            }
             }
 
-            return IsWhereObjectCommand(commandName)
-                && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "FilterScript");
+        functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+        return result;
         }
 
         private bool IsIsolatedRunspaceScriptBlock(
-            ScriptBlockAst scope,
-            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+        ScriptBlockAst scope,
+        FunctionAnalysisContext functionAnalysis)
         {
-            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
-            {
-                return false;
-            }
+        if (functionAnalysis.IsolatedRunspaceScriptBlockCache.TryGetValue(scope, out bool? cachedResult))
+        {
+            return cachedResult.GetValueOrDefault();
+        }
 
-            CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
-            if (commandAst == null || IsScriptDefinedFunction(commandAst, functionNameIndex))
-            {
-                return false;
-            }
+        functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = null;
+        bool result = false;
+        if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+            return result;
+        }
 
-            string commandName = GetCallbackCommandName(commandAst);
-            string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
-            if (IsForEachObjectCommand(commandName) && IsParameter(parameterName, "Parallel"))
-            {
-                return true;
-            }
+        CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+        if (commandAst == null)
+        {
+            commandAst = GetPrecedingDscScriptPropertyCommand(scriptBlock);
+        }
 
-            if ((String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
-                && (IsParameter(parameterName, "ScriptBlock")
-                    || IsParameter(parameterName, "InitializationScript")))
-            {
-                return true;
-            }
+        if (commandAst == null || IsScriptDefinedFunction(commandAst, functionAnalysis))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+            return result;
+        }
 
-            if (String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase)
-                && IsParameter(parameterName, "ScriptBlock")
-                && (HasCommandParameter(commandAst, "ComputerName")
-                    || HasCommandParameter(commandAst, "Session")))
-            {
-                return true;
-            }
-
-            if (String.Equals(commandName, "InlineScript", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return (String.Equals(commandName, "GetScript", StringComparison.OrdinalIgnoreCase)
+        string commandName = GetCallbackCommandName(commandAst);
+        string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+        if (IsForEachObjectCommand(commandName) && IsParameter(parameterName, "Parallel"))
+        {
+            result = true;
+        }
+        else if ((String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
+            && (IsParameter(parameterName, "ScriptBlock")
+                || IsParameter(parameterName, "InitializationScript")))
+        {
+            result = true;
+        }
+        else if (String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase)
+            && IsParameter(parameterName, "ScriptBlock")
+            && (HasCommandParameter(commandAst, "ComputerName")
+                || HasCommandParameter(commandAst, "Session")))
+        {
+            result = true;
+        }
+        else if (String.Equals(commandName, "InlineScript", StringComparison.OrdinalIgnoreCase))
+        {
+            result = true;
+        }
+        else
+        {
+            result = (String.Equals(commandName, "GetScript", StringComparison.OrdinalIgnoreCase)
                     || String.Equals(commandName, "TestScript", StringComparison.OrdinalIgnoreCase)
                     || String.Equals(commandName, "SetScript", StringComparison.OrdinalIgnoreCase))
                 && commandAst.CommandElements.Count > 1
                 && String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal);
+        }
+
+        functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+        return result;
+        }
+
+        private CommandAst GetPrecedingDscScriptPropertyCommand(ScriptBlockExpressionAst scriptBlock)
+        {
+        if (!(scriptBlock.Parent is CommandExpressionAst commandExpression)
+            || !(commandExpression.Parent is PipelineAst pipeline))
+        {
+            return null;
+        }
+
+        Ast statement = pipeline;
+        for (Ast parent = pipeline.Parent; parent != null; parent = parent.Parent)
+        {
+            var statements = (parent as NamedBlockAst)?.Statements
+                ?? (parent as StatementBlockAst)?.Statements;
+            if (statements == null)
+            {
+                statement = parent;
+                continue;
+            }
+
+            int index = statements.IndexOf(statement as StatementAst);
+            if (index <= 0
+                || !(statements[index - 1] is PipelineAst propertyPipeline)
+                || propertyPipeline.PipelineElements.Count != 1
+                || !(propertyPipeline.PipelineElements[0] is CommandAst propertyCommand)
+                || propertyCommand.CommandElements.Count != 2
+                || !String.Equals(propertyCommand.CommandElements[1].ToString(), "=", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            string propertyName = propertyCommand.GetCommandName();
+            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase)
+                    ? propertyCommand
+                    : null;
+        }
+
+        return null;
         }
 
         private CommandAst GetScriptBlockCommand(ScriptBlockExpressionAst scriptBlock)
@@ -643,6 +773,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (attachedParameter != null)
             {
                 return ResolveParameter(parameters, attachedParameter.ParameterName)?.Name;
+            }
+
+            if (IsWhereObjectCommand(GetCallbackCommandName(commandAst))
+                && commandAst.CommandElements
+                    .OfType<CommandParameterAst>()
+                    .Any(parameter => IsParameter(
+                        ResolveParameter(parameters, parameter.ParameterName)?.Name,
+                        "Property")))
+            {
+                return null;
             }
 
             CommandElementAst argumentElement = commandAst.CommandElements
