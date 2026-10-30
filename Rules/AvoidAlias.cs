@@ -340,6 +340,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         return true;
                     }
+
+                    if (IsParallelRunspaceScriptBlock(scope))
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -419,33 +424,85 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            string commandName = commandAst.GetCommandName();
+            string commandName = GetCallbackCommandName(commandAst);
             if (commandName == null)
             {
                 return false;
             }
 
+            CommandParameterAst parameter = GetScriptBlockParameter(commandAst, scriptBlock);
+            if (IsForEachObjectCommand(commandName))
+            {
+                if (IsParameter(parameter, "Parallel"))
+                {
+                    return false;
+                }
+
+                return parameter == null
+                    || IsParameter(parameter, "Begin")
+                    || IsParameter(parameter, "Process")
+                    || IsParameter(parameter, "End")
+                    || IsParameter(parameter, "RemainingScripts");
+            }
+
+            return IsWhereObjectCommand(commandName)
+                && (parameter == null || IsParameter(parameter, "FilterScript"));
+        }
+
+        private bool IsParallelRunspaceScriptBlock(ScriptBlockAst scope)
+        {
+            return scope.Parent is ScriptBlockExpressionAst scriptBlock
+                && scriptBlock.Parent is CommandAst commandAst
+                && IsForEachObjectCommand(GetCallbackCommandName(commandAst))
+                && IsParameter(GetScriptBlockParameter(commandAst, scriptBlock), "Parallel");
+        }
+
+        private string GetCallbackCommandName(CommandAst commandAst)
+        {
+            string commandName = commandAst.GetCommandName();
+            if (commandName == null)
+            {
+                return null;
+            }
+
+            const string coreModulePrefix = "Microsoft.PowerShell.Core\\";
+            if (commandName.StartsWith(coreModulePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                commandName = commandName.Substring(coreModulePrefix.Length);
+            }
+            else if (commandName.IndexOf('\\') >= 0)
+            {
+                return null;
+            }
+
             string cmdletName = Helper.Instance.GetCmdletNameFromAlias(commandName);
-            if (!String.IsNullOrEmpty(cmdletName))
-            {
-                commandName = cmdletName;
-            }
+            return String.IsNullOrEmpty(cmdletName) ? commandName : cmdletName;
+        }
 
-            if (!String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase)
-                && !String.Equals(commandName, "Where-Object", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
+        private CommandParameterAst GetScriptBlockParameter(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock)
+        {
+            int scriptBlockIndex = commandAst.CommandElements.IndexOf(scriptBlock);
+            return scriptBlockIndex > 0
+                ? commandAst.CommandElements[scriptBlockIndex - 1] as CommandParameterAst
+                : null;
+        }
 
-            if (String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase)
-                && commandAst.CommandElements.OfType<CommandParameterAst>()
-                    .Any(parameter => parameter.ParameterName.Length > 0
-                        && "Parallel".StartsWith(parameter.ParameterName, StringComparison.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
+        private bool IsParameter(CommandParameterAst parameter, string parameterName)
+        {
+            return parameter != null
+                && String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase);
+        }
 
-            return commandAst.CommandElements.Contains(scriptBlock);
+        private bool IsForEachObjectCommand(string commandName)
+        {
+            return String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsWhereObjectCommand(string commandName)
+        {
+            return String.Equals(commandName, "Where-Object", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsInConstantFalseBranch(FunctionDefinitionAst function)

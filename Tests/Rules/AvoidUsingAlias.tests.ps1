@@ -116,6 +116,8 @@ gci -Path C:\
         It "respects caller scope in <Command> callbacks" -TestCases @(
             @{ Command = 'ForEach-Object' }
             @{ Command = 'Where-Object' }
+            @{ Command = 'Microsoft.PowerShell.Core\ForEach-Object' }
+            @{ Command = 'Microsoft.PowerShell.Core\Where-Object' }
         ) {
             param($Command)
 
@@ -132,6 +134,30 @@ gci -Path C:\
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function Verb {}; 1 | ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "recognizes functions declared in ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = '1 | ForEach-Object -Parallel { function Verb {}; Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "does not index script blocks passed as ForEach-Object input data" {
+            $target = 'ForEach-Object -InputObject { function Verb {} } -Process { $_ }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
