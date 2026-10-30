@@ -324,12 +324,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             string commandName = cmdAst.GetCommandName();
+            if (commandName == null)
+            {
+                return false;
+            }
+
             ScriptBlockAst currentScope = null;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope)
                 {
-                    if (currentScope == null && !IsCallerScopedScriptBlock(scope))
+                    if (currentScope == null && !IsCallerScopedScriptBlock(scope, functionNameIndex))
                     {
                         currentScope = scope;
                     }
@@ -341,7 +346,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return true;
                     }
 
-                    if (IsParallelRunspaceScriptBlock(scope))
+                    if (IsIsolatedRunspaceScriptBlock(scope, functionNameIndex))
                     {
                         break;
                     }
@@ -354,9 +359,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Dictionary<ScriptBlockAst, Dictionary<string, bool>> GetFunctionNameIndex(Ast ast)
         {
             var functionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, bool>>();
-            IEnumerable<FunctionDefinitionAst> functionDefinitions = ast.FindAll(
+            FunctionDefinitionAst[] functionDefinitions = ast.FindAll(
                 candidate => candidate is FunctionDefinitionAst,
-                true).OfType<FunctionDefinitionAst>();
+                true).OfType<FunctionDefinitionAst>().ToArray();
+
+            var lexicalFunctionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, bool>>();
+            foreach (FunctionDefinitionAst function in functionDefinitions)
+            {
+                if (IsInConstantFalseBranch(function))
+                {
+                    continue;
+                }
+
+                string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
+                ScriptBlockAst scope = GetNearestFunctionScope(function);
+                if (!String.IsNullOrEmpty(functionName) && scope != null)
+                {
+                    AddFunctionToIndex(
+                        lexicalFunctionNameIndex,
+                        scope,
+                        functionName,
+                        function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase));
+                }
+            }
 
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
@@ -371,37 +396,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                ScriptBlockAst scope = GetFunctionScope(function);
+                ScriptBlockAst scope = GetFunctionScope(function, lexicalFunctionNameIndex);
                 if (scope == null)
                 {
                     continue;
                 }
 
-                bool isPrivate = function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase);
-                if (!functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames))
-                {
-                    functionNames = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-                    functionNameIndex.Add(scope, functionNames);
-                }
-
-                if (functionNames.TryGetValue(functionName, out bool existingIsPrivate))
-                {
-                    functionNames[functionName] = existingIsPrivate && isPrivate;
-                }
-                else
-                {
-                    functionNames.Add(functionName, isPrivate);
-                }
+                AddFunctionToIndex(
+                    functionNameIndex,
+                    scope,
+                    functionName,
+                    function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase));
             }
 
             return functionNameIndex;
         }
 
-        private ScriptBlockAst GetFunctionScope(FunctionDefinitionAst function)
+        private void AddFunctionToIndex(
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex,
+            ScriptBlockAst scope,
+            string functionName,
+            bool isPrivate)
+        {
+            if (!functionNameIndex.TryGetValue(scope, out Dictionary<string, bool> functionNames))
+            {
+                functionNames = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                functionNameIndex.Add(scope, functionNames);
+            }
+
+            if (functionNames.TryGetValue(functionName, out bool existingIsPrivate))
+            {
+                functionNames[functionName] = existingIsPrivate && isPrivate;
+            }
+            else
+            {
+                functionNames.Add(functionName, isPrivate);
+            }
+        }
+
+        private ScriptBlockAst GetNearestFunctionScope(FunctionDefinitionAst function)
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
-                if (parent is ScriptBlockAst scope && !IsCallerScopedScriptBlock(scope))
+                if (parent is ScriptBlockAst scope)
                 {
                     return scope;
                 }
@@ -410,7 +447,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private bool IsCallerScopedScriptBlock(ScriptBlockAst scope)
+        private ScriptBlockAst GetFunctionScope(
+            FunctionDefinitionAst function,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
+        {
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope
+                    && !IsCallerScopedScriptBlock(scope, functionNameIndex))
+                {
+                    return scope;
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsCallerScopedScriptBlock(
+            ScriptBlockAst scope,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
             {
@@ -419,6 +474,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
             if (commandAst == null)
+            {
+                return false;
+            }
+
+            if (IsScriptDefinedFunction(commandAst, functionNameIndex))
             {
                 return false;
             }
@@ -453,7 +513,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "FilterScript");
         }
 
-        private bool IsParallelRunspaceScriptBlock(ScriptBlockAst scope)
+        private bool IsIsolatedRunspaceScriptBlock(
+            ScriptBlockAst scope,
+            Dictionary<ScriptBlockAst, Dictionary<string, bool>> functionNameIndex)
         {
             if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
             {
@@ -461,24 +523,73 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
-            return commandAst != null
-                && IsForEachObjectCommand(GetCallbackCommandName(commandAst))
-                && IsParameter(
-                    GetScriptBlockParameterName(commandAst, scriptBlock),
-                    "Parallel");
+            if (commandAst == null || IsScriptDefinedFunction(commandAst, functionNameIndex))
+            {
+                return false;
+            }
+
+            string commandName = GetCallbackCommandName(commandAst);
+            string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+            if (IsForEachObjectCommand(commandName) && IsParameter(parameterName, "Parallel"))
+            {
+                return true;
+            }
+
+            if ((String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
+                && (IsParameter(parameterName, "ScriptBlock")
+                    || IsParameter(parameterName, "InitializationScript")))
+            {
+                return true;
+            }
+
+            if (String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase)
+                && IsParameter(parameterName, "ScriptBlock")
+                && (HasCommandParameter(commandAst, "ComputerName")
+                    || HasCommandParameter(commandAst, "Session")))
+            {
+                return true;
+            }
+
+            if (String.Equals(commandName, "InlineScript", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return (String.Equals(commandName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(commandName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(commandName, "SetScript", StringComparison.OrdinalIgnoreCase))
+                && commandAst.CommandElements.Count > 1
+                && String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal);
         }
 
         private CommandAst GetScriptBlockCommand(ScriptBlockExpressionAst scriptBlock)
         {
-            if (scriptBlock.Parent is CommandAst commandAst)
+            Ast current = scriptBlock;
+            while (current.Parent != null)
             {
-                return commandAst;
+                if (current.Parent is CommandAst commandAst)
+                {
+                    return commandAst;
+                }
+
+                if (current.Parent is ArrayLiteralAst arrayLiteral)
+                {
+                    current = arrayLiteral;
+                    continue;
+                }
+
+                if (current.Parent is CommandParameterAst parameter
+                    && parameter.Argument == current)
+                {
+                    current = parameter;
+                    continue;
+                }
+
+                return null;
             }
 
-            return scriptBlock.Parent is CommandParameterAst parameter
-                && parameter.Argument == scriptBlock
-                    ? parameter.Parent as CommandAst
-                    : null;
+            return null;
         }
 
         private string GetCallbackCommandName(CommandAst commandAst)
@@ -529,13 +640,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             CommandParameterAst attachedParameter = commandAst.CommandElements
                 .OfType<CommandParameterAst>()
-                .FirstOrDefault(parameter => parameter.Argument == scriptBlock);
+                .FirstOrDefault(parameter => parameter.Argument != null
+                    && (parameter.Argument == scriptBlock
+                        || IsDescendantOf(scriptBlock, parameter.Argument)));
             if (attachedParameter != null)
             {
                 return ResolveParameter(parameters, attachedParameter.ParameterName)?.Name;
             }
 
-            int scriptBlockIndex = commandAst.CommandElements.IndexOf(scriptBlock);
+            CommandElementAst argumentElement = commandAst.CommandElements
+                .FirstOrDefault(element => element == scriptBlock
+                    || IsDescendantOf(scriptBlock, element));
+            int scriptBlockIndex = argumentElement == null
+                ? -1
+                : commandAst.CommandElements.IndexOf(argumentElement);
             if (scriptBlockIndex < 0)
             {
                 return null;
@@ -613,6 +731,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int position)
         {
             ParameterMetadata match = null;
+            ParameterMetadata remainingScriptsParameter = null;
             foreach (ParameterMetadata parameter in parameters.Values)
             {
                 Type parameterType = parameter.ParameterType;
@@ -621,21 +740,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     parameterType = parameterType.GetElementType();
                 }
 
-                if (!typeof(ScriptBlock).IsAssignableFrom(parameterType)
-                    || !parameter.Attributes.OfType<ParameterAttribute>().Any(attribute => attribute.Position == position))
+                if (!typeof(ScriptBlock).IsAssignableFrom(parameterType))
                 {
                     continue;
                 }
 
-                if (match != null)
+                IEnumerable<ParameterAttribute> parameterAttributes = parameter.Attributes.OfType<ParameterAttribute>();
+                if (parameterAttributes.Any(attribute => attribute.Position == position))
                 {
-                    return null;
+                    if (match != null)
+                    {
+                        return null;
+                    }
+
+                    match = parameter;
                 }
 
-                match = parameter;
+                if (parameterAttributes.Any(attribute => attribute.ValueFromRemainingArguments))
+                {
+                    if (remainingScriptsParameter != null)
+                    {
+                        return null;
+                    }
+
+                    remainingScriptsParameter = parameter;
+                }
             }
 
-            return match;
+            return match ?? remainingScriptsParameter;
+        }
+
+        private bool HasCommandParameter(CommandAst commandAst, string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            return commandAst.CommandElements
+                .OfType<CommandParameterAst>()
+                .Any(parameter => ResolveParameter(commandInfo.Parameters, parameter.ParameterName)?.Name
+                    .Equals(parameterName, StringComparison.OrdinalIgnoreCase) == true);
         }
 
         private bool IsParameter(string parameter, string parameterName)

@@ -173,6 +173,67 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not find functions outside isolated execution boundaries" -TestCases @(
+            @{ Boundary = 'Start-Job { Verb }' }
+            @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command -Session $session -ScriptBlock { Verb }' }
+            @{ Boundary = 'InlineScript { Verb }' }
+            @{ Boundary = 'Script Test { GetScript = { Verb } }' }
+        ) {
+            param($Boundary)
+
+            $target = "function Verb {}; $Boundary"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects visible script-defined commands before callback scope rules" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function ForEach-Object { param([scriptblock]$Parallel) & $Parallel }; function Verb {}; ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function ForEach-Object { param([scriptblock]$Process) & $Process }; function private:Verb {}; 1 | ForEach-Object -Process { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('{ Verb }', '{ Get-Verb }'))
+        }
+
+        It "respects caller scope for script blocks inside array callback arguments" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not index script blocks inside array input data" {
+            $target = 'ForEach-Object -InputObject { function Verb {} }, { function Other {} } -Process { $_ }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects caller scope for trailing RemainingScripts callbacks" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object {}, {}, { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "resolves abbreviated and colon-attached parallel callback parameters" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
             foreach ($parameter in @('-Pa { Verb }', '-Pa:{ Verb }')) {
                 $target = "function Verb {}; 1 | ForEach-Object $parameter"
