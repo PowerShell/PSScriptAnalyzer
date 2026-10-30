@@ -129,6 +129,34 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "respects caller scope for colon-attached callback arguments" {
+            foreach ($command in @(
+                'ForEach-Object -Process:{ Verb }'
+                'Where-Object -FilterScript:{ Verb }'
+            )) {
+                $target = "function private:Verb {}; 1 | $command"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "uses the bound callback parameter after switches and abbreviated parameters" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Verbose { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Proc { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not apply caller scope to ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
             $target = 'function private:Verb {}; 1 | ForEach-Object -Parallel { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -143,6 +171,16 @@ gci -Path C:\
 
             $violations.Count | Should -Be 1
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "resolves abbreviated and colon-attached parallel callback parameters" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            foreach ($parameter in @('-Pa { Verb }', '-Pa:{ Verb }')) {
+                $target = "function Verb {}; 1 | ForEach-Object $parameter"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
         }
 
         It "recognizes functions declared in ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {

@@ -412,8 +412,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsCallerScopedScriptBlock(ScriptBlockAst scope)
         {
-            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
-                || !(scriptBlock.Parent is CommandAst commandAst))
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+            if (commandAst == null)
             {
                 return false;
             }
@@ -430,31 +435,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            CommandParameterAst parameter = GetScriptBlockParameter(commandAst, scriptBlock);
             if (IsForEachObjectCommand(commandName))
             {
-                if (IsParameter(parameter, "Parallel"))
+                string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+                if (IsParameter(parameterName, "Parallel"))
                 {
                     return false;
                 }
 
-                return parameter == null
-                    || IsParameter(parameter, "Begin")
-                    || IsParameter(parameter, "Process")
-                    || IsParameter(parameter, "End")
-                    || IsParameter(parameter, "RemainingScripts");
+                return IsParameter(parameterName, "Begin")
+                    || IsParameter(parameterName, "Process")
+                    || IsParameter(parameterName, "End")
+                    || IsParameter(parameterName, "RemainingScripts");
             }
 
             return IsWhereObjectCommand(commandName)
-                && (parameter == null || IsParameter(parameter, "FilterScript"));
+                && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "FilterScript");
         }
 
         private bool IsParallelRunspaceScriptBlock(ScriptBlockAst scope)
         {
-            return scope.Parent is ScriptBlockExpressionAst scriptBlock
-                && scriptBlock.Parent is CommandAst commandAst
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+            return commandAst != null
                 && IsForEachObjectCommand(GetCallbackCommandName(commandAst))
-                && IsParameter(GetScriptBlockParameter(commandAst, scriptBlock), "Parallel");
+                && IsParameter(
+                    GetScriptBlockParameterName(commandAst, scriptBlock),
+                    "Parallel");
+        }
+
+        private CommandAst GetScriptBlockCommand(ScriptBlockExpressionAst scriptBlock)
+        {
+            if (scriptBlock.Parent is CommandAst commandAst)
+            {
+                return commandAst;
+            }
+
+            return scriptBlock.Parent is CommandParameterAst parameter
+                && parameter.Argument == scriptBlock
+                    ? parameter.Parent as CommandAst
+                    : null;
         }
 
         private string GetCallbackCommandName(CommandAst commandAst)
@@ -479,20 +503,144 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return String.IsNullOrEmpty(cmdletName) ? commandName : cmdletName;
         }
 
-        private CommandParameterAst GetScriptBlockParameter(
+        private string GetScriptBlockParameterName(
             CommandAst commandAst,
             ScriptBlockExpressionAst scriptBlock)
         {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return null;
+            }
+
+            Dictionary<string, ParameterMetadata> parameters;
+            try
+            {
+                parameters = commandInfo.Parameters;
+            }
+            catch (InvalidOperationException)
+            {
+                parameters = Helper.Instance.GetCommandInfo(commandInfo.Name, bypassCache: true)?.Parameters;
+                if (parameters == null)
+                {
+                    return null;
+                }
+            }
+
+            CommandParameterAst attachedParameter = commandAst.CommandElements
+                .OfType<CommandParameterAst>()
+                .FirstOrDefault(parameter => parameter.Argument == scriptBlock);
+            if (attachedParameter != null)
+            {
+                return ResolveParameter(parameters, attachedParameter.ParameterName)?.Name;
+            }
+
             int scriptBlockIndex = commandAst.CommandElements.IndexOf(scriptBlock);
-            return scriptBlockIndex > 0
-                ? commandAst.CommandElements[scriptBlockIndex - 1] as CommandParameterAst
-                : null;
+            if (scriptBlockIndex < 0)
+            {
+                return null;
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i <= scriptBlockIndex; i++)
+            {
+                CommandElementAst commandElement = commandAst.CommandElements[i];
+                if (i == scriptBlockIndex)
+                {
+                    return GetPositionalScriptBlockParameter(parameters, positionalIndex)?.Name;
+                }
+
+                if (!(commandElement is CommandParameterAst parameter))
+                {
+                    positionalIndex++;
+                    continue;
+                }
+
+                ParameterMetadata parameterMetadata = ResolveParameter(parameters, parameter.ParameterName);
+                if (parameter.Argument != null
+                    || parameterMetadata?.ParameterType == typeof(SwitchParameter))
+                {
+                    continue;
+                }
+
+                if (i + 1 == scriptBlockIndex)
+                {
+                    return parameterMetadata?.Name;
+                }
+
+                if (i + 1 < scriptBlockIndex
+                    && !(commandAst.CommandElements[i + 1] is CommandParameterAst))
+                {
+                    i++;
+                }
+            }
+
+            return null;
         }
 
-        private bool IsParameter(CommandParameterAst parameter, string parameterName)
+        private ParameterMetadata ResolveParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            string parameterName)
         {
-            return parameter != null
-                && String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase);
+            if (String.IsNullOrEmpty(parameterName))
+            {
+                return null;
+            }
+
+            ParameterMetadata exactMatch = null;
+            var prefixMatches = new List<ParameterMetadata>();
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                if (String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase)
+                    || parameter.Aliases.Contains(parameterName, StringComparer.OrdinalIgnoreCase))
+                {
+                    exactMatch = parameter;
+                    break;
+                }
+
+                if (parameter.Name.StartsWith(parameterName, StringComparison.OrdinalIgnoreCase)
+                    || parameter.Aliases.Any(alias => alias.StartsWith(parameterName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    prefixMatches.Add(parameter);
+                }
+            }
+
+            return exactMatch ?? (prefixMatches.Count == 1 ? prefixMatches[0] : null);
+        }
+
+        private ParameterMetadata GetPositionalScriptBlockParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            int position)
+        {
+            ParameterMetadata match = null;
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                Type parameterType = parameter.ParameterType;
+                if (parameterType.IsArray)
+                {
+                    parameterType = parameterType.GetElementType();
+                }
+
+                if (!typeof(ScriptBlock).IsAssignableFrom(parameterType)
+                    || !parameter.Attributes.OfType<ParameterAttribute>().Any(attribute => attribute.Position == position))
+                {
+                    continue;
+                }
+
+                if (match != null)
+                {
+                    return null;
+                }
+
+                match = parameter;
+            }
+
+            return match;
+        }
+
+        private bool IsParameter(string parameter, string parameterName)
+        {
+            return String.Equals(parameter, parameterName, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsForEachObjectCommand(string commandName)
