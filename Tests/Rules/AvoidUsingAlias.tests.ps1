@@ -108,6 +108,22 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not resolve declarations after an immediately invoked child block" {
+            $target = '& { Verb }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects function begin and process execution order" {
+            $target = 'function Invoke-Example { process { Verb } begin { function Verb {} } }; Invoke-Example'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
         It "respects execution order across ForEach-Object callback phases" -TestCases @(
             @{
                 Target = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
@@ -307,6 +323,23 @@ Script Test {
                 Should -Be ($target.Substring(0, $target.LastIndexOf(' Verb')) + ' Get-Verb')
         }
 
+        It "does not let callback declarations change command resolution at invocation time" -TestCases @(
+            @{
+                Target = 'function private:Verb {}; 1 | ForEach-Object { function ForEach-Object { param([scriptblock]$Process) & $Process } }; function Unrelated {}; 1 | ForEach-Object -Process { Verb }'
+            }
+            @{
+                Target = 'function private:Verb {}; 1 | ForEach-Object { function ForEach-Object { param([scriptblock]$Process) & $Process } }; 1 | ForEach-Object -Process { Verb }'
+            }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "respects caller scope for script blocks inside array callback arguments" {
             $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -389,6 +422,31 @@ Script Test {
 
         It "does not classify ForEach-Object MemberName arguments as executable callbacks" {
             $target = '1 | ForEach-Object -MemberName Equals { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+
+            $target = '1 | ForEach-Object Equals { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects caller scope for parenthesized literal callbacks" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Process ({ Verb })'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not find functions outside module-qualified thread jobs" -skip:($null -eq (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+            $target = 'function Verb {}; ThreadJob\Start-ThreadJob -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1

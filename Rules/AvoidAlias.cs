@@ -373,7 +373,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         out Dictionary<string, List<FunctionDefinitionAst>> functionNames)
                         && functionNames.TryGetValue(commandName, out List<FunctionDefinitionAst> functionDefinitions)
                         && functionDefinitions.Any(function =>
-                            (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
+                            !IsDescendantOf(function, cmdAst)
+                            && (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
                                 || currentScope == scope)
                             && !IsFunctionDeclaredAfterCommand(function, cmdAst, currentScope, functionAnalysis)))
                     {
@@ -398,9 +399,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ScriptBlockAst commandScope,
             FunctionAnalysisContext functionAnalysis)
         {
-            if (commandScope == null || commandScope != GetFunctionScope(function, functionAnalysis))
+            if (commandScope == null)
             {
                 return false;
+            }
+
+            ScriptBlockAst functionScope = GetFunctionScope(function, functionAnalysis);
+            if (functionScope == null)
+            {
+                return false;
+            }
+
+            CommandAst immediateInvocation = null;
+            if (commandScope != functionScope
+                && !IsImmediatelyInvokedChildScope(commandScope, functionScope, out immediateInvocation))
+            {
+                return false;
+            }
+
+            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out FunctionDefinitionAst functionOwner);
+            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(cmdAst, out FunctionDefinitionAst commandOwner);
+            if (functionOwner != null
+                && functionOwner == commandOwner
+                && functionNamedBlockPhase >= 0
+                && commandNamedBlockPhase >= 0
+                && functionNamedBlockPhase != commandNamedBlockPhase)
+            {
+                return functionNamedBlockPhase > commandNamedBlockPhase;
             }
 
             int functionPhase = GetForEachObjectExecutionPhase(function, out CommandAst functionCallback);
@@ -413,7 +438,82 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionPhase > commandPhase;
             }
 
-            return function.Extent.StartOffset > cmdAst.Extent.StartOffset;
+            int commandExecutionOffset = immediateInvocation == null
+                ? cmdAst.Extent.StartOffset
+                : immediateInvocation.Extent.StartOffset;
+            return function.Extent.StartOffset > commandExecutionOffset;
+        }
+
+        private bool IsImmediatelyInvokedChildScope(
+            ScriptBlockAst commandScope,
+            ScriptBlockAst functionScope,
+            out CommandAst invocation)
+        {
+            invocation = null;
+            if (!(commandScope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst command = GetScriptBlockCommand(scriptBlock);
+            if (command == null || command.InvocationOperator != TokenKind.Ampersand)
+            {
+                return false;
+            }
+
+            ScriptBlockAst parentScope = null;
+            for (Ast parent = commandScope.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope)
+                {
+                    parentScope = scope;
+                    break;
+                }
+            }
+
+            if (parentScope != functionScope)
+            {
+                return false;
+            }
+
+            invocation = command;
+            return true;
+        }
+
+        private int GetNamedBlockExecutionPhase(Ast ast, out FunctionDefinitionAst containingFunction)
+        {
+            NamedBlockAst namedBlock = null;
+            containingFunction = null;
+            for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (namedBlock == null && current is NamedBlockAst block)
+                {
+                    namedBlock = block;
+                }
+
+                if (current != ast && current is FunctionDefinitionAst function)
+                {
+                    containingFunction = function;
+                    break;
+                }
+            }
+
+            if (namedBlock == null || containingFunction == null)
+            {
+                return -1;
+            }
+
+            switch (namedBlock.BlockKind)
+            {
+                case TokenKind.Begin:
+                    return 0;
+                case TokenKind.Process:
+                    return 1;
+                case TokenKind.End:
+                    return 2;
+                default:
+                    return -1;
+            }
         }
 
         private int GetForEachObjectExecutionPhase(Ast ast, out CommandAst callbackCommand)
@@ -611,7 +711,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string commandName = GetCallbackCommandName(commandAst);
             if (IsForEachObjectCommand(commandName))
             {
-                if (HasCommandParameter(commandAst, "MemberName"))
+                if (HasCommandParameter(commandAst, "MemberName")
+                    || HasPositionalCommandParameter(commandAst, scriptBlock, "MemberName"))
                 {
                     functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
                     return result;
@@ -768,7 +869,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (current.Parent is CommandExpressionAst
+                if (current.Parent is ParenExpressionAst
+                    || current.Parent is CommandExpressionAst
                     || current.Parent is PipelineAst
                     || current.Parent is StatementBlockAst)
                 {
@@ -801,6 +903,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (commandName.StartsWith(coreModulePrefix, StringComparison.OrdinalIgnoreCase))
             {
                 commandName = commandName.Substring(coreModulePrefix.Length);
+            }
+            else if (commandName.EndsWith("\\Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
+            {
+                commandName = "Start-ThreadJob";
             }
             else if (commandName.IndexOf('\\') >= 0)
             {
@@ -898,6 +1004,73 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private bool HasPositionalCommandParameter(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock,
+            string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            if (parameters == null)
+            {
+                return false;
+            }
+
+            CommandElementAst argumentElement = commandAst.CommandElements
+                .FirstOrDefault(element => element == scriptBlock
+                    || IsDescendantOf(scriptBlock, element));
+            int scriptBlockIndex = argumentElement == null
+                ? -1
+                : commandAst.CommandElements.IndexOf(argumentElement);
+            if (scriptBlockIndex < 0)
+            {
+                return false;
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i < scriptBlockIndex; i++)
+            {
+                CommandElementAst commandElement = commandAst.CommandElements[i];
+                if (!(commandElement is CommandParameterAst parameter))
+                {
+                    if (IsPositionalParameter(parameters, positionalIndex, parameterName))
+                    {
+                        return true;
+                    }
+
+                    positionalIndex++;
+                    continue;
+                }
+
+                ParameterMetadata metadata = ResolveParameter(parameters, parameter.ParameterName);
+                if (parameter.Argument != null || metadata?.ParameterType == typeof(SwitchParameter))
+                {
+                    continue;
+                }
+
+                if (i + 1 < scriptBlockIndex
+                    && !(commandAst.CommandElements[i + 1] is CommandParameterAst))
+                {
+                    i++;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsPositionalParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            int position,
+            string parameterName)
+        {
+            return parameters.Values.Any(parameter =>
+                String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase)
+                && parameter.Attributes.OfType<ParameterAttribute>()
+                    .Any(attribute => attribute.Position == position));
         }
 
         private ParameterMetadata ResolveParameter(
