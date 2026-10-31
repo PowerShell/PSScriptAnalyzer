@@ -124,6 +124,15 @@ gci -Path C:\
             $violations.Count | Should -Be 0
         }
 
+        It "respects function execution order through dot-sourced blocks in named blocks" {
+            $target = 'function Invoke-Example { process { Verb } begin { . { function Verb {} } } }; Invoke-Example'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "respects execution order across ForEach-Object callback phases" -TestCases @(
             @{
                 Target = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
@@ -170,6 +179,19 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "uses caller scope for parenthesized dot-sourced blocks and declarations" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($target in @(
+                'function private:Verb {}; . ({ Verb })',
+                '. ({ function private:Verb {}; Verb }); Verb'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
         }
 
         It "recognizes caller scope for local Invoke-Command NoNewScope callbacks" {
@@ -373,6 +395,12 @@ Script Test {
 
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function private:Verb {}; 1 | ForEach-Object {} {} { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 

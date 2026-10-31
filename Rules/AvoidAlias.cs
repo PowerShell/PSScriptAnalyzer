@@ -486,7 +486,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             containingFunction = null;
             for (Ast current = ast; current != null; current = current.Parent)
             {
-                if (namedBlock == null && current is NamedBlockAst block)
+                if (current is NamedBlockAst block)
                 {
                     namedBlock = block;
                 }
@@ -702,7 +702,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         if (commandAst.InvocationOperator == TokenKind.Dot
-            && commandAst.CommandElements[0] == scriptBlock)
+            && commandAst.CommandElements.Count > 0
+            && UnwrapParenthesizedExpression(commandAst.CommandElements[0]) == scriptBlock)
         {
             result = true;
         }
@@ -739,6 +740,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
         return result;
+        }
+
+        private Ast UnwrapParenthesizedExpression(Ast ast)
+        {
+            while (ast is ParenExpressionAst parenthesizedExpression
+                && parenthesizedExpression.Pipeline is PipelineAst pipeline
+                && pipeline.PipelineElements.Count == 1
+                && pipeline.PipelineElements[0] is CommandExpressionAst commandExpression)
+            {
+                ast = commandExpression.Expression;
+            }
+
+            return ast;
         }
 
         private bool IsIsolatedRunspaceScriptBlock(
@@ -1037,7 +1051,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 CommandElementAst commandElement = commandAst.CommandElements[i];
                 if (!(commandElement is CommandParameterAst parameter))
                 {
-                    if (IsPositionalParameter(parameters, positionalIndex, parameterName))
+                    if (IsPositionalParameter(parameters, positionalIndex, parameterName, commandElement))
                     {
                         return true;
                     }
@@ -1065,12 +1079,52 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool IsPositionalParameter(
             Dictionary<string, ParameterMetadata> parameters,
             int position,
-            string parameterName)
+            string parameterName,
+            Ast argument)
         {
-            return parameters.Values.Any(parameter =>
-                String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase)
-                && parameter.Attributes.OfType<ParameterAttribute>()
-                    .Any(attribute => attribute.Position == position));
+            ParameterMetadata targetParameter = parameters.Values.FirstOrDefault(parameter =>
+                String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase));
+            if (targetParameter == null)
+            {
+                return false;
+            }
+
+            Type argumentType = (argument as ExpressionAst)?.StaticType;
+            if (argumentType == null)
+            {
+                return false;
+            }
+
+            IEnumerable<ParameterAttribute> targetAttributes = targetParameter.Attributes
+                .OfType<ParameterAttribute>()
+                .Where(attribute => attribute.Position == position);
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                Type parameterType = parameter.ParameterType.IsArray
+                    ? parameter.ParameterType.GetElementType()
+                    : parameter.ParameterType;
+                if (!parameterType.IsAssignableFrom(argumentType))
+                {
+                    continue;
+                }
+
+                IEnumerable<string> parameterSets = parameter.Attributes
+                    .OfType<ParameterAttribute>()
+                    .Where(attribute => attribute.Position == position)
+                    .Select(attribute => attribute.ParameterSetName);
+                if (targetAttributes.Select(attribute => attribute.ParameterSetName)
+                    .Any(targetSet => parameterSets.Any(parameterSet =>
+                        String.IsNullOrEmpty(targetSet)
+                        || String.IsNullOrEmpty(parameterSet)
+                        || targetSet == "__AllParameterSets"
+                        || parameterSet == "__AllParameterSets"
+                        || String.Equals(targetSet, parameterSet, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private ParameterMetadata ResolveParameter(
