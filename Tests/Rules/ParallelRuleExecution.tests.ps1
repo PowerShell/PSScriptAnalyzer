@@ -30,4 +30,28 @@ Export-ModuleMember -Function Test-ParallelExample$index
         $diagnostics = Invoke-ScriptAnalyzer -Path $root -Recurse -Settings $settingsPath -ErrorAction Stop
         @($diagnostics).Count | Should -BeGreaterThan 0
     }
+
+    It 'analyzes a module with Export-ModuleMember in fresh processes without failing or hanging' {
+        # Regression test for https://github.com/PowerShell/PSScriptAnalyzer/issues/2229:
+        # PSProvideCommentHelp and PSReservedCmdletChar both resolve Export-ModuleMember
+        # parameters concurrently, which failed with a NullReferenceException and could leave
+        # the process hanging at exit. The failure was intermittent and only shows in new processes.
+        $fixture = Join-Path $TestDrive 'Issue2229'
+        $null = New-Item -ItemType Directory -Path $fixture -Force
+        "function Get-Probe { 'probe' }`nExport-ModuleMember -Function Get-Probe" | Set-Content -LiteralPath (Join-Path $fixture 'Probe.psm1')
+        'class ProbeBox { [NoSuchProbeType] $Value }' | Set-Content -LiteralPath (Join-Path $fixture 'ProbeBox.ps1')
+
+        $modulePath = (Get-Module PSScriptAnalyzer).Path
+        $pwsh = (Get-Process -Id $PID).Path
+        $script = '$ErrorActionPreference = "Stop"; Import-Module $args[0]; $null = Invoke-ScriptAnalyzer -Path $args[1] -Recurse; "OK"'
+        foreach ($run in 1..5) {
+            $job = Start-Job { param($pwsh, $script, $modulePath, $fixture) & $pwsh -NoProfile -NonInteractive -CommandWithArgs $script $modulePath $fixture } -ArgumentList $pwsh, $script, $modulePath, $fixture
+            $null = Wait-Job $job -Timeout 60
+            $state = $job.State
+            $output = Receive-Job $job -ErrorAction SilentlyContinue
+            Remove-Job $job -Force
+            $state | Should -Be 'Completed'
+            $output | Should -Be 'OK'
+        }
+    }
 }
