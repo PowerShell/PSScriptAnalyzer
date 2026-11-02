@@ -417,10 +417,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out FunctionDefinitionAst functionOwner);
-            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(cmdAst, out FunctionDefinitionAst commandOwner);
-            if (functionOwner != null
-                && functionOwner == commandOwner
+            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out ScriptBlockAst functionExecutionBlock);
+            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(cmdAst, out ScriptBlockAst commandExecutionBlock);
+            if (functionExecutionBlock != null
+                && functionExecutionBlock == commandExecutionBlock
                 && functionNamedBlockPhase >= 0
                 && commandNamedBlockPhase >= 0
                 && functionNamedBlockPhase != commandNamedBlockPhase)
@@ -456,7 +456,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             CommandAst command = GetScriptBlockCommand(scriptBlock);
-            if (command == null || command.InvocationOperator != TokenKind.Ampersand)
+            if (command == null
+                || command.InvocationOperator != TokenKind.Ampersand
+                || command.CommandElements.Count == 0
+                || UnwrapParenthesizedExpression(command.CommandElements[0]) != scriptBlock)
             {
                 return false;
             }
@@ -480,10 +483,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return true;
         }
 
-        private int GetNamedBlockExecutionPhase(Ast ast, out FunctionDefinitionAst containingFunction)
+        private int GetNamedBlockExecutionPhase(Ast ast, out ScriptBlockAst containingExecutionBlock)
         {
             NamedBlockAst namedBlock = null;
-            containingFunction = null;
+            containingExecutionBlock = null;
             for (Ast current = ast; current != null; current = current.Parent)
             {
                 if (current is NamedBlockAst block)
@@ -493,12 +496,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (current != ast && current is FunctionDefinitionAst function)
                 {
-                    containingFunction = function;
+                    containingExecutionBlock = function.Body;
+                    break;
+                }
+
+                if (current is ScriptBlockAst scriptBlock && scriptBlock.Parent == null)
+                {
+                    containingExecutionBlock = scriptBlock;
                     break;
                 }
             }
 
-            if (namedBlock == null || containingFunction == null)
+            if (namedBlock == null || containingExecutionBlock == null)
             {
                 return -1;
             }
@@ -668,13 +677,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope
-                    && !IsCallerScopedScriptBlock(scope, functionAnalysis))
+                    && GetJobScriptBlockScope(scope) is ScriptBlockAst jobScriptBlock)
                 {
-                    return scope;
+                    return jobScriptBlock;
+                }
+
+                if (parent is ScriptBlockAst functionScope
+                    && !IsCallerScopedScriptBlock(functionScope, functionAnalysis))
+                {
+                    return functionScope;
                 }
             }
 
             return null;
+        }
+
+        private ScriptBlockAst GetJobScriptBlockScope(ScriptBlockAst scope)
+        {
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
+                || !(GetScriptBlockCommand(scriptBlock) is CommandAst commandAst)
+                || !IsJobCommand(GetCallbackCommandName(commandAst))
+                || !IsParameter(
+                    GetScriptBlockParameterName(commandAst, scriptBlock),
+                    "InitializationScript"))
+            {
+                return null;
+            }
+
+            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, true)
+                .OfType<ScriptBlockExpressionAst>()
+                .Where(candidate => candidate != scriptBlock
+                    && IsParameter(
+                        GetScriptBlockParameterName(commandAst, candidate),
+                        "ScriptBlock"))
+                .Select(candidate => candidate.ScriptBlock)
+                .FirstOrDefault();
         }
 
         private bool IsCallerScopedScriptBlock(
@@ -773,12 +810,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+        bool isDscScriptProperty = false;
         if (commandAst == null)
         {
             commandAst = GetPrecedingDscScriptPropertyCommand(scriptBlock);
+            isDscScriptProperty = commandAst != null;
+        }
+        else
+        {
+            isDscScriptProperty = IsDscScriptPropertyCommand(commandAst);
         }
 
-        if (commandAst == null || IsScriptDefinedFunction(commandAst, functionAnalysis))
+        if (commandAst == null
+            || (!isDscScriptProperty && IsScriptDefinedFunction(commandAst, functionAnalysis)))
         {
             functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
             return result;
@@ -790,8 +834,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             result = true;
         }
-        else if ((String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
+        else if (IsJobCommand(commandName)
             && (IsParameter(parameterName, "ScriptBlock")
                 || IsParameter(parameterName, "InitializationScript")))
         {
@@ -809,15 +852,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         else
         {
-            result = (String.Equals(commandName, "GetScript", StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(commandName, "TestScript", StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(commandName, "SetScript", StringComparison.OrdinalIgnoreCase))
-                && commandAst.CommandElements.Count > 1
-                && String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal);
+            result = isDscScriptProperty;
         }
 
         functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
         return result;
+        }
+
+        private bool IsDscScriptPropertyCommand(CommandAst commandAst)
+        {
+            if (commandAst.CommandElements.Count < 2
+                || !String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            string propertyName = commandAst.GetCommandName();
+            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsJobCommand(string commandName)
+        {
+            return String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase);
         }
 
         private CommandAst GetPrecedingDscScriptPropertyCommand(ScriptBlockExpressionAst scriptBlock)
@@ -850,12 +909,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            string propertyName = propertyCommand.GetCommandName();
-            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase)
-                    ? propertyCommand
-                    : null;
+            return IsDscScriptPropertyCommand(propertyCommand) ? propertyCommand : null;
         }
 
         return null;

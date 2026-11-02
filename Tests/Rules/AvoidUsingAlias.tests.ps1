@@ -117,11 +117,29 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not treat script-block arguments to call-operator commands as immediately invoked" {
+            $target = 'function Save-Callback { param($Action) $script:cb = $Action }; & Save-Callback { Verb }; function Verb {}; & $script:cb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "respects function begin and process execution order" {
             $target = 'function Invoke-Example { process { Verb } begin { function Verb {} } }; Invoke-Example'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
+        }
+
+        It "respects script-level begin and process execution order" {
+            $target = 'param() process { Verb } begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "respects function execution order through dot-sourced blocks in named blocks" {
@@ -224,6 +242,26 @@ Script Test {
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "keeps DSC script properties isolated when property names are functions" {
+            foreach ($property in @('GetScript', 'TestScript', 'SetScript')) {
+                $targets = @(
+                    "function $property {}; Script Test { $property = { Verb } }"
+                    "function $property {}; Script Test {`n    $property =`n    { Verb }`n}"
+                )
+
+                foreach ($target in $targets) {
+                    $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                    $violations.Count | Should -Be 1
+                    $violations[0].Extent.Text | Should -Be 'Verb'
+                    $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+                    $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                    Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                        Should -Be ($target.Replace('Verb }', 'Get-Verb }'))
+                }
+            }
+        }
+
         It "respects caller scope in <Command> callbacks" -TestCases @(
             @{ Command = 'ForEach-Object' }
             @{ Command = 'Where-Object' }
@@ -314,6 +352,30 @@ Script Test {
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "makes job initialization functions visible only to the same job script block" {
+            $target = 'Start-Job -InitializationScript { function Verb {} } -ScriptBlock { Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('; Verb', '; Get-Verb'))
+        }
+
+        It "makes thread-job initialization functions visible only to the same job script block" -skip:($null -eq (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+            $target = 'Start-ThreadJob -InitializationScript { function Verb {} } -ScriptBlock { Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('; Verb', '; Get-Verb'))
         }
 
         It "respects visible script-defined commands before callback scope rules" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
