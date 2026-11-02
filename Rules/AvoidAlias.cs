@@ -464,37 +464,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             out CommandAst invocation)
         {
             invocation = null;
-            if (!(commandScope.Parent is ScriptBlockExpressionAst scriptBlock))
+            ScriptBlockAst currentScope = commandScope;
+            while (currentScope != functionScope)
             {
-                return false;
-            }
-
-            CommandAst command = GetScriptBlockCommand(scriptBlock);
-            if (command == null
-                || command.InvocationOperator != TokenKind.Ampersand
-                || command.CommandElements.Count == 0
-                || UnwrapParenthesizedExpression(command.CommandElements[0]) != scriptBlock)
-            {
-                return false;
-            }
-
-            ScriptBlockAst parentScope = null;
-            for (Ast parent = commandScope.Parent; parent != null; parent = parent.Parent)
-            {
-                if (parent is ScriptBlockAst scope)
+                if (!(currentScope.Parent is ScriptBlockExpressionAst scriptBlock))
                 {
-                    parentScope = scope;
-                    break;
+                    return false;
                 }
+
+                CommandAst command = GetScriptBlockCommand(scriptBlock);
+                if (command == null
+                    || command.InvocationOperator != TokenKind.Ampersand
+                    || command.CommandElements.Count == 0
+                    || UnwrapParenthesizedExpression(command.CommandElements[0]) != scriptBlock)
+                {
+                    return false;
+                }
+
+                ScriptBlockAst parentScope = null;
+                for (Ast parent = currentScope.Parent; parent != null; parent = parent.Parent)
+                {
+                    if (parent is ScriptBlockAst scope)
+                    {
+                        parentScope = scope;
+                        break;
+                    }
+                }
+
+                if (parentScope == null)
+                {
+                    return false;
+                }
+
+                if (parentScope == functionScope)
+                {
+                    invocation = command;
+                    return true;
+                }
+
+                currentScope = parentScope;
             }
 
-            if (parentScope != functionScope)
-            {
-                return false;
-            }
-
-            invocation = command;
-            return true;
+            return false;
         }
 
         private int GetNamedBlockExecutionPhase(Ast ast, out ScriptBlockAst containingExecutionBlock)
@@ -514,7 +525,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     break;
                 }
 
-                if (current is ScriptBlockAst scriptBlock && scriptBlock.Parent == null)
+                if (current is ScriptBlockAst scriptBlock
+                    && (scriptBlock.Parent == null || IsDirectlyInvokedScriptBlock(scriptBlock)))
                 {
                     containingExecutionBlock = scriptBlock;
                     break;
@@ -537,6 +549,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 default:
                     return -1;
             }
+        }
+
+        private bool IsDirectlyInvokedScriptBlock(ScriptBlockAst scope)
+        {
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst command = GetScriptBlockCommand(scriptBlock);
+            return command != null
+                && command.InvocationOperator == TokenKind.Ampersand
+                && command.CommandElements.Count > 0
+                && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
         }
 
         private int GetForEachObjectExecutionPhase(Ast ast, out CommandAst callbackCommand)
@@ -593,7 +619,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
-                if (IsInConstantFalseBranch(function))
+                if (IsInConstantUnreachableBranch(function))
                 {
                     continue;
                 }
@@ -608,7 +634,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var previousScopes = new Dictionary<FunctionDefinitionAst, ScriptBlockAst>();
             foreach (FunctionDefinitionAst function in functionDefinitions)
             {
-                if (!IsInConstantFalseBranch(function))
+                if (!IsInConstantUnreachableBranch(function))
                 {
                     previousScopes[function] = GetNearestFunctionScope(function);
                 }
@@ -857,12 +883,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         bool isDscScriptProperty = false;
         if (commandAst == null)
         {
-            commandAst = GetPrecedingDscScriptPropertyCommand(scriptBlock);
+            commandAst = GetPrecedingDscScriptPropertyCommand(scriptBlock, functionAnalysis);
             isDscScriptProperty = commandAst != null;
         }
         else
         {
-            isDscScriptProperty = IsDscScriptPropertyCommand(commandAst);
+            isDscScriptProperty = IsDscScriptPropertyCommand(commandAst, functionAnalysis);
         }
 
         if (commandAst == null
@@ -903,7 +929,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         return result;
         }
 
-        private bool IsDscScriptPropertyCommand(CommandAst commandAst)
+        private bool IsDscScriptPropertyCommand(
+            CommandAst commandAst,
+            FunctionAnalysisContext functionAnalysis)
         {
             if (commandAst.CommandElements.Count < 2
                 || !String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal))
@@ -912,9 +940,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             string propertyName = commandAst.GetCommandName();
-            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
-                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase);
+            if (!String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                && !String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                && !String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            for (Ast parent = commandAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is CommandAst resource
+                    && String.Equals(resource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase)
+                    && GetDscResourceBody(resource) != null
+                    && IsDscResourceCommand(resource, functionAnalysis))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool IsJobCommand(string commandName)
@@ -923,7 +967,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase);
         }
 
-        private CommandAst GetPrecedingDscScriptPropertyCommand(ScriptBlockExpressionAst scriptBlock)
+        private CommandAst GetPrecedingDscScriptPropertyCommand(
+            ScriptBlockExpressionAst scriptBlock,
+            FunctionAnalysisContext functionAnalysis)
         {
         if (!(scriptBlock.Parent is CommandExpressionAst commandExpression)
             || !(commandExpression.Parent is PipelineAst pipeline))
@@ -953,7 +999,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            return IsDscScriptPropertyCommand(propertyCommand) ? propertyCommand : null;
+            return IsDscScriptPropertyCommand(propertyCommand, functionAnalysis) ? propertyCommand : null;
         }
 
         return null;
@@ -1510,7 +1556,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return String.Equals(commandName, "Where-Object", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool IsInConstantFalseBranch(FunctionDefinitionAst function)
+        private bool IsInConstantUnreachableBranch(FunctionDefinitionAst function)
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
@@ -1519,12 +1565,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                foreach (Tuple<PipelineBaseAst, StatementBlockAst> clause in ifStatement.Clauses)
+                int containingClauseIndex = -1;
+                for (int i = 0; i < ifStatement.Clauses.Count; i++)
                 {
-                    if (IsDescendantOf(function, clause.Item2) && IsConstantFalseCondition(clause.Item1))
+                    Tuple<PipelineBaseAst, StatementBlockAst> clause = ifStatement.Clauses[i];
+                    if (IsDescendantOf(function, clause.Item2))
                     {
-                        return true;
+                        if (IsConstantFalseCondition(clause.Item1))
+                        {
+                            return true;
+                        }
+
+                        containingClauseIndex = i;
+                        break;
                     }
+                }
+
+                if (containingClauseIndex >= 0
+                    && ifStatement.Clauses.Take(containingClauseIndex)
+                        .Any(clause => IsConstantTrueCondition(clause.Item1)))
+                {
+                    return true;
+                }
+
+                if (ifStatement.ElseClause != null
+                    && IsDescendantOf(function, ifStatement.ElseClause)
+                    && ifStatement.Clauses.Any(clause => IsConstantTrueCondition(clause.Item1)))
+                {
+                    return true;
                 }
             }
 
@@ -1555,6 +1623,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             try
             {
                 return !LanguagePrimitives.IsTrue(expression.SafeGetValue());
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private bool IsConstantTrueCondition(PipelineBaseAst condition)
+        {
+            ExpressionAst expression = condition.GetPureExpression();
+            if (expression == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return LanguagePrimitives.IsTrue(expression.SafeGetValue());
             }
             catch (InvalidOperationException)
             {

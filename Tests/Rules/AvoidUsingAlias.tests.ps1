@@ -466,6 +466,36 @@ Script Test {
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "checks declaration order through nested directly invoked blocks" {
+            $target = '& { & { Verb } }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('& { & { Verb } }', '& { & { Get-Verb } }'))
+        }
+
+        It "preserves named-block phases in independently invoked script blocks" {
+            $target = '& { process { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat ordinary function assignments as DSC script properties" {
+            $target = 'function Verb {}; function SetScript { param($Op, [scriptblock]$Action) & $Action }; SetScript = { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "respects caller scope for script blocks inside array callback arguments" {
             $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -541,6 +571,19 @@ Script Test {
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index functions in statically unreachable else and elseif branches" {
+            foreach ($target in @(
+                'if ($true) {} else { function Verb {} }; Verb'
+                'if ($true) {} elseif ($true) { function Verb {} }; Verb'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.Text | Should -Be 'Verb'
+                $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
         }
 
         It "does not classify Where-Object comparison values as executable callbacks" {
