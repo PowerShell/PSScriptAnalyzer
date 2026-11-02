@@ -410,6 +410,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
+            ScriptBlockAst initializationScope = GetJobInitializationScope(function, functionAnalysis, functionScope);
+            if (initializationScope != null)
+            {
+                if (commandScope == functionScope)
+                {
+                    return false;
+                }
+
+                if (commandScope == initializationScope)
+                {
+                    functionScope = initializationScope;
+                }
+            }
+
             CommandAst immediateInvocation = null;
             if (commandScope != functionScope
                 && !IsImmediatelyInvokedChildScope(commandScope, functionScope, out immediateInvocation))
@@ -612,6 +626,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (scope != null)
                     {
                         AddFunctionToIndex(functionNameIndex, scope, function);
+                        ScriptBlockAst initializationScope = GetJobInitializationScope(function, functionAnalysis, scope);
+                        if (initializationScope != null)
+                        {
+                            AddFunctionToIndex(functionNameIndex, initializationScope, function);
+                        }
                     }
                 }
 
@@ -677,7 +696,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope
-                    && GetJobScriptBlockScope(scope) is ScriptBlockAst jobScriptBlock)
+                    && GetJobScriptBlockScope(scope, functionAnalysis) is ScriptBlockAst jobScriptBlock)
                 {
                     return jobScriptBlock;
                 }
@@ -692,11 +711,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private ScriptBlockAst GetJobScriptBlockScope(ScriptBlockAst scope)
+        private ScriptBlockAst GetJobScriptBlockScope(
+            ScriptBlockAst scope,
+            FunctionAnalysisContext functionAnalysis)
         {
             if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
                 || !(GetScriptBlockCommand(scriptBlock) is CommandAst commandAst)
                 || !IsJobCommand(GetCallbackCommandName(commandAst))
+                || IsScriptDefinedFunction(commandAst, functionAnalysis)
                 || !IsParameter(
                     GetScriptBlockParameterName(commandAst, scriptBlock),
                     "InitializationScript"))
@@ -712,6 +734,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         "ScriptBlock"))
                 .Select(candidate => candidate.ScriptBlock)
                 .FirstOrDefault();
+        }
+
+        private ScriptBlockAst GetJobInitializationScope(
+            FunctionDefinitionAst function,
+            FunctionAnalysisContext functionAnalysis,
+            ScriptBlockAst jobScriptBlock)
+        {
+            if (jobScriptBlock == null)
+            {
+                return null;
+            }
+
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope
+                    && GetJobScriptBlockScope(scope, functionAnalysis) == jobScriptBlock)
+                {
+                    return scope;
+                }
+            }
+
+            return null;
         }
 
         private bool IsCallerScopedScriptBlock(

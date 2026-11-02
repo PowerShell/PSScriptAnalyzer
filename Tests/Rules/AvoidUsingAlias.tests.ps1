@@ -378,6 +378,42 @@ Script Test {
                 Should -Be ($target.Replace('; Verb', '; Get-Verb'))
         }
 
+        It "preserves initializer-local function lookup and declaration order for job callbacks" {
+            $commands = @('Start-Job')
+            if ($null -ne (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+                $commands += 'Start-ThreadJob'
+            }
+
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($command in $commands) {
+                $target = "$command -InitializationScript { function Verb {}; Verb } -ScriptBlock { Verb }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+                $target = "$command -InitializationScript { Verb; function Verb {} } -ScriptBlock { Verb }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.StartOffset | Should -Be $target.IndexOf('Verb;')
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be ($target.Replace('{ Verb;', '{ Get-Verb;'))
+            }
+        }
+
+        It "does not transfer initializer functions across a script-defined job command" {
+            $target = 'function Start-Job { param($InitializationScript, $ScriptBlock) & $InitializationScript; & $ScriptBlock }; Start-Job -InitializationScript { function Verb {} } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('-ScriptBlock { Verb }', '-ScriptBlock { Get-Verb }'))
+        }
+
         It "respects visible script-defined commands before callback scope rules" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
             $target = 'function ForEach-Object { param([scriptblock]$Parallel) & $Parallel }; function Verb {}; ForEach-Object -Parallel { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
