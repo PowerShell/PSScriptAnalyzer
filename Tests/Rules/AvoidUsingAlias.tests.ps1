@@ -392,6 +392,12 @@ Script Test {
                 $violations.Count | Should -Be 0
                 Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
 
+                $target = "$command -ScriptBlock { & { Verb } } -InitializationScript { function Verb {} }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
                 $target = "$command -InitializationScript { Verb; function Verb {} } -ScriptBlock { Verb }"
                 $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 

@@ -413,7 +413,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ScriptBlockAst initializationScope = GetJobInitializationScope(function, functionAnalysis, functionScope);
             if (initializationScope != null)
             {
-                if (commandScope == functionScope)
+                if (commandScope == functionScope || IsDescendantOf(commandScope, functionScope))
                 {
                     return false;
                 }
