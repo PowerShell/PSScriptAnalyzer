@@ -443,8 +443,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out ScriptBlockAst functionExecutionBlock);
+            GetNamedBlockExecutionPhase(cmdAst, out ScriptBlockAst commandOwnExecutionBlock);
+            bool sharesExecutionBlock = functionExecutionBlock != null
+                && functionExecutionBlock == commandOwnExecutionBlock;
             int commandNamedBlockPhase = GetNamedBlockExecutionPhase(
-                immediateInvocation ?? cmdAst, out ScriptBlockAst commandExecutionBlock);
+                sharesExecutionBlock ? cmdAst : immediateInvocation ?? cmdAst,
+                out ScriptBlockAst commandExecutionBlock);
             if (functionExecutionBlock != null
                 && functionExecutionBlock == commandExecutionBlock
                 && functionNamedBlockPhase >= 0
@@ -454,11 +458,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionNamedBlockPhase > commandNamedBlockPhase;
             }
 
-            CommandAst dotInvocation = GetDotSourcedInvocation(function, functionScope);
-            if (dotInvocation != null && functionExecutionBlock != commandExecutionBlock)
+            CommandAst functionScopeInvocation = GetFunctionScopeInvocation(function, functionScope);
+            if (functionScopeInvocation != null && functionExecutionBlock != commandExecutionBlock)
             {
                 int callerNamedBlockPhase = GetNamedBlockExecutionPhase(
-                    dotInvocation, out ScriptBlockAst callerExecutionBlock);
+                    functionScopeInvocation, out ScriptBlockAst callerExecutionBlock);
                 if (callerExecutionBlock == commandExecutionBlock
                     && callerNamedBlockPhase >= 0
                     && commandNamedBlockPhase >= 0
@@ -478,11 +482,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionPhase > commandPhase;
             }
 
-            int commandExecutionOffset = immediateInvocation == null
+            int commandExecutionOffset = immediateInvocation == null || sharesExecutionBlock
                 ? cmdAst.Extent.StartOffset
                 : immediateInvocation.Extent.StartOffset;
-            int functionExecutionOffset = dotInvocation != null && functionExecutionBlock != commandExecutionBlock
-                ? dotInvocation.Extent.StartOffset
+            int functionExecutionOffset = functionScopeInvocation != null
+                && functionExecutionBlock != commandExecutionBlock
+                ? functionScopeInvocation.Extent.StartOffset
                 : function.Extent.StartOffset;
             return functionExecutionOffset > commandExecutionOffset;
         }
@@ -514,8 +519,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-        private CommandAst GetDotSourcedInvocation(FunctionDefinitionAst function, ScriptBlockAst functionScope)
+        private CommandAst GetFunctionScopeInvocation(FunctionDefinitionAst function, ScriptBlockAst functionScope)
         {
+            CommandAst invocation = null;
             for (Ast parent = function.Parent; parent != null && parent != functionScope; parent = parent.Parent)
             {
                 if (!(parent is ScriptBlockAst scope)
@@ -526,15 +532,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 CommandAst command = GetScriptBlockCommand(scriptBlock);
                 if (command != null
-                    && command.InvocationOperator == TokenKind.Dot
+                    && (command.InvocationOperator == TokenKind.Ampersand
+                        || command.InvocationOperator == TokenKind.Dot)
                     && command.CommandElements.Count > 0
                     && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock)
                 {
-                    return command;
+                    invocation = command;
                 }
             }
 
-            return null;
+            return invocation;
         }
 
         private bool IsImmediatelyInvokedChildScope(
