@@ -292,12 +292,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ScriptBlockExpressionAst body,
             FunctionAnalysisContext functionAnalysis)
         {
+            return GetFollowingLineDscResourceDeclaration(body, functionAnalysis) != null;
+        }
+
+        private CommandAst GetFollowingLineDscResourceDeclaration(
+            ScriptBlockExpressionAst body,
+            FunctionAnalysisContext functionAnalysis)
+        {
             if (!(body.Parent is CommandExpressionAst bodyExpression)
                 || !(bodyExpression.Parent is PipelineAst bodyPipeline)
                 || bodyPipeline.PipelineElements.Count != 1
                 || bodyPipeline.PipelineElements[0] != bodyExpression)
             {
-                return false;
+                return null;
             }
 
             Ast statement = bodyPipeline;
@@ -316,14 +323,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || declarationPipeline.PipelineElements.Count != 1
                     || !(declarationPipeline.PipelineElements[0] is CommandAst declaration))
                 {
-                    return false;
+                    return null;
                 }
 
                 return GetDscResourceBody(declaration) == body
-                    && IsDscResourceCommand(declaration, functionAnalysis);
+                    && IsDscResourceCommand(declaration, functionAnalysis)
+                    ? declaration
+                    : null;
             }
 
-            return false;
+            return null;
         }
 
         private bool IsDscResourceCommand(
@@ -433,7 +442,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out ScriptBlockAst functionExecutionBlock);
-            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(cmdAst, out ScriptBlockAst commandExecutionBlock);
+            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(
+                immediateInvocation ?? cmdAst, out ScriptBlockAst commandExecutionBlock);
             if (functionExecutionBlock != null
                 && functionExecutionBlock == commandExecutionBlock
                 && functionNamedBlockPhase >= 0
@@ -956,6 +966,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && IsDscResourceCommand(resource, functionAnalysis))
                 {
                     return true;
+                }
+
+                if (parent is CommandExpressionAst bodyExpression
+                    && bodyExpression.Expression is ScriptBlockExpressionAst body)
+                {
+                    CommandAst followingLineResource = GetFollowingLineDscResourceDeclaration(body, functionAnalysis);
+                    if (followingLineResource != null
+                        && String.Equals(followingLineResource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
                 }
             }
 

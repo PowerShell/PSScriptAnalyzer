@@ -620,6 +620,15 @@ Script Test {
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "uses the immediate invocation block to resolve named-block scope" {
+            $target = 'param() process { & { Verb } } begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not find functions outside module-qualified thread jobs" -skip:($null -eq (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
             $target = 'function Verb {}; ThreadJob\Start-ThreadJob -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -757,6 +766,30 @@ $scriptFunction
             $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
 
             @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
+        It "recognizes Script resource properties when the opening brace is on the following line" {
+            $target = @'
+{
+    function Verb {}
+    Script Test
+    {
+        SetScript = { Verb }
+    }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
         It "does not index functions in constant-false branches when identifying DSC resources" {
