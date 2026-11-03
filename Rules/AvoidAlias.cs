@@ -485,8 +485,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int commandExecutionOffset = immediateInvocation == null || sharesExecutionBlock
                 ? cmdAst.Extent.StartOffset
                 : immediateInvocation.Extent.StartOffset;
+            bool sharesInvocationScope = immediateInvocation != null
+                && immediateInvocation == functionScopeInvocation;
+            if (sharesInvocationScope)
+            {
+                commandExecutionOffset = cmdAst.Extent.StartOffset;
+            }
+
             int functionExecutionOffset = functionScopeInvocation != null
                 && functionExecutionBlock != commandExecutionBlock
+                && !sharesInvocationScope
                 ? functionScopeInvocation.Extent.StartOffset
                 : function.Extent.StartOffset;
             return functionExecutionOffset > commandExecutionOffset;

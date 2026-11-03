@@ -230,6 +230,25 @@ gci -Path C:\
             }
         }
 
+        It "respects declaration order across nested invoked scopes" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { & { Verb }; function ${scope}:Verb {} }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.Text | Should -Be 'Verb'
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be "& { & { Get-Verb }; function ${scope}:Verb {} }"
+
+                $target = "& { function ${scope}:Verb {}; & { Verb } }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
         It "respects named-block order across nested invoked scopes" -TestCases @(
             @{ Target = 'param() process { Verb } begin { . { . { function Verb {} } } }' }
             @{ Target = 'param() process { Verb } begin { & { function script:Verb {} } }' }
