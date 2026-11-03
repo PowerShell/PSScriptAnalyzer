@@ -334,6 +334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return !IsScriptDefinedFunction(cmdAst, functionAnalysis)
                 && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName))
                 && (String.Equals(commandName, "Node", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(commandName, "Script", StringComparison.OrdinalIgnoreCase)
                     || Helper.Instance.GetCommandInfo(commandName) == null);
         }
 
