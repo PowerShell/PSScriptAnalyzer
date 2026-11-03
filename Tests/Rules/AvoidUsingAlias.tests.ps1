@@ -117,6 +117,18 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not resolve callback declarations for other commands in the same pipeline" {
+            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('} | Verb', '} | Get-Verb'))
+        }
+
         It "does not treat script-block arguments to call-operator commands as immediately invoked" {
             $target = 'function Save-Callback { param($Action) $script:cb = $Action }; & Save-Callback { Verb }; function Verb {}; & $script:cb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -188,6 +200,23 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "indexes explicit script and global functions declared in immediately invoked blocks" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { function ${scope}:Verb {} }; Verb"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+
+            $target = 'function Register-Commands { & { function script:Verb {} } }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
         It "uses caller scope for parameterized dot-sourced blocks" {
@@ -476,10 +505,27 @@ Script Test {
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings |
                 Should -Be ($target.Replace('& { & { Verb } }', '& { & { Get-Verb } }'))
+
+            $target = '. { & { Verb } }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('{ Verb }', '{ Get-Verb }'))
         }
 
         It "preserves named-block phases in independently invoked script blocks" {
             $target = '& { process { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "preserves named-block phases in dot-invoked script blocks" {
+            $target = '. { process { Verb } begin { function Verb {} } }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
@@ -494,6 +540,19 @@ Script Test {
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not isolate nested script properties inside executable DSC callbacks" {
+            foreach ($target in @(
+                'Script Test { SetScript = { function Verb {}; function SetScript { param($op, $action) & $action }; SetScript = { Verb } } }'
+                "Script Test`n{`n    SetScript = { function Verb {}; function SetScript { param(`$op, `$action) & `$action }; SetScript = { Verb } }`n}"
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
         }
 
         It "respects caller scope for script blocks inside array callback arguments" {

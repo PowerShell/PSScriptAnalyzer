@@ -384,6 +384,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && functionNames.TryGetValue(commandName, out List<FunctionDefinitionAst> functionDefinitions)
                         && functionDefinitions.Any(function =>
                             !IsDescendantOf(function, cmdAst)
+                            && !IsFunctionDeclaredInSamePipelineCallback(function, cmdAst)
                             && (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
                                 || currentScope == scope)
                             && !IsFunctionDeclaredAfterCommand(function, cmdAst, currentScope, functionAnalysis)))
@@ -453,6 +454,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionNamedBlockPhase > commandNamedBlockPhase;
             }
 
+            CommandAst dotInvocation = GetDotSourcedInvocation(function, functionScope);
+            if (dotInvocation != null && functionExecutionBlock != commandExecutionBlock)
+            {
+                int callerNamedBlockPhase = GetNamedBlockExecutionPhase(
+                    dotInvocation, out ScriptBlockAst callerExecutionBlock);
+                if (callerExecutionBlock == commandExecutionBlock
+                    && callerNamedBlockPhase >= 0
+                    && commandNamedBlockPhase >= 0
+                    && callerNamedBlockPhase != commandNamedBlockPhase)
+                {
+                    return callerNamedBlockPhase > commandNamedBlockPhase;
+                }
+            }
+
             int functionPhase = GetForEachObjectExecutionPhase(function, out CommandAst functionCallback);
             int commandPhase = GetForEachObjectExecutionPhase(cmdAst, out CommandAst commandCallback);
             if (functionCallback == commandCallback
@@ -466,7 +481,60 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int commandExecutionOffset = immediateInvocation == null
                 ? cmdAst.Extent.StartOffset
                 : immediateInvocation.Extent.StartOffset;
-            return function.Extent.StartOffset > commandExecutionOffset;
+            int functionExecutionOffset = dotInvocation != null && functionExecutionBlock != commandExecutionBlock
+                ? dotInvocation.Extent.StartOffset
+                : function.Extent.StartOffset;
+            return functionExecutionOffset > commandExecutionOffset;
+        }
+
+        private bool IsFunctionDeclaredInSamePipelineCallback(FunctionDefinitionAst function, CommandAst cmdAst)
+        {
+            GetForEachObjectExecutionPhase(function, out CommandAst callbackCommand);
+            if (callbackCommand == null
+                || cmdAst == callbackCommand
+                || IsDescendantOf(cmdAst, callbackCommand))
+            {
+                return false;
+            }
+
+            PipelineAst callbackPipeline = GetContainingPipeline(callbackCommand);
+            return callbackPipeline != null && callbackPipeline == GetContainingPipeline(cmdAst);
+        }
+
+        private PipelineAst GetContainingPipeline(Ast ast)
+        {
+            for (Ast parent = ast; parent != null; parent = parent.Parent)
+            {
+                if (parent is PipelineAst pipeline)
+                {
+                    return pipeline;
+                }
+            }
+
+            return null;
+        }
+
+        private CommandAst GetDotSourcedInvocation(FunctionDefinitionAst function, ScriptBlockAst functionScope)
+        {
+            for (Ast parent = function.Parent; parent != null && parent != functionScope; parent = parent.Parent)
+            {
+                if (!(parent is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    continue;
+                }
+
+                CommandAst command = GetScriptBlockCommand(scriptBlock);
+                if (command != null
+                    && command.InvocationOperator == TokenKind.Dot
+                    && command.CommandElements.Count > 0
+                    && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock)
+                {
+                    return command;
+                }
+            }
+
+            return null;
         }
 
         private bool IsImmediatelyInvokedChildScope(
@@ -485,7 +553,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 CommandAst command = GetScriptBlockCommand(scriptBlock);
                 if (command == null
-                    || command.InvocationOperator != TokenKind.Ampersand
+                    || (command.InvocationOperator != TokenKind.Ampersand
+                        && command.InvocationOperator != TokenKind.Dot)
                     || command.CommandElements.Count == 0
                     || UnwrapParenthesizedExpression(command.CommandElements[0]) != scriptBlock)
                 {
@@ -571,7 +640,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             CommandAst command = GetScriptBlockCommand(scriptBlock);
             return command != null
-                && command.InvocationOperator == TokenKind.Ampersand
+                && (command.InvocationOperator == TokenKind.Ampersand
+                    || command.InvocationOperator == TokenKind.Dot)
                 && command.CommandElements.Count > 0
                 && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
         }
@@ -730,6 +800,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             FunctionDefinitionAst function,
             FunctionAnalysisContext functionAnalysis)
         {
+            if (function.Name.StartsWith("script:", StringComparison.OrdinalIgnoreCase)
+                || function.Name.StartsWith("global:", StringComparison.OrdinalIgnoreCase))
+            {
+                ScriptBlockAst scope = GetNearestFunctionScope(function);
+                ScriptBlockAst parentScope;
+                while (scope != null && TryGetInvokedParentScope(scope, out parentScope))
+                {
+                    scope = parentScope;
+                }
+
+                if (scope != null && scope != GetNearestFunctionScope(function))
+                {
+                    return scope;
+                }
+            }
+
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
                 if (parent is ScriptBlockAst scope
@@ -746,6 +832,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private bool TryGetInvokedParentScope(ScriptBlockAst scope, out ScriptBlockAst parentScope)
+        {
+            parentScope = null;
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst command = GetScriptBlockCommand(scriptBlock);
+            if (command == null
+                || (command.InvocationOperator != TokenKind.Ampersand
+                    && command.InvocationOperator != TokenKind.Dot)
+                || command.CommandElements.Count == 0
+                || UnwrapParenthesizedExpression(command.CommandElements[0]) != scriptBlock)
+            {
+                return false;
+            }
+
+            for (Ast parent = scope.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst enclosingScope)
+                {
+                    parentScope = enclosingScope;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private ScriptBlockAst GetJobScriptBlockScope(
@@ -962,8 +1078,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (parent is CommandAst resource
                     && String.Equals(resource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase)
-                    && GetDscResourceBody(resource) != null
-                    && IsDscResourceCommand(resource, functionAnalysis))
+                    && IsDscScriptPropertyInResourceBody(commandAst, resource, functionAnalysis))
                 {
                     return true;
                 }
@@ -975,8 +1090,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (followingLineResource != null
                         && String.Equals(followingLineResource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase))
                     {
-                        return true;
+                        return IsDscScriptPropertyInResourceBody(commandAst, followingLineResource, functionAnalysis);
                     }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDscScriptPropertyInResourceBody(
+            CommandAst propertyCommand,
+            CommandAst resource,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            ScriptBlockExpressionAst body = GetDscResourceBody(resource);
+            if (body == null || !IsDscResourceCommand(resource, functionAnalysis))
+            {
+                return false;
+            }
+
+            for (Ast parent = propertyCommand.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent == body.ScriptBlock)
+                {
+                    return true;
+                }
+
+                if (parent is ScriptBlockAst)
+                {
+                    return false;
                 }
             }
 
