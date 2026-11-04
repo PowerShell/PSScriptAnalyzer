@@ -351,6 +351,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             CommandAst cmdAst,
             FunctionAnalysisContext functionAnalysis)
         {
+            string originalCommandName = cmdAst.GetCommandName();
+            if (originalCommandName != null && originalCommandName.IndexOf('\\') >= 0)
+            {
+                return false;
+            }
+
             string commandName = GetCallbackCommandName(cmdAst);
             if (commandName == null)
             {
@@ -713,13 +719,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (IsParameter(parameterName, "End"))
                 {
                     callbackCommand = commandAst;
-                    return 2;
+                    return 3;
                 }
 
                 if (IsParameter(parameterName, "RemainingScripts"))
                 {
                     callbackCommand = commandAst;
-                    return 3;
+                    return 2;
                 }
             }
 

@@ -729,6 +729,15 @@ Script Test {
             $violations.Count | Should -Be 0
         }
 
+        It "resolves declarations from RemainingScripts callbacks before End callbacks" {
+            $target = '1 | ForEach-Object -Begin {} -Process { $_ } -RemainingScripts { function Verb {} } -End { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "resolves abbreviated and colon-attached parallel callback parameters" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
             foreach ($parameter in @('-Pa { Verb }', '-Pa:{ Verb }')) {
                 $target = "function Verb {}; 1 | ForEach-Object $parameter"
@@ -744,6 +753,15 @@ Script Test {
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
+        }
+
+        It "does not resolve module-qualified callbacks to local functions" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function ForEach-Object {}; function Verb {}; 1 | Microsoft.PowerShell.Core\ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
         It "does not index script blocks passed as ForEach-Object input data" {
