@@ -41,6 +41,18 @@ Describe "AvoidUsingAlias" {
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Invoke-Command'
         }
 
+        It "resolves aliases to script-defined callback commands" {
+            $target = 'function Invoke-Command { param($ComputerName, $ScriptBlock) & $ScriptBlock }; function Verb {}; icm x { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'icm'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Invoke-Command'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('icm', 'Invoke-Command'))
+        }
+
         It "still adds the Get prefix to ordinary commands with resource-shaped arguments" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Verb Argument {}' -IncludeRule $violationName
             $violations.Count | Should -Be 1
@@ -129,6 +141,19 @@ gci -Path C:\
                 Should -Be ($target.Replace('} | Verb', '} | Get-Verb'))
         }
 
+        It "does not resolve declarations from other caller-scoped callbacks in the same pipeline" -TestCases @(
+            @{ Target = '1 | Where-Object { function Verb {}; $true } | Verb' }
+            @{ Target = '1 | . { function Verb {} } | Verb' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "does not treat script-block arguments to call-operator commands as immediately invoked" {
             $target = 'function Save-Callback { param($Action) $script:cb = $Action }; & Save-Callback { Verb }; function Verb {}; & $script:cb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -136,6 +161,11 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function Invoke-Command { param($ScriptBlock) $script:cb = $ScriptBlock }; Invoke-Command -ScriptBlock { Verb }; function Verb {}; & $script:cb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
         }
 
         It "respects function begin and process execution order" {
@@ -161,6 +191,35 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects invocation order for synchronous script-block callbacks" -TestCases @(
+            @{
+                Target = 'Invoke-Command -ScriptBlock { Verb }; function Verb {}'
+                ExpectedViolations = 1
+            }
+            @{
+                Target = '1 | ForEach-Object -Begin { & { Verb } } -Process { function Verb {} }'
+                ExpectedViolations = 1
+            }
+        ) {
+            param($Target, $ExpectedViolations)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be $ExpectedViolations
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "compares named-block phases at the nearest shared execution block" -TestCases @(
+            @{ Target = '. { process { & { Verb } } begin { function script:Verb {} } }' }
+            @{ Target = '& { process { Verb } begin { & { function script:Verb {} } } }' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
         }
 
         It "respects execution order across ForEach-Object callback phases" -TestCases @(
@@ -217,6 +276,15 @@ gci -Path C:\
 
             $violations.Count | Should -Be 1
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "resolves explicit script functions declared in caller-scoped callbacks" {
+            $target = '& { 1 | ForEach-Object { function script:Verb {} } }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "preserves declarations and calls in the same immediately invoked scope" {
@@ -481,6 +549,19 @@ Script Test {
             }
         }
 
+        It "maps global functions from nested job initializers to the job body" {
+            $target = 'Start-Job -InitializationScript { & { function global:Verb {} } } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+
+            $target = 'Start-Job -InitializationScript { & { Verb; function global:Verb {} } } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.StartOffset | Should -Be $target.IndexOf('Verb;')
+        }
+
         It "does not transfer initializer functions across a script-defined job command" {
             $target = 'function Start-Job { param($InitializationScript, $ScriptBlock) & $InitializationScript; & $ScriptBlock }; Start-Job -InitializationScript { function Verb {} } -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -639,6 +720,13 @@ Script Test {
 
             $violations.Count | Should -Be 0
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "resolves declarations before RemainingScripts callbacks" {
+            $target = '1 | ForEach-Object -RemainingScripts { Verb } -Begin { function Verb {} } -Process { $_ }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
         }
 
         It "resolves abbreviated and colon-attached parallel callback parameters" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
