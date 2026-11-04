@@ -19,6 +19,26 @@ $h = @{
         $hashTableAst.Extent.Text | Should -Be '@{ z = "hi" }'
     }
 
+    It "Should pair script block braces without matching hashtable braces" {
+        $scriptText = @'
+$h = @{ key = 72 }
+if ($true) {
+    'value'
+}
+'@
+        $tokens = $null
+        $parseErrors = $null
+        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptText, [ref] $tokens, [ref] $parseErrors)
+        $tokenOperations = [Microsoft.Windows.PowerShell.ScriptAnalyzer.TokenOperations]::new($tokens, $scriptAst)
+        $bracePairs = @($tokenOperations.GetBracePairs())
+
+        $bracePairs.Count | Should -Be 1
+        $bracePairs[0].Item1.Extent.Text | Should -Be '{'
+        $bracePairs[0].Item2.Extent.Text | Should -Be '}'
+        $bracePairs[0].Item1.Extent.StartLineNumber | Should -Be 2
+        $bracePairs[0].Item2.Extent.StartLineNumber | Should -Be 4
+    }
+
     Context 'Braced Member Access Ranges' {
 
         BeforeDiscovery {
