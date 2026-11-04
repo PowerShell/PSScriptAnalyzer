@@ -368,6 +368,15 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "resolves globally scoped functions defined in synchronous local Invoke-Command blocks" {
+            $target = 'Invoke-Command -ScriptBlock { function global:Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not treat a newline-separated DSC script property as caller-scoped" {
             $target = @'
 function Verb {};
@@ -488,6 +497,24 @@ Script Test {
             param($Boundary)
 
             $target = "function Verb {}; $Boundary"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside SSHConnection invocations" -skip:($null -eq (Get-Command Invoke-Command).Parameters['SSHConnection']) {
+            $target = "function Verb {}; Invoke-Command -SSHConnection @{ HostName = 'server' } -ScriptBlock { Verb }"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not resolve local functions inside remote callbacks with computed targets" {
+            $target = "function Verb {}; Invoke-Command (& { 'localhost' }) -ScriptBlock { Verb }"
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
@@ -821,7 +848,20 @@ Script Test {
         }
 
         It "respects caller scope for parenthesized literal callbacks" {
-            $target = 'function private:Verb {}; 1 | ForEach-Object -Process ({ Verb })'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($target in @(
+                'function private:Verb {}; 1 | ForEach-Object -Process ({ Verb })',
+                'function private:Verb {}; 1 | ForEach-Object -Process $({ Verb })'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "uses the immediate invocation block to resolve named-block scope" {
+            $target = 'param() process { & { Verb } } begin { function Verb {} }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
@@ -829,8 +869,8 @@ Script Test {
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
-        It "uses the immediate invocation block to resolve named-block scope" {
-            $target = 'param() process { & { Verb } } begin { function Verb {} }'
+        It "recognizes clean blocks as executing after end blocks" -skip:($PSVersionTable.PSVersion -lt [version]'7.3') {
+            $target = '& { clean { Verb } begin { function Verb {} } }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0

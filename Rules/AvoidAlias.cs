@@ -666,7 +666,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 case TokenKind.End:
                     return 2;
                 default:
-                    return -1;
+                    return String.Equals(
+                        namedBlock.BlockKind.ToString(),
+                        "Clean",
+                        StringComparison.OrdinalIgnoreCase) ? 3 : -1;
             }
         }
 
@@ -798,7 +801,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 case TokenKind.End:
                     return 2;
                 default:
-                    return -1;
+                    return String.Equals(
+                        namedBlock.BlockKind.ToString(),
+                        "Clean",
+                        StringComparison.OrdinalIgnoreCase) ? 3 : -1;
             }
         }
 
@@ -1006,7 +1012,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && command.CommandElements.Count > 0
                 && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
             if (!directlyInvoked
-                && !IsCallerScopedScriptBlock(scope, functionAnalysis))
+                && !IsCallerScopedScriptBlock(scope, functionAnalysis)
+                && !IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis))
             {
                 return false;
             }
@@ -1351,6 +1358,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (current.Parent is ParenExpressionAst
+                    || current.Parent is SubExpressionAst
                     || current.Parent is CommandExpressionAst
                     || current.Parent is PipelineAst
                     || current.Parent is StatementBlockAst)
@@ -1747,7 +1755,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 "HostName",
                 "VMId",
                 "VMName",
-                "ContainerId"
+                "ContainerId",
+                "SSHConnection"
             };
 
             foreach (CommandParameterAst parameter in commandAst.CommandElements.OfType<CommandParameterAst>())
@@ -1777,8 +1786,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                bool isScriptBlock = element is ScriptBlockExpressionAst
-                    || element.FindAll(candidate => candidate is ScriptBlockExpressionAst, true).Any();
+                bool isScriptBlock = UnwrapParenthesizedExpression(element) is ScriptBlockExpressionAst;
                 if (!isScriptBlock
                     && remoteTargetParameters.Any(name =>
                         parameters.TryGetValue(name, out ParameterMetadata metadata)
