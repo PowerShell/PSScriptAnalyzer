@@ -1132,7 +1132,7 @@ Configuration Test {
             }
         }
 
-        It "does not isolate nested hashtable callbacks inside native DSC script properties" -skip:($IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
+        It "does not isolate nested hashtable callbacks inside native DSC script properties" -skip:($PSVersionTable.PSVersion.Major -lt 7 -or $IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
             Import-Module PSDesiredStateConfiguration -ErrorAction Stop
             $target = @'
 Configuration Test {
