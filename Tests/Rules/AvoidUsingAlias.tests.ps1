@@ -344,7 +344,10 @@ gci -Path C:\
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             foreach ($target in @(
                 'function private:Verb {}; . ({ Verb })',
-                '. ({ function private:Verb {}; Verb }); Verb'
+                '. ({ function private:Verb {}; Verb }); Verb',
+                'function private:Verb {}; . $({ Verb })',
+                '. $({ function Verb {} }); Verb',
+                'function Verb {}; Invoke-Command $({ Verb })'
             )) {
                 $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 

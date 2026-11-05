@@ -1144,11 +1144,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private Ast UnwrapParenthesizedExpression(Ast ast)
         {
-            while (ast is ParenExpressionAst parenthesizedExpression
-                && parenthesizedExpression.Pipeline is PipelineAst pipeline
-                && pipeline.PipelineElements.Count == 1
-                && pipeline.PipelineElements[0] is CommandExpressionAst commandExpression)
+            while (true)
             {
+                PipelineAst pipeline;
+                if (ast is ParenExpressionAst parenthesizedExpression
+                    && parenthesizedExpression.Pipeline is PipelineAst parenthesizedPipeline)
+                {
+                    pipeline = parenthesizedPipeline;
+                }
+                else if (ast is SubExpressionAst subExpression
+                    && subExpression.SubExpression.Statements.Count == 1
+                    && subExpression.SubExpression.Statements[0] is PipelineAst subExpressionPipeline)
+                {
+                    pipeline = subExpressionPipeline;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (pipeline == null
+                    || pipeline.PipelineElements.Count != 1
+                    || !(pipeline.PipelineElements[0] is CommandExpressionAst commandExpression))
+                {
+                    break;
+                }
+
                 ast = commandExpression.Expression;
             }
 
