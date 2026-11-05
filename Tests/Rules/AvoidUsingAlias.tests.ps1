@@ -507,6 +507,15 @@ Verb
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "resolves functions from enclosing blocks inside background pipelines" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = '& { function Verb {}; & { Verb } } &'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not find functions outside isolated execution boundaries" -TestCases @(
             @{ Boundary = 'Start-Job { Verb }' }
             @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
@@ -729,6 +738,15 @@ Verb
                 $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
                 Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
             }
+        }
+
+        It "resolves callback-local functions from nested script blocks in native DSC properties" {
+            $target = 'Script Test { SetScript = { function Verb {}; & { Verb } } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "respects caller scope for script blocks inside array callback arguments" {

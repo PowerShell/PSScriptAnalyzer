@@ -694,6 +694,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if CORECLR
             for (Ast current = ast; current != null; current = current.Parent)
             {
+                if (current != ast && current is ScriptBlockAst)
+                {
+                    return false;
+                }
+
                 if (current is PipelineAst pipeline && pipeline.Background)
                 {
                     return true;
@@ -1302,6 +1307,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (Ast current = scope; current != null; current = current.Parent)
             {
+                if (current != scope && current is ScriptBlockAst)
+                {
+                    return false;
+                }
+
                 if (!(current is HashtableAst hashtable)
                     || !hashtable.KeyValuePairs.Any(pair =>
                         pair.Item1 is StringConstantExpressionAst propertyName
