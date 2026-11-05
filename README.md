@@ -137,6 +137,12 @@ To install **PSScriptAnalyzer** from source code:
   Import-Module .\out\PSScriptAnalyzer\[version]\PSScriptAnalyzer.psd1
   ```
 
+- Command metadata handling lives in `CommandInfoCache`, not individual rules. Its parameter,
+  parameter-set and snapshot APIs return null when PowerShell metadata is unavailable, while
+  unexpected exceptions still propagate. Failed lookups and command objects with failed
+  metadata are evicted so subsequent calls can recover; genuine missing commands retain
+  negative caching.
+
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
 built-in rules.
 

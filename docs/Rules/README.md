@@ -86,6 +86,7 @@ title: List of PSScriptAnalyzer rules
 | [UseConsistentWhitespace][66]                      | Warning     |    Disabled    |     Yes      |
 | [UseConstrainedLanguageMode][67]                   | Warning     |    Disabled    |     Yes      |
 | [UseCorrectCasing][68]                             | Information |    Disabled    |     Yes      |
+| [UseCorrectCasingForDotSourcedFiles][81]           | Warning     |    Disabled    |     Yes      |
 | [UseDeclaredVarsMoreThanAssignments][69]           | Warning     | Always enabled |              |
 | [UseLiteralInitializerForHashtable][70]            | Warning     | Always enabled |              |
 | [UseOutputTypeCorrectly][71]                       | Information | Always enabled |              |
@@ -168,6 +169,7 @@ title: List of PSScriptAnalyzer rules
 [66]: UseConsistentWhitespace.md
 [67]: UseConstrainedLanguageMode.md
 [68]: UseCorrectCasing.md
+[81]: UseCorrectCasingForDotSourcedFiles.md
 [69]: UseDeclaredVarsMoreThanAssignments.md
 [70]: UseLiteralInitializerForHashtable.md
 [71]: UseOutputTypeCorrectly.md

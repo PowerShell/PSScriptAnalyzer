@@ -1,0 +1,436 @@
+name: Compare ScriptAnalyzer performance
+
+on:
+  workflow_dispatch:
+    inputs:
+      repetitions:
+        description: Number of fresh-process cold/warm pairs per build
+        type: choice
+        options: ['3', '5', '10']
+        default: '3'
+
+permissions:
+  contents: read
+
+jobs:
+  workload:
+    name: Prepare shared benchmark inputs
+    runs-on: windows-latest
+    timeout-minutes: 10
+    outputs:
+      powershell: ${{ steps.revision.outputs.sha }}
+      semver: ${{ steps.semver-revision.outputs.sha }}
+      upstream: ${{ steps.analyzer-revisions.outputs.upstream }}
+      fork: ${{ steps.analyzer-revisions.outputs.fork }}
+    steps:
+      - name: Pin all analyzer revisions once
+        id: analyzer-revisions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($source in @(
+              @{ Name = 'upstream'; Repository = 'PowerShell/PSScriptAnalyzer'; Ref = 'main' },
+              @{ Name = 'fork'; Repository = 'jessehouwing/PSScriptAnalyzer'; Ref = 'main' }
+          )) {
+              $revision = git ls-remote "https://github.com/$($source.Repository).git" "refs/heads/$($source.Ref)"
+              if ($LASTEXITCODE -ne 0 -or $revision -notmatch '^([0-9a-f]{40})\s') {
+                  throw "Cannot resolve $($source.Repository)@$($source.Ref)."
+              }
+              "$($source.Name)=$($Matches[1])" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Checkout PowerShell source tree once for both builds
+        uses: actions/checkout@v4
+        with:
+          repository: PowerShell/PowerShell
+          ref: master
+          path: workload
+          persist-credentials: false
+
+      - name: Archive PowerShell source tree and record revision
+        id: revision
+        shell: pwsh
+        run: |
+          $revision = git -C "$env:GITHUB_WORKSPACE/workload" rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve workload revision.' }
+          "sha=$revision" >> $env:GITHUB_OUTPUT
+          git -C "$env:GITHUB_WORKSPACE/workload" archive --format=zip --output="$env:GITHUB_WORKSPACE/powershell.zip" HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot archive PowerShell workload.' }
+
+      - name: Share the exact PowerShell source tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-workload-powershell
+          path: powershell.zip
+          if-no-files-found: error
+
+      - name: Checkout actions-semver-checker
+        uses: actions/checkout@v4
+        with:
+          repository: jessehouwing/actions-semver-checker
+          ref: main
+          path: semver
+          persist-credentials: false
+
+      - name: Archive actions-semver-checker and record revision
+        id: semver-revision
+        shell: pwsh
+        run: |
+          $revision = git -C "$env:GITHUB_WORKSPACE/semver" rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve semver workload revision.' }
+          "sha=$revision" >> $env:GITHUB_OUTPUT
+          git -C "$env:GITHUB_WORKSPACE/semver" archive --format=zip --output="$env:GITHUB_WORKSPACE/semver.zip" HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot archive semver workload.' }
+
+      - name: Share the exact semver source tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-workload-semver
+          path: semver.zip
+          if-no-files-found: error
+
+  benchmark:
+    name: Benchmark ${{ matrix.source }} / ${{ matrix.workload }} / ${{ matrix.os }}
+    needs: workload
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        workload: [powershell, semver]
+        source: [upstream, fork]
+        include:
+          - source: upstream
+            repository: PowerShell/PSScriptAnalyzer
+          - source: fork
+            repository: jessehouwing/PSScriptAnalyzer
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      BENCHMARK_SOURCE: ${{ matrix.source }}
+      BENCHMARK_REPOSITORY: ${{ matrix.repository }}
+      BENCHMARK_WORKLOAD: ${{ matrix.workload }}
+      WORKLOAD_REVISION: ${{ needs.workload.outputs[matrix.workload] }}
+      ANALYZER_REVISION: ${{ needs.workload.outputs[matrix.source] }}
+      BENCHMARK_REPETITIONS: ${{ inputs.repetitions }}
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          path: harness
+          persist-credentials: false
+
+      - name: Checkout pinned analyzer revision
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repository }}
+          ref: ${{ needs.workload.outputs[matrix.source] }}
+          path: analyzer
+          persist-credentials: false
+
+      - name: Download shared input
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: performance-workload-${{ matrix.workload }}
+          path: workload
+
+      - name: Extract workload source tree
+        run: Expand-Archive -LiteralPath "$env:GITHUB_WORKSPACE/workload/$env:BENCHMARK_WORKLOAD.zip" -DestinationPath "$env:GITHUB_WORKSPACE/workload/source"
+
+      - name: Install SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: analyzer/global.json
+
+      - name: Install build resources
+        run: '& "$env:GITHUB_WORKSPACE/harness/tools/installPSResources.ps1"'
+
+      - name: Build (Release, PowerShell 7)
+        working-directory: analyzer
+        run: '& "$env:GITHUB_WORKSPACE/analyzer/build.ps1" -Configuration Release -PSVersion 7 -Verbose'
+
+      - name: Measure repeated cold and warm analysis in fresh shells
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $workspace = $env:GITHUB_WORKSPACE
+          $resultDirectory = Join-Path $workspace 'results'
+          $null = New-Item -ItemType Directory -Path $resultDirectory -Force
+          $pwsh = (Get-Process -Id $PID).Path
+          $scriptPath = Join-Path $workspace 'workload/source/build.psm1'
+          $workloadRepository = 'PowerShell/PowerShell'
+          $analysisArguments = @()
+          if ($env:BENCHMARK_WORKLOAD -eq 'semver') {
+              $scriptPath = Join-Path $workspace 'workload/source'
+              $workloadRepository = 'jessehouwing/actions-semver-checker'
+              $analysisArguments = @('-Recurse', '-SettingsPath', (Join-Path $scriptPath 'PSScriptAnalyzerSettings.psd1'))
+          }
+          $measureScript = Join-Path $workspace 'harness/tools/Measure-ScriptAnalyzerPerformance.ps1'
+          $sourcePath = Join-Path $workspace 'analyzer'
+          $manifests = @(Get-ChildItem -Path "$sourcePath/out/PSScriptAnalyzer" -Filter PSScriptAnalyzer.psd1 -Recurse)
+          if ($manifests.Count -ne 1) {
+              throw "Expected exactly one built manifest, found $($manifests.Count)."
+          }
+          $revision = git -C $sourcePath rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $revision -ne $env:ANALYZER_REVISION) {
+              throw 'Analyzer checkout does not match the pinned revision.'
+          }
+          $metadata = @{
+              Source = $env:BENCHMARK_SOURCE
+              Repository = $env:BENCHMARK_REPOSITORY
+              Revision = $revision
+              Workload = $env:BENCHMARK_WORKLOAD
+              WorkloadRepository = $workloadRepository
+              WorkloadRevision = $env:WORKLOAD_REVISION
+              RunnerOS = $env:RUNNER_OS
+              RunnerImage = $env:ImageOS
+              RunnerImageVersion = $env:ImageVersion
+              ProcessorCount = [Environment]::ProcessorCount
+          }
+          for ($sample = 1; $sample -le [int]$env:BENCHMARK_REPETITIONS; $sample++) {
+              $resultPath = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE-$sample.json"
+              $attempt = 0
+              # Failed upstream runs are retried in entirely fresh processes.
+              # The job timeout bounds retries if upstream never succeeds.
+              $PSNativeCommandUseErrorActionPreference = $false
+              do {
+                  $attempt++
+                  $attemptLog = Join-Path $resultDirectory "$env:BENCHMARK_SOURCE-$sample-attempt-$attempt.log"
+                  & $pwsh -NoLogo -NoProfile -NonInteractive -File $measureScript `
+                      -ModulePath $manifests[0].FullName -ScriptPath $scriptPath -ResultPath $resultPath @analysisArguments 2>&1 |
+                      Tee-Object -FilePath $attemptLog
+                  $attemptExitCode = $LASTEXITCODE
+                  if ($attemptExitCode -ne 0) {
+                      if ($env:BENCHMARK_SOURCE -ne 'upstream') {
+                          throw "Benchmark sample $sample failed (exit code $attemptExitCode)."
+                      }
+                      Write-Warning "Upstream sample $sample attempt $attempt failed (exit code $attemptExitCode); retrying in a fresh process."
+                  }
+              } while ($attemptExitCode -ne 0)
+              $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+              $result | Add-Member -NotePropertyMembers $metadata
+              $result | Add-Member -NotePropertyName Sample -NotePropertyValue $sample
+              $result | Add-Member -NotePropertyName Attempts -NotePropertyValue $attempt
+              $result | Add-Member -NotePropertyName Inconsistent -NotePropertyValue ($attempt -gt 1)
+              $result | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $resultPath -Encoding utf8
+              $result | Format-List
+          }
+
+      - name: Upload raw benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-${{ matrix.source }}
+          path: |
+            results/*.json
+            results/*.log
+          if-no-files-found: warn
+
+  compare:
+    name: Compare ${{ matrix.workload }} / ${{ matrix.os }}
+    needs: benchmark
+    if: ${{ !cancelled() }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      BENCHMARK_REPETITIONS: ${{ inputs.repetitions }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        workload: [powershell, semver]
+    steps:
+      - name: Download benchmark results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-*
+          path: results
+          merge-multiple: true
+
+      - name: Validate and summarize
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $resultDirectory = Join-Path $env:GITHUB_WORKSPACE 'results'
+          $measurements = @{}
+          foreach ($source in 'upstream', 'fork') {
+              $measurements[$source] = @(for ($sample = 1; $sample -le [int]$env:BENCHMARK_REPETITIONS; $sample++) {
+                  Get-Content -LiteralPath "$resultDirectory/$source-$sample.json" -Raw | ConvertFrom-Json
+              })
+          }
+          $baseline = $measurements.upstream[0]
+          $findingsMatch = $baseline.ColdDiagnosticCount -gt 0
+          foreach ($source in 'upstream', 'fork') {
+              foreach ($candidate in $measurements[$source]) {
+                  foreach ($property in 'InputSHA256', 'InputFileCount', 'SettingsSHA256', 'Recurse',
+                      'WorkloadRevision', 'PowerShellVersion', 'RunnerOS', 'Culture', 'UICulture') {
+                      if ($baseline.$property -cne $candidate.$property) {
+                          throw "Benchmark property '$property' differs; results are not comparable."
+                      }
+                  }
+                  if ($candidate.Revision -ne $measurements[$source][0].Revision) {
+                      throw "Analyzer revision changed between $source samples."
+                  }
+                  foreach ($run in 'Cold', 'Warm') {
+                      if ($candidate."${run}DiagnosticCount" -ne $baseline.ColdDiagnosticCount -or
+                          $candidate."${run}DiagnosticsSHA256" -cne $baseline.ColdDiagnosticsSHA256) {
+                          $findingsMatch = $false
+                      }
+                  }
+              }
+          }
+          $report = [ordered]@{
+              WorkloadRepository = $baseline.WorkloadRepository
+              WorkloadRevision = $baseline.WorkloadRevision
+              ExpectedDiagnosticCount = $baseline.ColdDiagnosticCount
+              FindingsVerified = $findingsMatch
+              UpstreamInconsistent = @($measurements.upstream | Where-Object Inconsistent).Count -gt 0
+              Measurements = @($measurements.upstream) + @($measurements.fork)
+          }
+          $report | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath "$resultDirectory/comparison.json" -Encoding utf8
+
+          function Get-Median($values) {
+              $sorted = @($values | Sort-Object)
+              $middle = [int][Math]::Floor($sorted.Count / 2)
+              if ($sorted.Count % 2) { return $sorted[$middle] }
+              return ($sorted[$middle - 1] + $sorted[$middle]) / 2
+          }
+          $medians = @{}
+          foreach ($source in 'upstream', 'fork') {
+              $medians[$source] = @{
+                  Cold = Get-Median $measurements[$source].ColdSeconds
+                  Warm = Get-Median $measurements[$source].WarmSeconds
+              }
+          }
+
+          $summary = @(
+              "## Invoke-ScriptAnalyzer performance: $($baseline.Workload) / $($baseline.RunnerOS)"
+              ''
+              'Release builds run in separate jobs with the same OS and PowerShell version and identical input bytes. No analyzer modules or sessions are shared between jobs.'
+              'The PowerShell workload analyzes only build.psm1 with default rules. The semver workload analyzes the repository recursively using its PSScriptAnalyzerSettings.psd1, without filtering findings.'
+              "Each build gets $env:BENCHMARK_REPETITIONS fresh pwsh -NoProfile processes: cold is the first analysis; $($baseline.WarmupCount) discarded warm-up analyses are then run to spend the tiered-compilation ramp before the warm measurement."
+              'Shell startup, module import, checkout and build time are excluded. Cold does not mean an empty OS filesystem cache.'
+              ''
+              "| Source | Commit | Cold median (s) | Warm median (s) | Cold range (s) | Warm range (s) |"
+              "| --- | --- | ---: | ---: | --- | --- |"
+          )
+          foreach ($source in 'upstream', 'fork') {
+              $samples = $measurements[$source]
+              $reference = 'main'
+              $cold = $samples.ColdSeconds | Measure-Object -Minimum -Maximum
+              $warm = $samples.WarmSeconds | Measure-Object -Minimum -Maximum
+              $marker = if (@($samples | Where-Object Inconsistent).Count) { ' ⚠️' } else { '' }
+              $summary += "| $($samples[0].Repository)@$reference$marker | $($samples[0].Revision) | $($medians[$source].Cold.ToString('F3')) | $($medians[$source].Warm.ToString('F3')) | $($cold.Minimum.ToString('F3'))–$($cold.Maximum.ToString('F3')) | $($warm.Minimum.ToString('F3'))–$($warm.Maximum.ToString('F3')) |"
+          }
+          $summary += ''
+          if ($report.UpstreamInconsistent) {
+              $failedAttempts = ($measurements.upstream | ForEach-Object { $_.Attempts - 1 } | Measure-Object -Sum).Sum
+              $summary += "⚠️ Upstream results were inconsistent: $failedAttempts failed attempts were retried. Timings include successful attempts only and may be biased; failed-attempt logs are retained in the raw artifacts."
+              $summary += ''
+          }
+          foreach ($run in 'Cold', 'Warm') {
+              foreach ($pair in @(, @('fork', 'upstream'))) {
+                  if ($medians[$pair[1]][$run] -gt 0) {
+                      $change = 100 * ($medians[$pair[0]][$run] / $medians[$pair[1]][$run] - 1)
+                      $summary += "$run median time change ($($pair[0]) vs $($pair[1])): $($change.ToString('F2'))% (positive is slower)."
+                  }
+              }
+          }
+          $summary += @(
+              ''
+              "Input: $($baseline.WorkloadRepository) at $($baseline.WorkloadRevision)"
+              "Input SHA256: $($baseline.InputSHA256); PowerShell files: $($baseline.InputFileCount); recurse: $($baseline.Recurse)"
+              "Settings SHA256 (empty for default rules): $($baseline.SettingsSHA256)"
+              "PowerShell: $($baseline.PowerShellVersion)"
+              ''
+              'Samples run on separate hosts per build, not a controlled statistical regression test. Raw artifacts retain each measurement and full normalized diagnostics.'
+          )
+          foreach ($source in 'upstream', 'fork') {
+              $sample = $measurements[$source][0]
+              $summary += "$source runner: $($sample.RunnerImage) $($sample.RunnerImageVersion); logical processors: $($sample.ProcessorCount)"
+              $summary += "Verified $source module: $($sample.ModuleManifest); assembly: $($sample.AnalyzerAssemblyPath)"
+          }
+          if (-not $findingsMatch) {
+              $summary += '**FAILED:** Expected nonzero upstream findings and identical full diagnostic fingerprints across all samples and builds. Timing results must not be treated as a valid comparison.'
+          } else {
+              $summary += "Diagnostics verified: every sample returned the same $($baseline.ColdDiagnosticCount) findings, including locations, messages, suppression state, and corrections."
+          }
+          $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          $summary | Write-Output
+          if (-not $findingsMatch) {
+              throw 'Diagnostic equivalence validation failed. See the job summary and raw benchmark results.'
+          }
+
+      - name: Upload comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scriptanalyzer-performance-${{ matrix.os }}-${{ matrix.workload }}-comparison
+          path: results/comparison.json
+          if-no-files-found: warn
+
+  summary:
+    name: All performance comparisons
+    needs: compare
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Download comparisons
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: scriptanalyzer-performance-*-comparison
+          path: comparisons
+
+      - name: Summarize all combinations
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Get-Median($values) {
+              $sorted = @($values | Sort-Object)
+              $middle = [int][Math]::Floor($sorted.Count / 2)
+              if ($sorted.Count % 2) { return $sorted[$middle] }
+              return ($sorted[$middle - 1] + $sorted[$middle]) / 2
+          }
+          $summary = @(
+              '## Performance across all combinations'
+              ''
+              'Times are medians of fresh-process cold/warm samples; lower is better.'
+              ''
+              '| OS | Workload | Source | Cold median (s) | Warm median (s) | Status |'
+              '| --- | --- | --- | ---: | ---: | --- |'
+          )
+          foreach ($os in 'ubuntu-latest', 'windows-latest') {
+              foreach ($workload in 'powershell', 'semver') {
+                  $path = Join-Path $env:GITHUB_WORKSPACE "comparisons/scriptanalyzer-performance-$os-$workload-comparison/comparison.json"
+                  $report = if (Test-Path -LiteralPath $path) {
+                      Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+                  } else { $null }
+                  foreach ($source in 'upstream', 'fork') {
+                      $samples = @($report.Measurements | Where-Object Source -EQ $source)
+                      if ($samples.Count -eq 0) {
+                          $summary += "| $os | $workload | $source | — | — | Missing results |"
+                          continue
+                      }
+                      $cold = (Get-Median $samples.ColdSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $warm = (Get-Median $samples.WarmSeconds).ToString('F3', [Globalization.CultureInfo]::InvariantCulture)
+                      $status = if ($report.FindingsVerified) { 'Verified' } else { 'INVALID: diagnostics differ' }
+                      if (@($samples | Where-Object Inconsistent).Count) {
+                          $status += '; ⚠️ retried samples'
+                      }
+                      $summary += "| $os | $workload | $source | $cold | $warm | $status |"
+                  }
+              }
+          }
+          $summary += @(
+              ''
+              'Sources: upstream = PowerShell/PSScriptAnalyzer@main; fork = jessehouwing/PSScriptAnalyzer@main.'
+              'Compare timings only within the same OS/workload. Invalid results must not be used for performance comparisons; retried samples may be biased.'
+              'Builds run on separate hosts, not a controlled statistical regression test. Per-combination summaries and artifacts retain revisions, ranges, diagnostics, and retry details.'
+          )
+          $summary | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          $summary | Write-Output

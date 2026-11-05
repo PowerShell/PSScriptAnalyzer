@@ -1149,6 +1149,18 @@
   <data name="UseCorrectCasingParameterError" xml:space="preserve">
     <value>Parameter '{0}' of function/cmdlet '{1}' does not match its exact casing '{2}'.</value>
   </data>
+  <data name="UseCorrectCasingForDotSourcedFilesCommonName" xml:space="preserve">
+    <value>Use the exact on-disk casing of a dot-sourced file's path.</value>
+  </data>
+  <data name="UseCorrectCasingForDotSourcedFilesDescription" xml:space="preserve">
+    <value>Dot-sourcing a file whose path casing does not match the file on disk can silently fail on case-sensitive filesystems and is fragile everywhere else.</value>
+  </data>
+  <data name="UseCorrectCasingForDotSourcedFilesError" xml:space="preserve">
+    <value>The dot-sourced path '{0}' does not match the exact on-disk casing '{1}'.</value>
+  </data>
+  <data name="UseCorrectCasingForDotSourcedFilesName" xml:space="preserve">
+    <value>UseCorrectCasingForDotSourcedFiles</value>
+  </data>
   <data name="UseProcessBlockForPipelineCommandCommonName" xml:space="preserve">
     <value>Use process block for command that accepts input from pipeline.</value>
   </data>

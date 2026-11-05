@@ -133,13 +133,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
             // Sort by end position so that inner (nested) pipelines appear before outer ones.
-            // This is required by MatchingPipelineAstEnd, whose early-break optimization
-            // would otherwise skip nested pipelines that end before their outer pipeline.
+            // Preserve this order when selecting the first matching pipeline on each line.
             pipelineAsts.Sort((a, b) =>
             {
                 int lineCmp = a.Extent.EndScriptPosition.LineNumber.CompareTo(b.Extent.EndScriptPosition.LineNumber);
                 return lineCmp != 0 ? lineCmp : a.Extent.EndScriptPosition.ColumnNumber.CompareTo(b.Extent.EndScriptPosition.ColumnNumber);
             });
+            var pipelineEndsByLine = new Dictionary<int, List<Ast>>();
+            foreach (var pipeline in pipelineAsts)
+            {
+                int endLine = pipeline.Extent.EndScriptPosition.LineNumber;
+                if (!pipelineEndsByLine.TryGetValue(endLine, out var pipelinesOnLine))
+                {
+                    pipelinesOnLine = new List<Ast>();
+                    pipelineEndsByLine.Add(endLine, pipelinesOnLine);
+                }
+                pipelinesOnLine.Add(pipeline);
+            }
             // Track pipeline indentation increases per PipelineAst instead of as a single
             // flat counter. A flat counter caused all accumulated pipeline indentation to be
             // subtracted when *any* pipeline ended, instead of only the contribution from
@@ -306,7 +316,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (pipelineIndentationStyle == PipelineIndentationStyle.None) { continue; }
 
                 // Check if the current token matches the end of a PipelineAst
-                PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, token);
+                PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineEndsByLine, token);
                 if (matchingPipeLineAstEnd == null)
                 {
                     continue;
@@ -493,24 +503,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return lastPipeOnFirstLineWithPipeUsage;
         }
 
-        private static PipelineAst MatchingPipelineAstEnd(List<Ast> pipelineAsts, Token token)
+        private static PipelineAst MatchingPipelineAstEnd(Dictionary<int, List<Ast>> pipelineEndsByLine, Token token)
         {
-            PipelineAst matchingPipeLineAstEnd = null;
+            if (!pipelineEndsByLine.TryGetValue(token.Extent.EndScriptPosition.LineNumber, out var pipelineAsts))
+            {
+                return null;
+            }
+
             for (int i = 0; i < pipelineAsts.Count; i++)
             {
-                if (pipelineAsts[i].Extent.EndScriptPosition.LineNumber > token.Extent.EndScriptPosition.LineNumber)
-                {
-                    break;
-                }
-
                 if (PositionIsEqual(pipelineAsts[i].Extent.EndScriptPosition, token.Extent.EndScriptPosition))
                 {
-                    matchingPipeLineAstEnd = pipelineAsts[i] as PipelineAst;
-                    break;
+                    return pipelineAsts[i] as PipelineAst;
                 }
             }
 
-            return matchingPipeLineAstEnd;
+            return null;
         }
 
         /// <summary>
