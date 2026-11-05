@@ -243,6 +243,15 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $ExpectedText
         }
 
+        It "compares nested ForEach-Object callback phases at their shared invocation" {
+            $target = '1 | ForEach-Object -Process { 1 | ForEach-Object { Verb } } -Begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -483,6 +492,18 @@ Script Test {
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside background pipeline blocks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = @'
+. { function Verb {} } &
+Verb
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
@@ -825,6 +846,26 @@ Script Test {
             }
         }
 
+        It "does not index functions in statically unentered pre-test loops" -TestCases @(
+            @{ Target = 'while ($false) { function Verb {} }; Verb' }
+            @{ Target = 'for ($i = 1; $false; $i++) { function Verb {} }; Verb' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "indexes functions declared in do loops whose bodies execute" {
+            $target = 'do { function Verb {} } while ($false); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
         It "does not classify Where-Object comparison values as executable callbacks" {
             $target = 'Where-Object -Property Name -EQ { function Verb {} }; Verb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -1042,6 +1083,35 @@ $scriptFunction
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "recognizes native Script resource properties as isolated scopes" -skip:($IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
+            Import-Module PSDesiredStateConfiguration -ErrorAction Stop
+            $target = @'
+Configuration Test {
+    Node localhost {
+        function Verb {}
+        Script Test {
+            GetScript = { Verb }
+            TestScript = { Verb }
+            SetScript = { Verb }
+        }
+    }
+}
+'@
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$tokens, [ref]$errors)
+            $errors | Should -BeNullOrEmpty
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($ast, $null))
+
+            $violations.Count | Should -Be 3
+            $violations | ForEach-Object {
+                $_.Extent.Text | Should -Be 'Verb'
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
         }
 
         It "does not index functions in constant-false branches when identifying DSC resources" {

@@ -489,11 +489,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            int functionPhase = GetForEachObjectExecutionPhase(function, out CommandAst functionCallback);
-            int commandPhase = GetForEachObjectExecutionPhase(cmdAst, out CommandAst commandCallback);
-            if (functionCallback == commandCallback
-                && functionPhase >= 0
-                && commandPhase >= 0
+            if (TryGetNearestSharedForEachObjectExecutionPhase(
+                function,
+                cmdAst,
+                out int functionPhase,
+                out int commandPhase)
                 && functionPhase != commandPhase)
             {
                 return functionPhase > commandPhase;
@@ -675,7 +675,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsDirectlyInvokedScriptBlock(ScriptBlockAst scope)
         {
-            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            if (IsInBackgroundPipeline(scope)
+                || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
             {
                 return false;
             }
@@ -688,10 +689,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
         }
 
-        private int GetForEachObjectExecutionPhase(Ast ast, out CommandAst callbackCommand)
+        private bool IsInBackgroundPipeline(Ast ast)
         {
-            callbackCommand = null;
+#if CORECLR
             for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (current is PipelineAst pipeline && pipeline.Background)
+                {
+                    return true;
+                }
+            }
+#endif
+            return false;
+        }
+
+        private bool TryGetNearestSharedForEachObjectExecutionPhase(
+            Ast first,
+            Ast second,
+            out int firstPhase,
+            out int secondPhase)
+        {
+            firstPhase = -1;
+            secondPhase = -1;
+            var firstCallbacks = new Dictionary<CommandAst, Tuple<int, int>>();
+            foreach (Tuple<CommandAst, int, int> callback in GetForEachObjectExecutionPhases(first))
+            {
+                firstCallbacks[callback.Item1] = Tuple.Create(callback.Item2, callback.Item3);
+            }
+
+            List<Tuple<CommandAst, int, int>> secondCallbacks = GetForEachObjectExecutionPhases(second);
+            int nearestDistance = Int32.MaxValue;
+            foreach (Tuple<CommandAst, int, int> secondCallback in secondCallbacks)
+            {
+                if (firstCallbacks.TryGetValue(secondCallback.Item1, out Tuple<int, int> firstCallback))
+                {
+                    int distance = firstCallback.Item2 + secondCallback.Item3;
+                    if (distance < nearestDistance)
+                    {
+                        firstPhase = firstCallback.Item1;
+                        secondPhase = secondCallback.Item2;
+                        nearestDistance = distance;
+                    }
+                }
+            }
+
+            return nearestDistance != Int32.MaxValue;
+        }
+
+        private List<Tuple<CommandAst, int, int>> GetForEachObjectExecutionPhases(Ast ast)
+        {
+            var callbacks = new List<Tuple<CommandAst, int, int>>();
+            int depth = 0;
+            for (Ast current = ast; current != null; current = current.Parent, depth++)
             {
                 if (!(current is ScriptBlockAst scope)
                     || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
@@ -709,30 +758,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
                 if (IsParameter(parameterName, "Begin"))
                 {
-                    callbackCommand = commandAst;
-                    return 0;
+                    callbacks.Add(Tuple.Create(commandAst, 0, depth));
                 }
-
-                if (IsParameter(parameterName, "Process"))
+                else if (IsParameter(parameterName, "Process"))
                 {
-                    callbackCommand = commandAst;
-                    return 1;
+                    callbacks.Add(Tuple.Create(commandAst, 1, depth));
                 }
-
-                if (IsParameter(parameterName, "End"))
+                else if (IsParameter(parameterName, "End"))
                 {
-                    callbackCommand = commandAst;
-                    return 3;
+                    callbacks.Add(Tuple.Create(commandAst, 3, depth));
                 }
-
-                if (IsParameter(parameterName, "RemainingScripts"))
+                else if (IsParameter(parameterName, "RemainingScripts"))
                 {
-                    callbackCommand = commandAst;
-                    return 2;
+                    callbacks.Add(Tuple.Create(commandAst, 2, depth));
                 }
             }
 
-            return -1;
+            return callbacks;
         }
 
         private bool TryGetNearestSharedExecutionBlock(
@@ -1088,7 +1130,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         functionAnalysis.CallerScopedScriptBlockCache[scope] = null;
         bool result = false;
-        if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+        if (IsInBackgroundPipeline(scope)
+            || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
         {
             functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
             return result;
@@ -1187,6 +1230,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = null;
         bool result = false;
+        if (IsInBackgroundPipeline(scope))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = true;
+            return true;
+        }
+
+        if (IsNativeDscScriptPropertyValue(scope))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = true;
+            return true;
+        }
+
         if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
         {
             functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
@@ -1241,6 +1296,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
         return result;
+        }
+
+        private bool IsNativeDscScriptPropertyValue(ScriptBlockAst scope)
+        {
+            for (Ast current = scope; current != null; current = current.Parent)
+            {
+                if (!(current is HashtableAst hashtable)
+                    || !hashtable.KeyValuePairs.Any(pair =>
+                        pair.Item1 is StringConstantExpressionAst propertyName
+                        && IsDscScriptPropertyName(propertyName.Value)
+                        && IsDescendantOf(scope, pair.Item2)))
+                {
+                    continue;
+                }
+
+                for (Ast parent = hashtable.Parent; parent != null; parent = parent.Parent)
+                {
+                    if (parent is DynamicKeywordStatementAst dynamicKeyword
+                        && dynamicKeyword.CommandElements.Count > 0
+                        && String.Equals(
+                            dynamicKeyword.CommandElements[0].ToString(),
+                            "Script",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDscScriptPropertyName(string propertyName)
+        {
+            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsDscScriptPropertyCommand(
@@ -1912,6 +2004,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
             {
+                if (parent is WhileStatementAst whileStatement
+                    && IsDescendantOf(function, whileStatement.Body)
+                    && IsConstantFalseCondition(whileStatement.Condition))
+                {
+                    return true;
+                }
+
+                if (parent is ForStatementAst forStatement
+                    && IsDescendantOf(function, forStatement.Body)
+                    && forStatement.Condition != null
+                    && IsConstantFalseCondition(forStatement.Condition))
+                {
+                    return true;
+                }
+
                 if (!(parent is IfStatementAst ifStatement))
                 {
                     continue;
