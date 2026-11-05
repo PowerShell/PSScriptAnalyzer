@@ -1323,6 +1323,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 for (Ast parent = hashtable.Parent; parent != null; parent = parent.Parent)
                 {
+                    if (parent is ScriptBlockAst)
+                    {
+                        break;
+                    }
+
                     if (parent is DynamicKeywordStatementAst dynamicKeyword
                         && dynamicKeyword.CommandElements.Count > 0
                         && String.Equals(

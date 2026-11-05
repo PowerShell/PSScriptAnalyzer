@@ -1132,6 +1132,28 @@ Configuration Test {
             }
         }
 
+        It "does not isolate nested hashtable callbacks inside native DSC script properties" -skip:($IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
+            Import-Module PSDesiredStateConfiguration -ErrorAction Stop
+            $target = @'
+Configuration Test {
+    Node localhost {
+        Script Test {
+            SetScript = {
+                function Verb {}
+                $actions = @{ SetScript = { Verb } }
+                & $actions.SetScript
+            }
+        }
+    }
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not index functions in constant-false branches when identifying DSC resources" {
             $target = @'
 {
