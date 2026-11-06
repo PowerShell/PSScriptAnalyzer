@@ -264,6 +264,19 @@ gci -Path C:\
                 Should -Be $target.Replace('(Verb)', '(Get-Verb)')
         }
 
+        It "resolves declarations before commands nested in the same pipeline element" -TestCases @(
+            @{ Target = 'Write-Output $(. { function Verb {} }; Verb)' }
+            @{ Target = 'Write-Output (. { function Verb {} }) (Verb)' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)

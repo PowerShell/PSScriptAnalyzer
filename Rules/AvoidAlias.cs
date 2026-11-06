@@ -541,7 +541,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             List<PipelineAst> callbackPipelines = GetContainingPipelines(callbackCommand);
-            return GetContainingPipelines(cmdAst).Any(callbackPipelines.Contains);
+            foreach (PipelineAst pipeline in GetContainingPipelines(cmdAst))
+            {
+                if (!callbackPipelines.Contains(pipeline))
+                {
+                    continue;
+                }
+
+                Ast callbackElement = GetPipelineElement(pipeline, callbackCommand);
+                Ast commandElement = GetPipelineElement(pipeline, cmdAst);
+                if (callbackElement != null && commandElement != null && callbackElement != commandElement)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private Ast GetPipelineElement(PipelineAst pipeline, Ast ast)
+        {
+            for (Ast current = ast; current != null && current != pipeline; current = current.Parent)
+            {
+                if (current.Parent == pipeline)
+                {
+                    return current;
+                }
+            }
+
+            return null;
         }
 
         private List<PipelineAst> GetContainingPipelines(Ast ast)
