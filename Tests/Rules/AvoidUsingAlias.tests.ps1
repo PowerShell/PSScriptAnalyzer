@@ -120,6 +120,24 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "recognizes caller scope through a ScriptBlock cast" {
+            $target = '. ([scriptblock]{ function Verb {} }); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat a ScriptBlock cast as a remote invocation" {
+            $target = 'function Verb {}; Invoke-Command ([scriptblock]{ Verb })'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "does not resolve declarations after an immediately invoked child block" {
             $target = '& { Verb }; function Verb {}'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)

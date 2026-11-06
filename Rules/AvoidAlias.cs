@@ -1279,6 +1279,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             while (true)
             {
+                if (ast is ConvertExpressionAst conversion
+                    && conversion.StaticType == typeof(ScriptBlock))
+                {
+                    ast = conversion.Child;
+                    continue;
+                }
+
                 PipelineAst pipeline;
                 if (ast is ParenExpressionAst parenthesizedExpression
                     && parenthesizedExpression.Pipeline is PipelineAst parenthesizedPipeline)
