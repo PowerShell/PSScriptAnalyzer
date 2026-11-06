@@ -1580,6 +1580,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (current.Parent is ConvertExpressionAst convertExpression
                     && convertExpression.Child == current)
                 {
+                    if (convertExpression.StaticType == typeof(void))
+                    {
+                        return null;
+                    }
+
                     current = convertExpression;
                     continue;
                 }
@@ -2126,7 +2131,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (parent is ForStatementAst forStatement
-                    && IsDescendantOf(function, forStatement.Body)
+                    && (IsDescendantOf(function, forStatement.Body)
+                        || (forStatement.Iterator != null
+                            && IsDescendantOf(function, forStatement.Iterator)))
                     && forStatement.Condition != null
                     && IsConstantFalseCondition(forStatement.Condition))
                 {

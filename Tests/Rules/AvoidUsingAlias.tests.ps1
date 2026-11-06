@@ -908,6 +908,15 @@ Verb
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not index script blocks discarded by void casts" {
+            $target = '1 | ForEach-Object -Process $([void]{ function Verb {} }; { $_ }); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "does not index functions in constant-false branches" {
             $target = 'if ($false) { function Verb {} }; Verb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -933,6 +942,7 @@ Verb
         It "does not index functions in statically unentered pre-test loops" -TestCases @(
             @{ Target = 'while ($false) { function Verb {} }; Verb' }
             @{ Target = 'for ($i = 1; $false; $i++) { function Verb {} }; Verb' }
+            @{ Target = 'for ($i = 0; $false; . { function Verb {} }) {}; Verb' }
         ) {
             param($Target)
 
@@ -941,6 +951,13 @@ Verb
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "indexes functions declared in for initializers before constant-false conditions" {
+            $target = 'for (. { function Verb {} }; $false; $i++) {}; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
         }
 
         It "indexes functions declared in do loops whose bodies execute" {
