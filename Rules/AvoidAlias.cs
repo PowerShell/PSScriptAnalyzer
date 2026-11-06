@@ -499,6 +499,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionPhase > commandPhase;
             }
 
+            if (TryGetForStatementExecutionPhase(
+                function,
+                cmdAst,
+                out functionPhase,
+                out commandPhase)
+                && functionPhase != commandPhase)
+            {
+                return functionPhase > commandPhase;
+            }
+
             int commandExecutionOffset = immediateInvocation == null || sharesExecutionBlock
                 ? cmdAst.Extent.StartOffset
                 : immediateInvocation.Extent.StartOffset;
@@ -530,21 +540,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            PipelineAst callbackPipeline = GetContainingPipeline(callbackCommand);
-            return callbackPipeline != null && callbackPipeline == GetContainingPipeline(cmdAst);
+            List<PipelineAst> callbackPipelines = GetContainingPipelines(callbackCommand);
+            return GetContainingPipelines(cmdAst).Any(callbackPipelines.Contains);
         }
 
-        private PipelineAst GetContainingPipeline(Ast ast)
+        private List<PipelineAst> GetContainingPipelines(Ast ast)
         {
+            var pipelines = new List<PipelineAst>();
             for (Ast parent = ast; parent != null; parent = parent.Parent)
             {
+                if (parent is ScriptBlockAst && parent != ast)
+                {
+                    break;
+                }
+
                 if (parent is PipelineAst pipeline)
                 {
-                    return pipeline;
+                    pipelines.Add(pipeline);
                 }
             }
 
-            return null;
+            return pipelines;
+        }
+
+        private bool TryGetForStatementExecutionPhase(
+            Ast function,
+            Ast command,
+            out int functionPhase,
+            out int commandPhase)
+        {
+            functionPhase = -1;
+            commandPhase = -1;
+            for (Ast parent = function; parent != null; parent = parent.Parent)
+            {
+                if (!(parent is ForStatementAst forStatement)
+                    || forStatement.Iterator == null)
+                {
+                    continue;
+                }
+
+                if (IsDescendantOf(function, forStatement.Body)
+                    && IsDescendantOf(command, forStatement.Iterator))
+                {
+                    functionPhase = 0;
+                    commandPhase = 1;
+                    return true;
+                }
+
+                if (IsDescendantOf(function, forStatement.Iterator)
+                    && IsDescendantOf(command, forStatement.Body))
+                {
+                    functionPhase = 1;
+                    commandPhase = 0;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private CommandAst GetFunctionScopeInvocation(FunctionDefinitionAst function, ScriptBlockAst functionScope)
@@ -1047,6 +1099,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             out ScriptBlockAst parentScope)
         {
             parentScope = null;
+            if (IsInBackgroundPipeline(scope))
+            {
+                return false;
+            }
+
             if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
             {
                 return false;
@@ -1482,6 +1539,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (current.Parent is ArrayExpressionAst arrayExpression)
                 {
                     current = arrayExpression;
+                    continue;
+                }
+
+                if (current.Parent is ConvertExpressionAst convertExpression
+                    && convertExpression.Child == current)
+                {
+                    current = convertExpression;
                     continue;
                 }
 

@@ -252,6 +252,18 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "checks enclosing pipelines for callback execution order" {
+            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | Write-Output (Verb)'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be $target.Replace('(Verb)', '(Get-Verb)')
+        }
+
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
             $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -324,6 +336,15 @@ gci -Path C:\
                 $violations.Count | Should -Be 0
                 Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
             }
+        }
+
+        It "resolves functions declared in a for-loop body before iterator commands" {
+            $target = 'for ($i = 0; $i -lt 1; Verb) { function Verb {}; $i++ }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "respects named-block order across nested invoked scopes" -TestCases @(
@@ -516,8 +537,22 @@ Verb
             Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
+        It "does not promote functions declared in background pipeline blocks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { function ${scope}:Verb {}; Verb } &; Verb"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.StartOffset | Should -Be $target.LastIndexOf('Verb')
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be ($target.Replace('&; Verb', '&; Get-Verb'))
+            }
+        }
+
         It "does not find functions outside isolated execution boundaries" -TestCases @(
             @{ Boundary = 'Start-Job { Verb }' }
+            @{ Boundary = 'Start-Job -ScriptBlock ([scriptblock]{ Verb })' }
             @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command -Session $session -ScriptBlock { Verb }' }
             @{ Boundary = 'Invoke-Command localhost { Verb }' }
