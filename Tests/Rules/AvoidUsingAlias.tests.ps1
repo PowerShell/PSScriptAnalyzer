@@ -41,6 +41,18 @@ Describe "AvoidUsingAlias" {
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Invoke-Command'
         }
 
+        It "resolves aliases to script-defined callback commands" {
+            $target = 'function Invoke-Command { param($ComputerName, $ScriptBlock) & $ScriptBlock }; function Verb {}; icm x { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'icm'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Invoke-Command'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('icm', 'Invoke-Command'))
+        }
+
         It "still adds the Get prefix to ordinary commands with resource-shaped arguments" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Verb Argument {}' -IncludeRule $violationName
             $violations.Count | Should -Be 1
@@ -61,6 +73,990 @@ gci -Path C:\
     Context "When there are no violations" {
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
+        }
+
+        It "does not add the Get prefix to script-defined functions or skip their script block arguments" {
+            $target = 'function script:vErB {}; Verb Instance { ChildItem . {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'ChildItem'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('ChildItem', 'Get-ChildItem'))
+        }
+
+        It "respects private function visibility" {
+            $target = 'function private:Verb {}; Verb; . { Verb }; & { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('& { Verb }', '& { Get-Verb }'))
+        }
+
+        It "does not resolve function declarations before their execution" {
+            $target = 'Verb; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects execution order across caller-scoped blocks" -TestCases @(
+            @{ Target = 'Verb; . { function Verb {} }' }
+            @{ Target = '. { Verb }; function Verb {}' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "recognizes caller scope through a ScriptBlock cast" {
+            $target = '. ([scriptblock]{ function Verb {} }); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat a ScriptBlock cast as a remote invocation" {
+            $target = 'function Verb {}; Invoke-Command ([scriptblock]{ Verb })'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not resolve declarations after an immediately invoked child block" {
+            $target = '& { Verb }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not resolve callback declarations for other commands in the same pipeline" {
+            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('} | Verb', '} | Get-Verb'))
+        }
+
+        It "does not resolve declarations from other caller-scoped callbacks in the same pipeline" -TestCases @(
+            @{ Target = '1 | Where-Object { function Verb {}; $true } | Verb' }
+            @{ Target = '1 | . { function Verb {} } | Verb' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not treat script-block arguments to call-operator commands as immediately invoked" {
+            $target = 'function Save-Callback { param($Action) $script:cb = $Action }; & Save-Callback { Verb }; function Verb {}; & $script:cb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function Invoke-Command { param($ScriptBlock) $script:cb = $ScriptBlock }; Invoke-Command -ScriptBlock { Verb }; function Verb {}; & $script:cb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "respects function begin and process execution order" {
+            $target = 'function Invoke-Example { process { Verb } begin { function Verb {} } }; Invoke-Example'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "respects script-level begin and process execution order" {
+            $target = 'param() process { Verb } begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects function execution order through dot-sourced blocks in named blocks" {
+            $target = 'function Invoke-Example { process { Verb } begin { . { function Verb {} } } }; Invoke-Example'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects invocation order for synchronous script-block callbacks" -TestCases @(
+            @{
+                Target = 'Invoke-Command -ScriptBlock { Verb }; function Verb {}'
+                ExpectedViolations = 1
+            }
+            @{
+                Target = '1 | ForEach-Object -Begin { & { Verb } } -Process { function Verb {} }'
+                ExpectedViolations = 1
+            }
+        ) {
+            param($Target, $ExpectedViolations)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be $ExpectedViolations
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "compares named-block phases at the nearest shared execution block" -TestCases @(
+            @{ Target = '. { process { & { Verb } } begin { function script:Verb {} } }' }
+            @{ Target = '& { process { Verb } begin { & { function script:Verb {} } } }' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "respects execution order across ForEach-Object callback phases" -TestCases @(
+            @{
+                Target = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
+                ExpectedViolations = 0
+                ExpectedText = '1 | ForEach-Object -Process { Verb } -Begin { function Verb {} }'
+            }
+            @{
+                Target = '1 | ForEach-Object -Begin { Verb } -Process { function Verb {} }'
+                ExpectedViolations = 1
+                ExpectedText = '1 | ForEach-Object -Begin { Get-Verb } -Process { function Verb {} }'
+            }
+        ) {
+            param($Target, $ExpectedViolations, $ExpectedText)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be $ExpectedViolations
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $ExpectedText
+        }
+
+        It "compares nested ForEach-Object callback phases at their shared invocation" {
+            $target = '1 | ForEach-Object -Process { 1 | ForEach-Object { Verb } } -Begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "checks enclosing pipelines for callback execution order" {
+            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | Write-Output (Verb)'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be $target.Replace('(Verb)', '(Get-Verb)')
+        }
+
+        It "resolves declarations before commands nested in the same pipeline element" -TestCases @(
+            @{ Target = 'Write-Output $(. { function Verb {} }; Verb)' }
+            @{ Target = 'Write-Output (. { function Verb {} }) (Verb)' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
+        }
+
+        It "does not apply caller scope to script-block arguments of dot-invoked commands" {
+            $target = 'function private:Verb {}; . Invoke-Command -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "indexes declarations in directly dot-sourced blocks in the caller scope" {
+            $target = '. { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "indexes explicit script and global functions declared in immediately invoked blocks" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { function ${scope}:Verb {} }; Verb"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+
+            $target = 'function Register-Commands { & { function script:Verb {} } }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "resolves explicit script functions declared in caller-scoped callbacks" {
+            $target = '& { 1 | ForEach-Object { function script:Verb {} } }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "preserves declarations and calls in the same immediately invoked scope" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { function ${scope}:Verb {}; Verb }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "respects declaration order across nested invoked scopes" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { & { Verb }; function ${scope}:Verb {} }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.Text | Should -Be 'Verb'
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be "& { & { Get-Verb }; function ${scope}:Verb {} }"
+
+                $target = "& { function ${scope}:Verb {}; & { Verb } }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "resolves functions declared in a for-loop body before iterator commands" {
+            $target = 'for ($i = 0; $i -lt 1; Verb) { function Verb {}; $i++ }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects named-block order across nested invoked scopes" -TestCases @(
+            @{ Target = 'param() process { Verb } begin { . { . { function Verb {} } } }' }
+            @{ Target = 'param() process { Verb } begin { & { function script:Verb {} } }' }
+            @{ Target = 'param() process { Verb } begin { & { function global:Verb {} } }' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
+        }
+
+        It "uses caller scope for parameterized dot-sourced blocks" {
+            $target = 'function private:Verb {}; . { param($value) Verb } 1'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "uses caller scope for parenthesized dot-sourced blocks and declarations" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($target in @(
+                'function private:Verb {}; . ({ Verb })',
+                '. ({ function private:Verb {}; Verb }); Verb',
+                'function private:Verb {}; . $({ Verb })',
+                '. $({ function Verb {} }); Verb',
+                'function Verb {}; Invoke-Command $({ Verb })'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "recognizes caller scope for local Invoke-Command NoNewScope callbacks" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            $target = 'function private:Verb {}; Invoke-Command -NoNewScope -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'Invoke-Command -NoNewScope -ScriptBlock { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "resolves globally scoped functions defined in synchronous local Invoke-Command blocks" {
+            $target = 'Invoke-Command -ScriptBlock { function global:Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat a newline-separated DSC script property as caller-scoped" {
+            $target = @'
+function Verb {};
+Script Test {
+    SetScript =
+    { Verb }
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "keeps DSC script properties isolated when property names are functions" {
+            foreach ($property in @('GetScript', 'TestScript', 'SetScript')) {
+                $targets = @(
+                    "function $property {}; Script Test { $property = { Verb } }"
+                    "function $property {}; Script Test {`n    $property =`n    { Verb }`n}"
+                )
+
+                foreach ($target in $targets) {
+                    $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                    $violations.Count | Should -Be 1
+                    $violations[0].Extent.Text | Should -Be 'Verb'
+                    $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+                    $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                    Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                        Should -Be ($target.Replace('Verb }', 'Get-Verb }'))
+                }
+            }
+        }
+
+        It "respects caller scope in <Command> callbacks" -TestCases @(
+            @{ Command = 'ForEach-Object' }
+            @{ Command = 'Where-Object' }
+            @{ Command = 'Microsoft.PowerShell.Core\ForEach-Object' }
+            @{ Command = 'Microsoft.PowerShell.Core\Where-Object' }
+        ) {
+            param($Command)
+
+            $target = "function private:Verb {}; 1 | $Command { Verb }"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "preserves caller scope when an alias takes precedence over a same-named function" {
+            $target = 'function where {}; function private:Verb {}; 1 | where { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'where'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('1 | where', '1 | Where-Object'))
+        }
+
+        It "respects caller scope for colon-attached callback arguments" {
+            foreach ($command in @(
+                'ForEach-Object -Process:{ Verb }'
+                'Where-Object -FilterScript:{ Verb }'
+            )) {
+                $target = "function private:Verb {}; 1 | $command"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "uses the bound callback parameter after switches and abbreviated parameters" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Verbose { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Proc { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not apply caller scope to ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function Verb {}; 1 | ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside background pipeline blocks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = @'
+. { function Verb {} } &
+Verb
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "resolves functions from enclosing blocks inside background pipelines" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = '& { function Verb {}; & { Verb } } &'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not promote functions declared in background pipeline blocks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            foreach ($scope in @('script', 'global')) {
+                $target = "& { function ${scope}:Verb {}; Verb } &; Verb"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.StartOffset | Should -Be $target.LastIndexOf('Verb')
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be ($target.Replace('&; Verb', '&; Get-Verb'))
+            }
+        }
+
+        It "does not find functions outside isolated execution boundaries" -TestCases @(
+            @{ Boundary = 'Start-Job { Verb }' }
+            @{ Boundary = 'Start-Job -ScriptBlock ([scriptblock]{ Verb })' }
+            @{ Boundary = 'Invoke-Command -ComputerName localhost -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command -Session $session -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command localhost { Verb }' }
+            @{ Boundary = 'Invoke-Command -Verbose localhost -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command -Verbose:$true localhost -ScriptBlock { Verb }' }
+            @{ Boundary = 'Invoke-Command -ConnectionUri http://server:5985/wsman -ScriptBlock { Verb }' }
+            @{ Boundary = 'InlineScript { Verb }' }
+            @{ Boundary = 'Script Test { GetScript = { Verb } }' }
+        ) {
+            param($Boundary)
+
+            $target = "function Verb {}; $Boundary"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find functions outside SSHConnection invocations" -skip:($null -eq (Get-Command Invoke-Command).Parameters['SSHConnection']) {
+            $target = "function Verb {}; Invoke-Command -SSHConnection @{ HostName = 'server' } -ScriptBlock { Verb }"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not resolve local functions inside remote callbacks with computed targets" {
+            $target = "function Verb {}; Invoke-Command (& { 'localhost' }) -ScriptBlock { Verb }"
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "makes job initialization functions visible only to the same job script block" {
+            $target = 'Start-Job -InitializationScript { function Verb {} } -ScriptBlock { Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('; Verb', '; Get-Verb'))
+        }
+
+        It "makes thread-job initialization functions visible only to the same job script block" -skip:($null -eq (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+            $target = 'Start-ThreadJob -InitializationScript { function Verb {} } -ScriptBlock { Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('; Verb', '; Get-Verb'))
+        }
+
+        It "preserves initializer-local function lookup and declaration order for job callbacks" {
+            $commands = @('Start-Job')
+            if ($null -ne (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+                $commands += 'Start-ThreadJob'
+            }
+
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($command in $commands) {
+                $target = "$command -InitializationScript { function Verb {}; Verb } -ScriptBlock { Verb }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+                $target = "$command -ScriptBlock { & { Verb } } -InitializationScript { function Verb {} }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+                $target = "$command -InitializationScript { Verb; function Verb {} } -ScriptBlock { Verb }"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.StartOffset | Should -Be $target.IndexOf('Verb;')
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                    Should -Be ($target.Replace('{ Verb;', '{ Get-Verb;'))
+            }
+        }
+
+        It "maps global functions from nested job initializers to the job body" {
+            $target = 'Start-Job -InitializationScript { & { function global:Verb {} } } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+
+            $target = 'Start-Job -InitializationScript { & { Verb; function global:Verb {} } } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.StartOffset | Should -Be $target.IndexOf('Verb;')
+        }
+
+        It "does not transfer initializer functions across a script-defined job command" {
+            $target = 'function Start-Job { param($InitializationScript, $ScriptBlock) & $InitializationScript; & $ScriptBlock }; Start-Job -InitializationScript { function Verb {} } -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('-ScriptBlock { Verb }', '-ScriptBlock { Get-Verb }'))
+        }
+
+        It "respects visible script-defined commands before callback scope rules" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function ForEach-Object { param([scriptblock]$Parallel) & $Parallel }; function Verb {}; ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function ForEach-Object { param([scriptblock]$Process) & $Process }; function private:Verb {}; 1 | ForEach-Object -Process { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('{ Verb }', '{ Get-Verb }'))
+        }
+
+        It "resolves dot-sourced callback commands before classifying nested callbacks" {
+            $target = '. { function ForEach-Object { param([scriptblock]$Process) & $Process } }; ForEach-Object { function private:Verb {}; Verb }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Substring(0, $target.LastIndexOf(' Verb')) + ' Get-Verb')
+        }
+
+        It "does not let callback declarations change command resolution at invocation time" -TestCases @(
+            @{
+                Target = 'function private:Verb {}; 1 | ForEach-Object { function ForEach-Object { param([scriptblock]$Process) & $Process } }; function Unrelated {}; 1 | ForEach-Object -Process { Verb }'
+            }
+            @{
+                Target = 'function private:Verb {}; 1 | ForEach-Object { function ForEach-Object { param([scriptblock]$Process) & $Process } }; 1 | ForEach-Object -Process { Verb }'
+            }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "checks declaration order through nested directly invoked blocks" {
+            $target = '& { & { Verb } }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('& { & { Verb } }', '& { & { Get-Verb } }'))
+
+            $target = '. { & { Verb } }; function Verb {}'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings |
+                Should -Be ($target.Replace('{ Verb }', '{ Get-Verb }'))
+        }
+
+        It "preserves named-block phases in independently invoked script blocks" {
+            $target = '& { process { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "preserves named-block phases in dot-invoked script blocks" {
+            $target = '. { process { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not treat ordinary function assignments as DSC script properties" {
+            $target = 'function Verb {}; function SetScript { param($Op, [scriptblock]$Action) & $Action }; SetScript = { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not isolate nested script properties inside executable DSC callbacks" {
+            foreach ($target in @(
+                'Script Test { SetScript = { function Verb {}; function SetScript { param($op, $action) & $action }; SetScript = { Verb } } }'
+                "Script Test`n{`n    SetScript = { function Verb {}; function SetScript { param(`$op, `$action) & `$action }; SetScript = { Verb } }`n}"
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "resolves callback-local functions from nested script blocks in native DSC properties" {
+            $target = 'Script Test { SetScript = { function Verb {}; & { Verb } } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects caller scope for script blocks inside array callback arguments" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Process {}, { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects caller scope for callbacks in array subexpressions" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object -Process @({ Verb })'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not index script blocks inside array input data" {
+            $target = 'ForEach-Object -InputObject { function Verb {} }, { function Other {} } -Process { $_ }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects caller scope for trailing RemainingScripts callbacks" {
+            $target = 'function private:Verb {}; 1 | ForEach-Object {}, {}, { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+
+            $target = 'function private:Verb {}; 1 | ForEach-Object {} {} { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "resolves declarations before RemainingScripts callbacks" {
+            $target = '1 | ForEach-Object -RemainingScripts { Verb } -Begin { function Verb {} } -Process { $_ }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "resolves declarations from RemainingScripts callbacks before End callbacks" {
+            $target = '1 | ForEach-Object -Begin {} -Process { $_ } -RemainingScripts { function Verb {} } -End { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "resolves abbreviated and colon-attached parallel callback parameters" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            foreach ($parameter in @('-Pa { Verb }', '-Pa:{ Verb }')) {
+                $target = "function Verb {}; 1 | ForEach-Object $parameter"
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
+        }
+
+        It "recognizes functions declared in ForEach-Object parallel callbacks" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = '1 | ForEach-Object -Parallel { function Verb {}; Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "does not resolve module-qualified callbacks to local functions" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function ForEach-Object {}; function Verb {}; 1 | Microsoft.PowerShell.Core\ForEach-Object -Parallel { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index script blocks passed as ForEach-Object input data" {
+            $target = 'ForEach-Object -InputObject { function Verb {} } -Process { $_ }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index script blocks discarded by void casts" {
+            $target = '1 | ForEach-Object -Process $([void]{ function Verb {} }; { $_ }); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index functions in constant-false branches" {
+            $target = 'if ($false) { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index functions in statically unreachable else and elseif branches" {
+            foreach ($target in @(
+                'if ($true) {} else { function Verb {} }; Verb'
+                'if ($true) {} elseif ($true) { function Verb {} }; Verb'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 1
+                $violations[0].Extent.Text | Should -Be 'Verb'
+                $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
+        }
+
+        It "does not index functions in statically unentered pre-test loops" -TestCases @(
+            @{ Target = 'while ($false) { function Verb {} }; Verb' }
+            @{ Target = 'for ($i = 1; $false; $i++) { function Verb {} }; Verb' }
+            @{ Target = 'for ($i = 0; $false; . { function Verb {} }) {}; Verb' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "indexes functions declared in for initializers before constant-false conditions" {
+            $target = 'for (. { function Verb {} }; $false; $i++) {}; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "indexes functions declared in do loops whose bodies execute" {
+            $target = 'do { function Verb {} } while ($false); Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+        }
+
+        It "does not classify Where-Object comparison values as executable callbacks" {
+            $target = 'Where-Object -Property Name -EQ { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not classify ForEach-Object MemberName arguments as executable callbacks" {
+            $target = '1 | ForEach-Object -MemberName Equals { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+
+            $target = '1 | ForEach-Object Equals { function Verb {} }; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "respects caller scope for parenthesized literal callbacks" {
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            foreach ($target in @(
+                'function private:Verb {}; 1 | ForEach-Object -Process ({ Verb })',
+                'function private:Verb {}; 1 | ForEach-Object -Process $({ Verb })'
+            )) {
+                $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+                $violations.Count | Should -Be 0
+                Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+            }
+        }
+
+        It "uses the immediate invocation block to resolve named-block scope" {
+            $target = 'param() process { & { Verb } } begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "recognizes clean blocks as executing after end blocks" -skip:($PSVersionTable.PSVersion -lt [version]'7.3') {
+            $target = '& { clean { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not find functions outside module-qualified thread jobs" -skip:($null -eq (Get-Command Start-ThreadJob -ErrorAction SilentlyContinue)) {
+            $target = 'function Verb {}; ThreadJob\Start-ThreadJob -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not treat an explicitly disabled NoNewScope switch as caller-scoped" {
+            $target = 'function private:Verb {}; Invoke-Command -NoNewScope:$false -ScriptBlock { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "handles deeply nested caller-scoped callbacks without repeated visibility scans" {
+            $depth = 12
+            $target = ('1 | ForEach-Object { ' * $depth) + 'Verb' + (' }' * $depth)
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+        }
+
+        It "indexes declarations in parameterized dot-sourced blocks in the caller scope" {
+            $target = '. { param($value) function private:Verb {}; Verb } 1; Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
@@ -97,6 +1093,167 @@ Configuration PackageTest {
     }
 
     Context "DSC resource ASTs" {
+        It "recognizes functions declared in the <Scope> scope as executable commands" -TestCases @(
+            @{ Scope = 'script' }
+            @{ Scope = 'configuration' }
+        ) {
+            param($Scope)
+
+            $scriptFunction = if ($Scope -eq 'script') { 'function script:vErB {}' }
+            $configurationFunction = if ($Scope -eq 'configuration') { 'function vErB {}' }
+            $target = @"
+$scriptFunction
+{
+    $configurationFunction
+    Verb SameLine { ChildItem . {} }
+    Verb FollowingLine
+    {
+        ChildItem . {}
+    }
+    Package PackageExample {}
+}
+"@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[-1].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            [System.Management.Automation.Language.StatementAst[]]$statements = if ($Scope -eq 'script') {
+                @($ast.EndBlock.Statements[0].Copy(), $configuration)
+            } else {
+                @($configuration)
+            }
+            $scriptAst = [System.Management.Automation.Language.ScriptBlockAst]::new(
+                $ast.Extent, $null,
+                [System.Management.Automation.Language.StatementBlockAst]::new($ast.Extent, $statements, $null), $false)
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($scriptAst, $null))
+
+            $violations.Count | Should -Be 2
+            $violations | ForEach-Object {
+                $_.Extent.Text | Should -Be 'ChildItem'
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-ChildItem'
+            }
+        }
+
+        It "does not treat functions declared in unrelated scopes as executable commands" -TestCases @(
+            @{ FunctionName = 'Verb' }
+            @{ FunctionName = 'script:Verb' }
+            @{ FunctionName = 'global:Verb' }
+        ) {
+            param($FunctionName)
+
+            $target = @"
+{
+    function Get-Example {
+        function $FunctionName {}
+    }
+    Verb ResourceExample { ChildItem NestedResource {} }
+}
+"@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
+        It "recognizes Script resource properties when the opening brace is on the following line" {
+            $target = @'
+{
+    function Verb {}
+    Script Test
+    {
+        SetScript = { Verb }
+    }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($configuration, $null))
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "recognizes native Script resource properties as isolated scopes" -skip:($IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
+            Import-Module PSDesiredStateConfiguration -ErrorAction Stop
+            $target = @'
+Configuration Test {
+    Node localhost {
+        function Verb {}
+        Script Test {
+            GetScript = { Verb }
+            TestScript = { Verb }
+            SetScript = { Verb }
+        }
+    }
+}
+'@
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$tokens, [ref]$errors)
+            $errors | Should -BeNullOrEmpty
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            $violations = @($rule.AnalyzeScript($ast, $null))
+
+            $violations.Count | Should -Be 3
+            $violations | ForEach-Object {
+                $_.Extent.Text | Should -Be 'Verb'
+                $_.SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+            }
+        }
+
+        It "does not isolate nested hashtable callbacks inside native DSC script properties" -skip:($PSVersionTable.PSVersion.Major -lt 7 -or $IsLinux -or $IsMacOS -or $null -eq (Get-Module -ListAvailable -Name PSDesiredStateConfiguration)) {
+            Import-Module PSDesiredStateConfiguration -ErrorAction Stop
+            $target = @'
+Configuration Test {
+    Node localhost {
+        Script Test {
+            SetScript = {
+                function Verb {}
+                $actions = @{ SetScript = { Verb } }
+                & $actions.SetScript
+            }
+        }
+    }
+}
+'@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not index functions in constant-false branches when identifying DSC resources" {
+            $target = @'
+{
+    if ($false) { function Verb {} }
+    Verb ResourceExample { ChildItem NestedResource {} }
+}
+'@
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($target, [ref]$null, [ref]$null)
+            $body = $ast.EndBlock.Statements[0].PipelineElements[0].Expression.Copy()
+            $configuration = [System.Management.Automation.Language.ConfigurationDefinitionAst]::new(
+                $ast.Extent, $body, 'Resource',
+                [System.Management.Automation.Language.StringConstantExpressionAst]::new($ast.Extent, 'Test', 'BareWord'))
+            $rule = [Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.AvoidAlias]::new()
+
+            @($rule.AnalyzeScript($configuration, $null)).Count | Should -Be 0
+        }
+
         It "does not expand nested resource names in a same-line Node declaration when node is discoverable" -skip:(!(Get-Command node -CommandType Application -ErrorAction Ignore)) {
             $target = @'
 {
