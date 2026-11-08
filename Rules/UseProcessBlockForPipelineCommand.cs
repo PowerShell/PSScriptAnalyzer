@@ -30,7 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (scriptblockAst.ProcessBlock != null
                     || scriptblockAst.ParamBlock?.Attributes == null
-                    || scriptblockAst.ParamBlock.Parameters == null)
+                    || scriptblockAst.ParamBlock.Parameters == null
+                    || ReadsPipelineInput(scriptblockAst.EndBlock))
                 {
                     continue;
                 }
@@ -45,8 +46,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                         foreach (NamedAttributeArgumentAst namedArgument in paramAttributeAst.NamedArguments)
                         {
-                            if (!namedArgument.ArgumentName.Equals("valuefrompipeline", StringComparison.OrdinalIgnoreCase)
-                                && !namedArgument.ArgumentName.Equals("valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase))
+                            if (!(namedArgument.ArgumentName.Equals("ValueFromPipeline", StringComparison.OrdinalIgnoreCase)
+                                || namedArgument.ArgumentName.Equals("ValueFromPipelineByPropertyName", StringComparison.OrdinalIgnoreCase))
+                                || !Helper.Instance.GetNamedArgumentAttributeValue(namedArgument))
                             {
                                 continue;
                             }
@@ -63,6 +65,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private static bool ReadsPipelineInput(NamedBlockAst endBlock)
+        {
+            return endBlock?.Find(
+                candidate => candidate is VariableExpressionAst variable
+                    && (variable.VariablePath.IsUnqualified || variable.VariablePath.IsLocal)
+                    && string.Equals(Helper.Instance.VariableNameWithoutScope(variable.VariablePath), "input", StringComparison.OrdinalIgnoreCase)
+                    && !(variable.Parent is AssignmentStatementAst assignment
+                        && assignment.Left == variable && assignment.Operator == TokenKind.Equals),
+                searchNestedScriptBlocks: false) != null;
         }
 
         public string GetName()

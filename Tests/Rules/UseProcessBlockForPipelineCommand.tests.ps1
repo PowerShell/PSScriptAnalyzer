@@ -20,6 +20,18 @@ Describe "UseProcessBlockForPipelineCommand" {
                 ScriptDefinition = '{ [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) }'
                 Name = "scriptblock without process block"
             }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline=$true)]$Item) end { $global:input }'
+                Name = "end block that reads a different scope's input"
+            }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline=$true)]$Item) end { { $input } }'
+                Name = "input only referenced in a nested script block"
+            }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline=$true)]$Item) end { $input = 1 }'
+                Name = "end block that only assigns to input"
+            }
         )
         It "has 1 violation for <Name>" -TestCases $Cases {
             param ($ScriptDefinition)
@@ -49,6 +61,18 @@ Describe "UseProcessBlockForPipelineCommand" {
             @{
                 ScriptDefinition = '{ [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) process { } }'
                 Name = "scriptblock with process block"
+            }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline=$false, ValueFromPipelineByPropertyName=$false)]$Item)'
+                Name = "explicitly disabled pipeline binding"
+            }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline=$true)]$Item) end { $input | ConvertTo-Json }'
+                Name = "explicit end block that consumes pipeline input"
+            }
+            @{
+                ScriptDefinition = 'param ([Parameter(ValueFromPipeline)]$Item) $local:input | ConvertTo-Json'
+                Name = "implicit end block that consumes pipeline input"
             }
         )
         It "has no violations for function <Name>" -TestCases $Cases {
