@@ -24,21 +24,22 @@ Describe "Validate rule documentation files" {
         $linkDefLine = @{}
         $usedRefs = @{}
         # Regex patterns.
-        # Table rule cell: | [RuleName][ref] | Severity | Default state |... |  -> capture name, ref, severity, defstate.
-        $ruleRowRegex = '^\|\s*\[(?<name>[^\]]+)\]\[(?<ref>[^\]]+)\]\s*\|\s*(?<severity>[^|]+?)\s*\|(?<defstate>[^|]+?)\s*\|'
+        # A rule row can use a full or collapsed reference-style link.
+        $ruleRowRegex = '^\|\s*\[(?<name>[^\]]+)\]\[(?<ref>[^\]]*)\]\s*\|\s*(?<severity>[^|]+?)\s*\|(?<defstate>[^|]+?)\s*\|'
         # Link definition: [ref]: target  (target may include an #anchor).
         $linkDefRegex = '^\[(?<ref>[^\]]+)\]:\s*(?<target>\S+)'
-        # Any reference-style usage anywhere: ...][ref]...
-        $refUsageRegex = '\]\[(?<ref>[^\]]+)\]'
+        # Full and collapsed reference-style links, such as [text][ref] and [ref][].
+        $refUsageRegex = '\[(?<label>[^\]]+)\]\[(?<ref>[^\]]*)\]'
         $lines = Get-Content (Join-Path $ruleDocDirectory 'README.md')
         $lineNumber = 0
         foreach ($line in $lines) {
             $lineNumber++
             if ($line -match $ruleRowRegex) {
+                $ref = if ($Matches['ref']) { $Matches['ref'] } else { $Matches['name'] }
                 $ruleTable += [pscustomobject]@{
                     RowName  = $Matches['name'].Trim()
                     RuleName = 'PS' + $Matches['name'].Trim()
-                    Ref      = $Matches['ref'].Trim()
+                    Ref      = $ref.Trim()
                     Severity = $Matches['severity'].Trim()
                     DefState = $Matches['defstate'].Trim()
                     Line     = $lineNumber
@@ -53,7 +54,11 @@ Describe "Validate rule documentation files" {
 
             # Collect every reference usage (table rows and prose) for orphan detection.
             foreach ($match in [regex]::matches($line, $refUsageRegex)) {
-                $usedRefs[$match.Groups['ref'].Value] = 1
+                $ref = $match.Groups['ref'].Value
+                if (!$ref) {
+                    $ref = $match.Groups['label'].Value
+                }
+                $usedRefs[$ref] = 1
             }
         }
     }
