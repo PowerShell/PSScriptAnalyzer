@@ -122,7 +122,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            SuppressionPreference suppressionPreference = SuppressionPreference.Omit)
+            SuppressionPreference suppressionPreference = SuppressionPreference.Omit,
+            bool terminateOnMissingRules = true)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -139,7 +140,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressionPreference);
+                suppressionPreference,
+                terminateOnMissingRules: terminateOnMissingRules);
         }
 
         /// <summary>
@@ -650,7 +652,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity,
             bool includeDefaultRules = false,
             SuppressionPreference suppressionPreference = SuppressionPreference.Omit,
-            string profile = null)
+            string profile = null,
+            bool terminateOnMissingRules = true)
         {
             if (outputWriter == null)
             {
@@ -786,12 +789,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.RulesNotFound);
 
-                this.outputWriter.ThrowTerminatingError(
-                    new ErrorRecord(
-                        new Exception(errorMessage),
-                        errorMessage,
-                        ErrorCategory.ObjectNotFound,
-                        this));
+                var error = new ErrorRecord(
+                    new Exception(errorMessage),
+                    errorMessage,
+                    ErrorCategory.ObjectNotFound,
+                    this);
+                if (terminateOnMissingRules)
+                {
+                    this.outputWriter.ThrowTerminatingError(error);
+                }
+                else
+                {
+                    this.outputWriter.WriteError(error);
+                }
             }
 
 #endregion

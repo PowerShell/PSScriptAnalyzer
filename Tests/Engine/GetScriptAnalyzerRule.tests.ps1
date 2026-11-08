@@ -130,6 +130,18 @@ Describe "Test RuleExtension" {
     }
 
     Context "When used incorrectly" {
+        It "reports missing custom rules without terminating when ErrorAction is SilentlyContinue" {
+            $rules = @(Get-ScriptAnalyzerRule -CustomRulePath $TestDrive -RecurseCustomRulePath -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -ErrorVariable ruleErrors)
+            $rules.Count | Should -Be 0
+            $ruleErrors.Count | Should -Be 1
+            $ruleErrors[0].CategoryInfo.Category | Should -Be 'ObjectNotFound'
+        }
+
+        It "terminates for missing custom rules when ErrorAction is Stop" {
+            { Get-ScriptAnalyzerRule -CustomRulePath $TestDrive -RecurseCustomRulePath -WarningAction SilentlyContinue -ErrorAction Stop } |
+                Should -Throw
+        }
+
         It "file cannot be found" {
             try
             {
