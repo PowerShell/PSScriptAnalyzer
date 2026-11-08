@@ -84,6 +84,14 @@ function foo {
     }
 
     Context "When no settings are given" {
+        It "formats code without changing mixed LF and CRLF line endings" {
+            $crlf = [string][char]13 + [char]10
+            $lf = [string][char]10
+            $scriptDefinition = '$a=1' + $lf + '$b=2' + $crlf + '$c=3'
+            Invoke-Formatter -ScriptDefinition $scriptDefinition |
+                Should -BeExactly ('$a = 1' + $lf + '$b = 2' + $crlf + '$c = 3')
+        }
+
         It "Should format using default settings" {
             $def = @'
 function foo
