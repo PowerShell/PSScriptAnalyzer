@@ -21,6 +21,11 @@ Describe "UseBOMForUnicodeEncodedFile" {
             $violationsOne[0].Message | Should -Match $violationMessageOne
         }
 
+        It "locates the missing BOM at the start of the file" {
+            $violationsOne[0].Extent.StartLineNumber | Should -Be 1
+            $violationsOne[0].Extent.StartColumnNumber | Should -Be 1
+        }
+
         It "has 1 rule violation for BOM Absent - Unknown Encoded file" {
             $violationsTwo.Count | Should -Be 1
         }

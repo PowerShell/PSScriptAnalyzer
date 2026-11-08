@@ -89,7 +89,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
-            ScriptAnalyzer.Instance.Initialize(this, rulePaths, null, null, null, null == rulePaths);
+            ScriptAnalyzer.Instance.Initialize(this, rulePaths,
+                includeDefaultRules: rulePaths == null, terminateOnMissingRules: false);
         }
 
         /// <summary>

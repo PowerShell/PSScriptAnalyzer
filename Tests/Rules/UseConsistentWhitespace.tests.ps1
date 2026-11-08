@@ -485,6 +485,11 @@ foo
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "formats both sides of a one-line hashtable" {
+            Invoke-Formatter -ScriptDefinition '@{foo = ''bar''}' -Settings $settings |
+                Should -BeExactly "@{ foo = 'bar' }"
+        }
+
         It "Should not find a violation for an empty hashtable" {
             $def = '$hashtable = @{}'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null

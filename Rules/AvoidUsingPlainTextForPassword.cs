@@ -9,6 +9,8 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -21,6 +23,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidUsingPlainTextForPassword : IScriptRule
     {
+        private static readonly string[] PasswordIndicators = { "Password", "Passphrase", "Credential" };
+        // Split on separators and on the boundaries in DbCred, DBCred, and CREDSFile.
+        private static readonly Regex IdentifierWordBoundary = new Regex(
+            @"[^\p{L}]+|(?<=\p{Ll})(?=\p{Lu})|(?<=\p{Lu})(?=\p{Lu}\p{Ll})",
+            RegexOptions.CultureInvariant);
+
         /// <summary>
         /// AvoidUsingPlainTextForPassword: Check that parameter "password", "passphrase" and do not use plaintext.
         /// </summary>
@@ -31,23 +39,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all ParamAsts.
             IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
 
-            List<String> passwords = new List<String>() {"Password", "Passphrase", "Cred", "Credential"};
-
-            // Iterates all ParamAsts and check if their names are on the list.
             foreach (ParameterAst paramAst in paramAsts)
             {
                 Type paramType = paramAst.StaticType;
-                bool hasPwd = false;
                 String paramName = paramAst.Name.VariablePath.ToString();
 
-                foreach (String password in passwords)
-                {
-                    if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        hasPwd = true;
-                        break;
-                    }
-                }
+                bool hasPwd = PasswordIndicators.Any(indicator => paramName.IndexOf(indicator, StringComparison.OrdinalIgnoreCase) >= 0)
+                    || (paramName.IndexOf("Cred", StringComparison.OrdinalIgnoreCase) >= 0
+                        && IdentifierWordBoundary.Split(paramName).Any(word =>
+                            word.Equals("Cred", StringComparison.OrdinalIgnoreCase)
+                            || word.Equals("Creds", StringComparison.OrdinalIgnoreCase)));
 
                 if (hasPwd && ((!paramType.IsArray && (paramType == typeof(String) || paramType == typeof(object)))
                               || (paramType.IsArray && (paramType.GetElementType() == typeof(String) || paramType.GetElementType() == typeof(object)))))

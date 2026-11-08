@@ -260,7 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Ranges which represent braced member access. Tokens within these ranges should be
             // excluded from formatting.
             var exclusionRanges = tokenOperations.GetBracedMemberAccessRanges();
-            foreach (var lCurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
+            foreach (var lCurly in tokenOperations.GetTokenNodes(token => token.Kind == TokenKind.LCurly || token.Kind == TokenKind.AtCurly))
             {
                 if (lCurly.Next == null
                     || !(lCurly.Previous == null || IsPreviousTokenOnSameLine(lCurly))
@@ -285,7 +285,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetCorrections(lCurly.Previous.Value, lCurly.Value, lCurly.Next.Value, true, false).ToList());
+                        GetCorrections(lCurly.Previous?.Value, lCurly.Value, lCurly.Next.Value, true, false).ToList());
                 }
             }
 

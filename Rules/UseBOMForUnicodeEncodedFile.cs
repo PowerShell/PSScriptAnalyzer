@@ -44,8 +44,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 
                 if (0 != byteStream.Count(o => o > 0x7F))
                 { 
+                    // A missing BOM is a file-level diagnostic at the start of the file.
+                    var start = new ScriptPosition(fileName, 1, 1, null);
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseBOMForUnicodeEncodedFileError, System.IO.Path.GetFileName(fileName), null),
-                                null, GetName(), DiagnosticSeverity.Warning, fileName);
+                                new ScriptExtent(start, start), GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
         }

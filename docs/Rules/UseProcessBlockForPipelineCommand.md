@@ -13,10 +13,9 @@ title: UseProcessBlockForPipelineCommand
 ## Description
 
 This rule detects functions with pipeline-enabled parameters that handle input directly in the
-function body instead of using a process block. Functions that accept pipeline input through
-parameters should always process that input in a process block. Handling parameter input directly in
-the function body can lead to unexpected behavior because the function body executes once, while the
-process block executes for each object in the pipeline.
+function body instead of using a process block. A process block runs for each object in the pipeline.
+The rule also allows functions to batch pipeline input by reading the `$input` automatic variable
+in the `end` block, which runs once after all input arrives.
 
 ## Example
 

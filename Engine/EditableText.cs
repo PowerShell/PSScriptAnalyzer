@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -14,7 +15,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class EditableText
     {
-        private TextLines lines { get; set; }
+        private static readonly Regex LineEnding = new Regex(@"(\r\n|\n|\r)");
+        private readonly TextLines lines;
+        private readonly TextLines mixedLineEndings;
 
         /// <summary>
         /// Return the number of lines in the text.
@@ -24,7 +27,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// The text that is available for editing.
         /// </summary>
-        public string Text { get { return String.Join(NewLine, lines); } }
+        public string Text
+        {
+            get
+            {
+                if (mixedLineEndings == null)
+                {
+                    return string.Join(NewLine, lines);
+                }
+
+                var text = new StringBuilder();
+                using (var endings = mixedLineEndings.GetEnumerator())
+                {
+                    foreach (string line in lines)
+                    {
+                        text.Append(line);
+                        if (endings.MoveNext())
+                        {
+                            text.Append(endings.Current);
+                        }
+                    }
+                }
+
+                return text.ToString();
+            }
+        }
 
         /// <summary>
         /// The lines in the Text.
@@ -32,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public ReadOnlyCollection<string> Lines => lines.ReadOnly();
 
         /// <summary>
-        /// The new line character in the Text.
+        /// The line ending used when inserting a new line.
         /// </summary>
         public string NewLine { get; private set; }
 
@@ -47,9 +74,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(text));
             }
 
-            string[] lines;
-            NewLine = GetNewLineCharacters(text, out lines);
-            this.lines = new TextLines(lines);
+            // The captured delimiters occupy the odd indexes between lines.
+            string[] parts = LineEnding.Split(text);
+            lines = new TextLines(parts.Where((part, index) => index % 2 == 0));
+            NewLine = parts.Length > 1 ? parts[1] : Environment.NewLine;
+            var endings = parts.Where((part, index) => index % 2 == 1);
+            if (endings.Any(ending => ending != NewLine))
+            {
+                mixedLineEndings = new TextLines(endings);
+            }
         }
 
         /// <summary>
@@ -76,9 +109,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     lines[textEdit.EndLineNumber - 1].Length - textEdit.EndColumnNumber + 1);
 
             // Remove the old lines
-            for (int i = 0; i <= textEdit.EndLineNumber - textEdit.StartLineNumber; i++)
+            int firstLineIndex = textEdit.StartLineNumber - 1;
+            int linesToRemove = textEdit.EndLineNumber - textEdit.StartLineNumber + 1;
+            for (int i = 0; i < linesToRemove; i++)
             {
-                lines.RemoveAt(textEdit.StartLineNumber - 1);
+                lines.RemoveAt(firstLineIndex);
+            }
+
+            // Keep the separator after the last replaced line.
+            if (mixedLineEndings != null)
+            {
+                for (int i = 1; i < linesToRemove; i++)
+                {
+                    mixedLineEndings.RemoveAt(firstLineIndex);
+                }
+
+                if (editLines.Length == 0 && lines.Count > 0)
+                {
+                    // No replacement line remains to carry the separator.
+                    mixedLineEndings.RemoveAt(Math.Min(firstLineIndex, lines.Count - 1));
+                }
             }
 
             // Build and insert the new lines
@@ -102,6 +152,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 lines.Insert(currentLineNumber - 1, finalLine);
+                if (changeIndex < editLines.Length - 1)
+                {
+                    mixedLineEndings?.Insert(currentLineNumber - 1, NewLine);
+                }
                 currentLineNumber++;
             }
 
@@ -155,38 +209,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     CultureInfo.CurrentCulture,
                     Strings.EditableTextRangeIsNotContained));
             }
-        }
-
-        private static string GetNewLineCharacters(string text, out string[] lines)
-        {
-            int numNewLineChars = GetNumNewLineCharacters(text, out lines);
-            if (lines.Length == 1)
-            {
-                return Environment.NewLine;
-            }
-
-            return text.Substring(lines[0].Length, numNewLineChars);
-        }
-
-        private static int GetNumNewLineCharacters(string text, out string[] lines)
-        {
-            lines = text.GetLines().ToArray();
-            if (lines.Length == 1)
-            {
-                return Environment.NewLine.Length;
-            }
-
-            var charsInLines = lines.Sum(line => line.Length);
-            var numCharDiff = text.Length - charsInLines;
-            int remainder = numCharDiff % (lines.Length - 1);
-            if (remainder != 0)
-            {
-                throw new ArgumentException(
-                    String.Format(CultureInfo.CurrentCulture, Strings.EditableTextInvalidLineEnding),
-                    nameof(text));
-            }
-
-            return numCharDiff / (lines.Length - 1);
         }
     }
 }

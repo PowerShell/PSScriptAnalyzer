@@ -10,6 +10,30 @@ BeforeAll {
 
 Describe "EditableText class" {
     Context "When a single edit is given for application" {
+        It "preserves mixed line endings outside a multiline replacement" {
+            $crlf = [string][char]13 + [char]10
+            $lf = [string][char]10
+            $original = 'first' + $crlf + 'second' + $lf + 'third' + $lf + 'fourth'
+            $text = New-Object -TypeName $editableTextType -ArgumentList $original
+            $text.ToString() | Should -BeExactly $original
+
+            $edit = New-Object -TypeName $textEditType -ArgumentList 2,1,3,6,('new' + $lf + 'lines')
+            $result = $text.ApplyEdit($edit)
+            $result.ToString() | Should -BeExactly ('first' + $crlf + 'new' + $crlf + 'lines' + $lf + 'fourth')
+        }
+
+        It "removes the final line and its preceding separator for an edit with no replacement lines" {
+            $crlf = [string][char]13 + [char]10
+            $lf = [string][char]10
+            $text = New-Object -TypeName $editableTextType -ArgumentList ('first' + $crlf + 'second' + $lf + 'third')
+            $emptyLines = [System.Collections.Generic.List[string]]::new()
+            $constructor = ([type]$textEditType).GetConstructor([type[]]@(
+                [int], [int], [int], [int], [System.Collections.Generic.IEnumerable[string]]
+            ))
+            $edit = $constructor.Invoke([object[]]@(3, 1, 3, 6, $emptyLines))
+            $text.ApplyEdit($edit).ToString() | Should -BeExactly ('first' + $crlf + 'second')
+        }
+
         It "Should replace in a single line string in the middle" {
             $def = 'This is just a single line.'
             $edit = New-Object -TypeName $textEditType -ArgumentList 1,14,1,22,"one"
