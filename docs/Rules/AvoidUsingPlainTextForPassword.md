@@ -17,17 +17,9 @@ This rule detects function or script parameters with password-related names that
 passwords and can compromise your system's security. You shouldn't accept passwords as plain text.
 Instead, use the [SecureString][01] type to store passwords securely.
 
-The following parameters are considered password parameters and aren't case sensitive:
-
-- Password
-- Pass
-- Passwords
-- Passphrase
-- Passphrases
-- PasswordParam
-
-If you define a parameter with a name from the provided list, declare it with the **SecureString**
-type.
+The rule looks for **Password**, **Passphrase**, and **Credential** anywhere in a parameter name.
+It also recognizes **Cred** and **Creds** as a distinct word, as in **db_cred** and **DbCreds**.
+These checks are case insensitive.
 
 ## Example
 

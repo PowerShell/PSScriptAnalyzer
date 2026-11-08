@@ -12,6 +12,11 @@ BeforeAll {
 
 Describe "AvoidUsingPlainTextForPassword" {
     Context "When there are violations" {
+        It "recognizes credential abbreviations in parameter names" {
+            $scriptDefinition = 'param([string]$cred, [string]$DbCreds, [string]$DBCred, [string]$CREDFile, [string]$db_cred)'
+            @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $violationName).Count | Should -Be 5
+        }
+
         It "has expected violations count" {
             $violations.Count | Should -Be 7
         }
@@ -34,6 +39,11 @@ Describe "AvoidUsingPlainTextForPassword" {
     }
 
     Context "When there are no violations" {
+        It "ignores names containing an unrelated cred substring" {
+            $scriptDefinition = 'param([string]$creditor, [string]$CREDIT, [string]$Accreditation, [string]$Credibility, [string]$creditCardNumber)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $violationName | Should -BeNullOrEmpty
+        }
+
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
