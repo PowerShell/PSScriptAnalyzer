@@ -320,6 +320,31 @@ gci -Path C:\
             $violations.Count | Should -Be 1
             $violations[0].Extent.Text | Should -Be 'Verb'
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+
+            $target = 'ForEach-Object -Begin { function Verb {} } -Process { $_ } -InputObject (& { Verb })'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "resolves declarations in upstream pipeline callbacks for downstream callbacks" {
+            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | ForEach-Object { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "does not resolve downstream callbacks that execute before an upstream declaration" {
+            $target = '1 | ForEach-Object -Process { function Verb {} } | ForEach-Object -Begin { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
         It "resolves declarations before commands nested in the same pipeline element" -TestCases @(

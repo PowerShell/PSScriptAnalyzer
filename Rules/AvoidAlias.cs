@@ -574,12 +574,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         && commandElement != null
                         && invocationElement != commandElement)
                     {
+                        CommandAst commandCallback = GetCallerScopedCallbackCommand(cmdAst, functionAnalysis);
+                        if (commandCallback != null
+                            && IsPipelineCallbackExecutedBefore(
+                                function,
+                                invocation,
+                                invocationElement,
+                                cmdAst,
+                                commandCallback,
+                                commandElement,
+                                pipeline))
+                        {
+                            continue;
+                        }
+
                         return true;
                     }
                 }
             }
 
             return false;
+        }
+
+        private bool IsPipelineCallbackExecutedBefore(
+            Ast first,
+            CommandAst firstCallbackCommand,
+            Ast firstElement,
+            Ast second,
+            CommandAst secondCallbackCommand,
+            Ast secondElement,
+            PipelineAst pipeline)
+        {
+            int firstPhase = GetPipelineCallbackExecutionPhase(first, firstCallbackCommand);
+            int secondPhase = GetPipelineCallbackExecutionPhase(second, secondCallbackCommand);
+            int firstElementIndex = GetPipelineElementIndex(pipeline, firstElement);
+            int secondElementIndex = GetPipelineElementIndex(pipeline, secondElement);
+            if (firstElementIndex < 0 || secondElementIndex < 0)
+            {
+                return false;
+            }
+
+            return firstPhase < secondPhase
+                || (firstPhase == secondPhase
+                    && firstElementIndex < secondElementIndex);
+        }
+
+        private int GetPipelineCallbackExecutionPhase(Ast ast, CommandAst callbackCommand)
+        {
+            Tuple<CommandAst, int, int> callback = GetForEachObjectExecutionPhases(ast)
+                .FirstOrDefault(candidate => candidate.Item1 == callbackCommand);
+            return callback?.Item2 ?? 1;
         }
 
         private bool IsEagerlyEvaluatedBeforeCallback(
@@ -595,7 +639,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             for (Ast current = command.Parent; current != null; current = current.Parent)
             {
-                if (current is ScriptBlockAst)
+                if (current is ScriptBlockAst scope
+                    && (!IsDirectlyInvokedScriptBlock(scope)
+                        || (scope.Parent is ScriptBlockExpressionAst scriptBlock
+                            && GetScriptBlockCommand(scriptBlock) == callbackCommand)))
                 {
                     return false;
                 }
@@ -620,6 +667,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private int GetPipelineElementIndex(PipelineAst pipeline, Ast element)
+        {
+            for (int i = 0; i < pipeline.PipelineElements.Count; i++)
+            {
+                if (pipeline.PipelineElements[i] == element)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private List<PipelineAst> GetContainingPipelines(Ast ast)
