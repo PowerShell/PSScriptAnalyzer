@@ -172,6 +172,19 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not resolve declarations from enclosing invocations in other pipeline elements" -TestCases @(
+            @{ Target = '& { function global:Verb {} } | Verb' }
+            @{ Target = '1 | ForEach-Object -Begin { . { function Verb {} } } -Process { $_ } | Verb' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "does not treat script-block arguments to call-operator commands as immediately invoked" {
             $target = 'function Save-Callback { param($Action) $script:cb = $Action }; & Save-Callback { Verb }; function Verb {}; & $script:cb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -191,6 +204,24 @@ gci -Path C:\
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
+        }
+
+        It "respects dynamicparam execution before begin blocks" {
+            $target = 'function Invoke-Example { [CmdletBinding()] param() begin { Verb } dynamicparam { function Verb {} } }; Invoke-Example'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
+        It "respects named-block order in isolated execution blocks" {
+            $target = 'Start-Job -ScriptBlock { process { Verb } begin { function Verb {} } }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "respects script-level begin and process execution order" {
@@ -282,6 +313,15 @@ gci -Path C:\
                 Should -Be $target.Replace('(Verb)', '(Get-Verb)')
         }
 
+        It "does not resolve callback declarations before eagerly evaluated arguments" {
+            $target = 'ForEach-Object -Begin { function Verb {} } -Process { $_ } -InputObject (Verb)'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "resolves declarations before commands nested in the same pipeline element" -TestCases @(
             @{ Target = 'Write-Output $(. { function Verb {} }; Verb)' }
             @{ Target = 'Write-Output (. { function Verb {} }) (Verb)' }
@@ -293,6 +333,15 @@ gci -Path C:\
             $violations.Count | Should -Be 0
             $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
             Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
+        }
+
+        It "resolves declarations from nested invocations before later pipeline elements" {
+            $target = 'Write-Output (. { function Verb { process { $_ } }; 1 }) | Verb'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
         }
 
         It "does not apply caller scope to script-block arguments of dot-invoked commands" {
@@ -930,6 +979,7 @@ Verb
             foreach ($target in @(
                 'if ($true) {} else { function Verb {} }; Verb'
                 'if ($true) {} elseif ($true) { function Verb {} }; Verb'
+                'if ($true) {} elseif (. { function Verb {} }) {}; Verb'
             )) {
                 $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 

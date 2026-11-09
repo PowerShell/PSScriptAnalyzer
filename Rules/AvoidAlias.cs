@@ -447,6 +447,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
+            if (IsEagerlyEvaluatedBeforeCallback(function, cmdAst, functionAnalysis))
+            {
+                return true;
+            }
+
             if (TryGetNearestSharedExecutionBlock(function, cmdAst, functionAnalysis, out ScriptBlockAst sharedExecutionBlock))
             {
                 int sharedFunctionPhase = GetNamedBlockExecutionPhase(function, sharedExecutionBlock);
@@ -459,12 +464,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(function, out ScriptBlockAst functionExecutionBlock);
-            GetNamedBlockExecutionPhase(cmdAst, out ScriptBlockAst commandOwnExecutionBlock);
+            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(
+                function,
+                functionAnalysis,
+                out ScriptBlockAst functionExecutionBlock);
+            GetNamedBlockExecutionPhase(cmdAst, functionAnalysis, out ScriptBlockAst commandOwnExecutionBlock);
             bool sharesExecutionBlock = functionExecutionBlock != null
                 && functionExecutionBlock == commandOwnExecutionBlock;
             int commandNamedBlockPhase = GetNamedBlockExecutionPhase(
                 sharesExecutionBlock ? cmdAst : immediateInvocation ?? cmdAst,
+                functionAnalysis,
                 out ScriptBlockAst commandExecutionBlock);
             if (functionExecutionBlock != null
                 && functionExecutionBlock == commandExecutionBlock
@@ -479,7 +488,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (functionScopeInvocation != null && functionExecutionBlock != commandExecutionBlock)
             {
                 int callerNamedBlockPhase = GetNamedBlockExecutionPhase(
-                    functionScopeInvocation, out ScriptBlockAst callerExecutionBlock);
+                    functionScopeInvocation,
+                    functionAnalysis,
+                    out ScriptBlockAst callerExecutionBlock);
                 if (callerExecutionBlock == commandExecutionBlock
                     && callerNamedBlockPhase >= 0
                     && commandNamedBlockPhase >= 0
@@ -532,25 +543,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             CommandAst cmdAst,
             FunctionAnalysisContext functionAnalysis)
         {
-            CommandAst callbackCommand = GetCallerScopedCallbackCommand(function, functionAnalysis);
-            if (callbackCommand == null
-                || cmdAst == callbackCommand
-                || IsDescendantOf(cmdAst, callbackCommand))
+            for (Ast current = function; current != null; current = current.Parent)
             {
-                return false;
-            }
-
-            List<PipelineAst> callbackPipelines = GetContainingPipelines(callbackCommand);
-            foreach (PipelineAst pipeline in GetContainingPipelines(cmdAst))
-            {
-                if (!callbackPipelines.Contains(pipeline))
+                if (!(current is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
                 {
                     continue;
                 }
 
-                Ast callbackElement = GetPipelineElement(pipeline, callbackCommand);
-                Ast commandElement = GetPipelineElement(pipeline, cmdAst);
-                if (callbackElement != null && commandElement != null && callbackElement != commandElement)
+                CommandAst invocation = GetScriptBlockCommand(scriptBlock);
+                bool directlyInvoked = invocation != null
+                    && (invocation.InvocationOperator == TokenKind.Ampersand
+                        || invocation.InvocationOperator == TokenKind.Dot)
+                    && invocation.CommandElements.Count > 0
+                    && UnwrapParenthesizedExpression(invocation.CommandElements[0]) == scriptBlock;
+                if (invocation == null
+                    || (!directlyInvoked
+                        && !IsCallerScopedScriptBlock(scope, functionAnalysis)
+                        && !IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis)))
+                {
+                    continue;
+                }
+
+                PipelineAst pipeline = GetContainingPipelines(invocation).FirstOrDefault();
+                if (pipeline != null)
+                {
+                    Ast invocationElement = GetPipelineElement(pipeline, invocation);
+                    Ast commandElement = GetPipelineElement(pipeline, cmdAst);
+                    if (invocationElement != null
+                        && commandElement != null
+                        && invocationElement != commandElement)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsEagerlyEvaluatedBeforeCallback(
+            FunctionDefinitionAst function,
+            CommandAst command,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            CommandAst callbackCommand = GetCallerScopedCallbackCommand(function, functionAnalysis);
+            if (callbackCommand == null)
+            {
+                return false;
+            }
+
+            for (Ast current = command.Parent; current != null; current = current.Parent)
+            {
+                if (current is ScriptBlockAst)
+                {
+                    return false;
+                }
+
+                if (current == callbackCommand)
                 {
                     return true;
                 }
@@ -707,7 +757,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private int GetNamedBlockExecutionPhase(Ast ast, out ScriptBlockAst containingExecutionBlock)
+        private int GetNamedBlockExecutionPhase(
+            Ast ast,
+            FunctionAnalysisContext functionAnalysis,
+            out ScriptBlockAst containingExecutionBlock)
         {
             NamedBlockAst namedBlock = null;
             containingExecutionBlock = null;
@@ -725,7 +778,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (current is ScriptBlockAst scriptBlock
-                    && (scriptBlock.Parent == null || IsDirectlyInvokedScriptBlock(scriptBlock)))
+                    && (scriptBlock.Parent == null
+                        || IsDirectlyInvokedScriptBlock(scriptBlock)
+                        || IsIsolatedRunspaceScriptBlock(scriptBlock, functionAnalysis)))
                 {
                     containingExecutionBlock = scriptBlock;
                     break;
@@ -739,17 +794,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             switch (namedBlock.BlockKind)
             {
-                case TokenKind.Begin:
+                case TokenKind.Dynamicparam:
                     return 0;
-                case TokenKind.Process:
+                case TokenKind.Begin:
                     return 1;
-                case TokenKind.End:
+                case TokenKind.Process:
                     return 2;
+                case TokenKind.End:
+                    return 3;
                 default:
                     return String.Equals(
                         namedBlock.BlockKind.ToString(),
                         "Clean",
-                        StringComparison.OrdinalIgnoreCase) ? 3 : -1;
+                        StringComparison.OrdinalIgnoreCase) ? 4 : -1;
             }
         }
 
@@ -901,7 +958,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 || scope.Parent is FunctionDefinitionAst
                 || IsDirectlyInvokedScriptBlock(scope)
                 || IsCallerScopedScriptBlock(scope, functionAnalysis)
-                || IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis);
+                || IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis)
+                || IsIsolatedRunspaceScriptBlock(scope, functionAnalysis);
         }
 
         private int GetNamedBlockExecutionPhase(Ast ast, ScriptBlockAst executionBlock)
@@ -921,17 +979,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             switch (namedBlock.BlockKind)
             {
-                case TokenKind.Begin:
+                case TokenKind.Dynamicparam:
                     return 0;
-                case TokenKind.Process:
+                case TokenKind.Begin:
                     return 1;
-                case TokenKind.End:
+                case TokenKind.Process:
                     return 2;
+                case TokenKind.End:
+                    return 3;
                 default:
                     return String.Equals(
                         namedBlock.BlockKind.ToString(),
                         "Clean",
-                        StringComparison.OrdinalIgnoreCase) ? 3 : -1;
+                        StringComparison.OrdinalIgnoreCase) ? 4 : -1;
             }
         }
 
@@ -2149,9 +2209,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 for (int i = 0; i < ifStatement.Clauses.Count; i++)
                 {
                     Tuple<PipelineBaseAst, StatementBlockAst> clause = ifStatement.Clauses[i];
-                    if (IsDescendantOf(function, clause.Item2))
+                    bool inCondition = IsDescendantOf(function, clause.Item1);
+                    bool inBody = IsDescendantOf(function, clause.Item2);
+                    if (inCondition || inBody)
                     {
-                        if (IsConstantFalseCondition(clause.Item1))
+                        if (inBody && IsConstantFalseCondition(clause.Item1))
                         {
                             return true;
                         }
