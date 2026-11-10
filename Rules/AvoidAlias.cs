@@ -615,8 +615,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return firstPhase < secondPhase
-                || (firstPhase == secondPhase
-                    && firstElementIndex < secondElementIndex);
+                || (firstElementIndex < secondElementIndex
+                    && (firstPhase == secondPhase
+                        || (firstPhase > secondPhase && secondPhase == 1)));
         }
 
         private int GetPipelineCallbackExecutionPhase(Ast ast, CommandAst callbackCommand)
@@ -958,6 +959,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+                List<ScriptBlockExpressionAst> positionalScriptBlocks = commandAst.CommandElements
+                    .OfType<ScriptBlockExpressionAst>()
+                    .ToList();
+                bool inferPositionalPhases = positionalScriptBlocks.Count > 1
+                    && !HasExplicitForEachObjectBeginOrEnd(commandAst);
+                if (inferPositionalPhases && positionalScriptBlocks[0] == scriptBlock)
+                {
+                    parameterName = "Begin";
+                }
+                else if (inferPositionalPhases
+                    && positionalScriptBlocks.Count > 2
+                    && positionalScriptBlocks[positionalScriptBlocks.Count - 1] == scriptBlock)
+                {
+                    parameterName = "End";
+                }
+
                 if (IsParameter(parameterName, "Begin"))
                 {
                     callbacks.Add(Tuple.Create(commandAst, 0, depth));
@@ -977,6 +994,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return callbacks;
+        }
+
+        private bool HasExplicitForEachObjectBeginOrEnd(CommandAst commandAst)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            return parameters != null
+                && commandAst.CommandElements
+                    .OfType<CommandParameterAst>()
+                    .Any(parameter =>
+                    {
+                        string parameterName = ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                        return IsParameter(parameterName, "Begin") || IsParameter(parameterName, "End");
+                    });
         }
 
         private bool TryGetNearestSharedExecutionBlock(

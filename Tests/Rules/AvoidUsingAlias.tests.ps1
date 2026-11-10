@@ -329,8 +329,21 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
-        It "resolves declarations in upstream pipeline callbacks for downstream callbacks" {
-            $target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | ForEach-Object { Verb }'
+        It "resolves declarations in upstream pipeline callbacks for downstream callbacks" -TestCases @(
+            @{ Target = '1 | ForEach-Object -Begin { function Verb {} } -Process { $_ } | ForEach-Object { Verb }' }
+            @{ Target = '1 | ForEach-Object -Process {} -End { function Verb {}; 1 } | ForEach-Object { Verb }' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
+        }
+
+        It "resolves declarations in positional callbacks before downstream begin" {
+            $target = '1 | ForEach-Object { function Verb {} } { $_ } | ForEach-Object -Begin { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 0
