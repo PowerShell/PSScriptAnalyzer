@@ -959,18 +959,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
-                List<ScriptBlockExpressionAst> positionalScriptBlocks = commandAst.CommandElements
-                    .OfType<ScriptBlockExpressionAst>()
-                    .ToList();
-                bool inferPositionalPhases = positionalScriptBlocks.Count > 1
+                List<ScriptBlockExpressionAst> callbackScriptBlocks = GetForEachObjectCallbackScriptBlocks(commandAst);
+                bool inferPositionalPhases = callbackScriptBlocks.Count > 1
                     && !HasExplicitForEachObjectBeginOrEnd(commandAst);
-                if (inferPositionalPhases && positionalScriptBlocks[0] == scriptBlock)
+                if (inferPositionalPhases && callbackScriptBlocks[0] == scriptBlock)
                 {
                     parameterName = "Begin";
                 }
                 else if (inferPositionalPhases
-                    && positionalScriptBlocks.Count > 2
-                    && positionalScriptBlocks[positionalScriptBlocks.Count - 1] == scriptBlock)
+                    && callbackScriptBlocks.Count > 2
+                    && callbackScriptBlocks[callbackScriptBlocks.Count - 1] == scriptBlock)
                 {
                     parameterName = "End";
                 }
@@ -994,6 +992,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return callbacks;
+        }
+
+        private List<ScriptBlockExpressionAst> GetForEachObjectCallbackScriptBlocks(CommandAst commandAst)
+        {
+            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, true)
+                .OfType<ScriptBlockExpressionAst>()
+                .Where(scriptBlock => IsForEachObjectCallbackScriptBlock(commandAst, scriptBlock))
+                .OrderBy(scriptBlock => scriptBlock.Extent.StartOffset)
+                .ToList();
+        }
+
+        private bool IsForEachObjectCallbackScriptBlock(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock)
+        {
+            if (IsNestedInScriptBlock(scriptBlock, commandAst))
+            {
+                return false;
+            }
+
+            string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+            return IsParameter(parameterName, "Process")
+                || IsParameter(parameterName, "RemainingScripts");
+        }
+
+        private bool IsNestedInScriptBlock(Ast ast, Ast ancestor)
+        {
+            for (Ast current = ast.Parent; current != null && current != ancestor; current = current.Parent)
+            {
+                if (current is ScriptBlockAst)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool HasExplicitForEachObjectBeginOrEnd(CommandAst commandAst)
