@@ -22,6 +22,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidAlias : IScriptRule
     {
+        private sealed class FunctionAnalysisContext
+        {
+            public Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>> FunctionNameIndex { get; set; }
+
+            public Dictionary<CommandAst, bool?> ScriptDefinedFunctionCache { get; } = new Dictionary<CommandAst, bool?>();
+
+            public Dictionary<ScriptBlockAst, bool?> CallerScopedScriptBlockCache { get; } = new Dictionary<ScriptBlockAst, bool?>();
+
+            public Dictionary<ScriptBlockAst, bool?> IsolatedRunspaceScriptBlockCache { get; } = new Dictionary<ScriptBlockAst, bool?>();
+
+            public void ClearCaches()
+            {
+                ScriptDefinedFunctionCache.Clear();
+                CallerScopedScriptBlockCache.Clear();
+                IsolatedRunspaceScriptBlockCache.Clear();
+            }
+        }
+
         private readonly string allowListArgName = "allowlist";
         // keep legacy argument name for next version to allow customers to transition but remove later
         private readonly string allowListLegacyArgName = "whitelist";
@@ -97,6 +115,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
+            FunctionAnalysisContext functionAnalysis = GetFunctionNameIndex(ast);
 
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in foundAsts)
@@ -119,7 +138,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
-                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst);
+                bool isDscResourceDeclaration = IsDscResourceDeclaration(cmdAst, functionAnalysis);
                 if (isDscResourceDeclaration && String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     continue;
@@ -140,7 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                if (Helper.Instance.GetCommandInfo(commandName) != null || IsScriptDefinedFunction(cmdAst, functionAnalysis)) {
                     continue;
                 }
 
@@ -192,7 +211,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool IsDscResourceDeclaration(CommandAst cmdAst)
+        private bool IsDscResourceDeclaration(
+            CommandAst cmdAst,
+            FunctionAnalysisContext functionAnalysis)
         {
             bool hasConfigurationAncestor = false;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
@@ -214,7 +235,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null)
+            if (!hasConfigurationAncestor || GetDscResourceBody(cmdAst) == null
+                || !IsDscResourceCommand(cmdAst, functionAnalysis))
             {
                 return false;
             }
@@ -238,7 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (parent is CommandExpressionAst commandExpression
                     && (!(commandExpression.Expression is ScriptBlockExpressionAst body)
-                        || !IsFollowingLineDscResourceBody(body)))
+                        || !IsFollowingLineDscResourceBody(body, functionAnalysis)))
                 {
                     return false;
                 }
@@ -249,9 +271,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (scriptBlock.Parent is CommandAst enclosingCommand)
                     {
                         if (GetDscResourceBody(enclosingCommand) != scriptBlock
-                            || !String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(enclosingCommand.GetCommandName()))
-                            || (!String.Equals(enclosingCommand.GetCommandName(), "Node", StringComparison.OrdinalIgnoreCase)
-                                && Helper.Instance.GetCommandInfo(enclosingCommand.GetCommandName()) != null))
+                            || !IsDscResourceCommand(enclosingCommand, functionAnalysis))
                         {
                             return false;
                         }
@@ -268,14 +288,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
-        private bool IsFollowingLineDscResourceBody(ScriptBlockExpressionAst body)
+        private bool IsFollowingLineDscResourceBody(
+            ScriptBlockExpressionAst body,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            return GetFollowingLineDscResourceDeclaration(body, functionAnalysis) != null;
+        }
+
+        private CommandAst GetFollowingLineDscResourceDeclaration(
+            ScriptBlockExpressionAst body,
+            FunctionAnalysisContext functionAnalysis)
         {
             if (!(body.Parent is CommandExpressionAst bodyExpression)
                 || !(bodyExpression.Parent is PipelineAst bodyPipeline)
                 || bodyPipeline.PipelineElements.Count != 1
                 || bodyPipeline.PipelineElements[0] != bodyExpression)
             {
-                return false;
+                return null;
             }
 
             Ast statement = bodyPipeline;
@@ -294,17 +323,2098 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || declarationPipeline.PipelineElements.Count != 1
                     || !(declarationPipeline.PipelineElements[0] is CommandAst declaration))
                 {
+                    return null;
+                }
+
+                return GetDscResourceBody(declaration) == body
+                    && IsDscResourceCommand(declaration, functionAnalysis)
+                    ? declaration
+                    : null;
+            }
+
+            return null;
+        }
+
+        private bool IsDscResourceCommand(
+            CommandAst cmdAst,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            string commandName = cmdAst.GetCommandName();
+            return !IsScriptDefinedFunction(cmdAst, functionAnalysis)
+                && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(commandName))
+                && (String.Equals(commandName, "Node", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(commandName, "Script", StringComparison.OrdinalIgnoreCase)
+                    || Helper.Instance.GetCommandInfo(commandName) == null);
+        }
+
+        private bool IsScriptDefinedFunction(
+            CommandAst cmdAst,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            string originalCommandName = cmdAst.GetCommandName();
+            if (originalCommandName != null && originalCommandName.IndexOf('\\') >= 0)
+            {
+                return false;
+            }
+
+            string commandName = GetCallbackCommandName(cmdAst);
+            if (commandName == null)
+            {
+                return false;
+            }
+
+            if (functionAnalysis.ScriptDefinedFunctionCache.TryGetValue(cmdAst, out bool? cachedResult))
+            {
+                return cachedResult.GetValueOrDefault();
+            }
+
+            functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = null;
+            ScriptBlockAst currentScope = null;
+            for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope)
+                {
+                    if (currentScope == null && !IsCallerScopedScriptBlock(scope, functionAnalysis))
+                    {
+                        currentScope = scope;
+                    }
+
+                    if (functionAnalysis.FunctionNameIndex.TryGetValue(
+                        scope,
+                        out Dictionary<string, List<FunctionDefinitionAst>> functionNames)
+                        && functionNames.TryGetValue(commandName, out List<FunctionDefinitionAst> functionDefinitions)
+                        && functionDefinitions.Any(function =>
+                            !IsDescendantOf(function, cmdAst)
+                            && !IsFunctionDeclaredInSamePipelineCallback(function, cmdAst, functionAnalysis)
+                            && (!function.Name.StartsWith("private:", StringComparison.OrdinalIgnoreCase)
+                                || currentScope == scope)
+                            && !IsFunctionDeclaredAfterCommand(function, cmdAst, currentScope, functionAnalysis)))
+                    {
+                        functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = true;
+                        return true;
+                    }
+
+                    if (IsIsolatedRunspaceScriptBlock(scope, functionAnalysis))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            functionAnalysis.ScriptDefinedFunctionCache[cmdAst] = false;
+            return false;
+        }
+
+        private bool IsFunctionDeclaredAfterCommand(
+            FunctionDefinitionAst function,
+            CommandAst cmdAst,
+            ScriptBlockAst commandScope,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (commandScope == null)
+            {
+                return false;
+            }
+
+            ScriptBlockAst functionScope = GetFunctionScope(function, functionAnalysis);
+            if (functionScope == null)
+            {
+                return false;
+            }
+
+            ScriptBlockAst initializationScope = GetJobInitializationScope(function, functionAnalysis, functionScope);
+            if (initializationScope != null)
+            {
+                if (commandScope == functionScope || IsDescendantOf(commandScope, functionScope))
+                {
                     return false;
                 }
 
-                string declarationCommandName = declaration.GetCommandName();
-                return GetDscResourceBody(declaration) == body
-                    && String.IsNullOrEmpty(Helper.Instance.GetCmdletNameFromAlias(declarationCommandName))
-                    && (String.Equals(declarationCommandName, "Node", StringComparison.OrdinalIgnoreCase)
-                        || Helper.Instance.GetCommandInfo(declarationCommandName) == null);
+                if (commandScope == initializationScope)
+                {
+                    functionScope = initializationScope;
+                }
+                else if (IsDescendantOf(commandScope, initializationScope))
+                {
+                    functionScope = initializationScope;
+                }
+            }
+
+            CommandAst immediateInvocation = null;
+            if (commandScope != functionScope
+                && !IsImmediatelyInvokedChildScope(commandScope, functionScope, functionAnalysis, out immediateInvocation))
+            {
+                return false;
+            }
+
+            if (IsEagerlyEvaluatedBeforeCallback(function, cmdAst, functionAnalysis))
+            {
+                return true;
+            }
+
+            if (TryGetNearestSharedExecutionBlock(function, cmdAst, functionAnalysis, out ScriptBlockAst sharedExecutionBlock))
+            {
+                int sharedFunctionPhase = GetNamedBlockExecutionPhase(function, sharedExecutionBlock);
+                int sharedCommandPhase = GetNamedBlockExecutionPhase(cmdAst, sharedExecutionBlock);
+                if (sharedFunctionPhase >= 0
+                    && sharedCommandPhase >= 0
+                    && sharedFunctionPhase != sharedCommandPhase)
+                {
+                    return sharedFunctionPhase > sharedCommandPhase;
+                }
+            }
+
+            int functionNamedBlockPhase = GetNamedBlockExecutionPhase(
+                function,
+                functionAnalysis,
+                out ScriptBlockAst functionExecutionBlock);
+            GetNamedBlockExecutionPhase(cmdAst, functionAnalysis, out ScriptBlockAst commandOwnExecutionBlock);
+            bool sharesExecutionBlock = functionExecutionBlock != null
+                && functionExecutionBlock == commandOwnExecutionBlock;
+            int commandNamedBlockPhase = GetNamedBlockExecutionPhase(
+                sharesExecutionBlock ? cmdAst : immediateInvocation ?? cmdAst,
+                functionAnalysis,
+                out ScriptBlockAst commandExecutionBlock);
+            if (functionExecutionBlock != null
+                && functionExecutionBlock == commandExecutionBlock
+                && functionNamedBlockPhase >= 0
+                && commandNamedBlockPhase >= 0
+                && functionNamedBlockPhase != commandNamedBlockPhase)
+            {
+                return functionNamedBlockPhase > commandNamedBlockPhase;
+            }
+
+            CommandAst functionScopeInvocation = GetFunctionScopeInvocation(function, functionScope);
+            if (functionScopeInvocation != null && functionExecutionBlock != commandExecutionBlock)
+            {
+                int callerNamedBlockPhase = GetNamedBlockExecutionPhase(
+                    functionScopeInvocation,
+                    functionAnalysis,
+                    out ScriptBlockAst callerExecutionBlock);
+                if (callerExecutionBlock == commandExecutionBlock
+                    && callerNamedBlockPhase >= 0
+                    && commandNamedBlockPhase >= 0
+                    && callerNamedBlockPhase != commandNamedBlockPhase)
+                {
+                    return callerNamedBlockPhase > commandNamedBlockPhase;
+                }
+            }
+
+            if (TryGetNearestSharedForEachObjectExecutionPhase(
+                function,
+                cmdAst,
+                out int functionPhase,
+                out int commandPhase)
+                && functionPhase != commandPhase)
+            {
+                return functionPhase > commandPhase;
+            }
+
+            if (TryGetForStatementExecutionPhase(
+                function,
+                cmdAst,
+                out functionPhase,
+                out commandPhase)
+                && functionPhase != commandPhase)
+            {
+                return functionPhase > commandPhase;
+            }
+
+            int commandExecutionOffset = immediateInvocation == null || sharesExecutionBlock
+                ? cmdAst.Extent.StartOffset
+                : immediateInvocation.Extent.StartOffset;
+            bool sharesInvocationScope = immediateInvocation != null
+                && immediateInvocation == functionScopeInvocation;
+            if (sharesInvocationScope)
+            {
+                commandExecutionOffset = cmdAst.Extent.StartOffset;
+            }
+
+            int functionExecutionOffset = functionScopeInvocation != null
+                && functionExecutionBlock != commandExecutionBlock
+                && !sharesInvocationScope
+                ? functionScopeInvocation.Extent.StartOffset
+                : function.Extent.StartOffset;
+            return functionExecutionOffset > commandExecutionOffset;
+        }
+
+        private bool IsFunctionDeclaredInSamePipelineCallback(
+            FunctionDefinitionAst function,
+            CommandAst cmdAst,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            for (Ast current = function; current != null; current = current.Parent)
+            {
+                if (!(current is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    continue;
+                }
+
+                CommandAst invocation = GetScriptBlockCommand(scriptBlock);
+                bool directlyInvoked = invocation != null
+                    && (invocation.InvocationOperator == TokenKind.Ampersand
+                        || invocation.InvocationOperator == TokenKind.Dot)
+                    && invocation.CommandElements.Count > 0
+                    && UnwrapParenthesizedExpression(invocation.CommandElements[0]) == scriptBlock;
+                if (invocation == null
+                    || (!directlyInvoked
+                        && !IsCallerScopedScriptBlock(scope, functionAnalysis)
+                        && !IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis)))
+                {
+                    continue;
+                }
+
+                PipelineAst pipeline = GetContainingPipelines(invocation).FirstOrDefault();
+                if (pipeline != null)
+                {
+                    Ast invocationElement = GetPipelineElement(pipeline, invocation);
+                    Ast commandElement = GetPipelineElement(pipeline, cmdAst);
+                    if (invocationElement != null
+                        && commandElement != null
+                        && invocationElement != commandElement)
+                    {
+                        CommandAst commandCallback = GetCallerScopedCallbackCommand(cmdAst, functionAnalysis);
+                        if (commandCallback != null
+                            && IsPipelineCallbackExecutedBefore(
+                                function,
+                                invocation,
+                                invocationElement,
+                                cmdAst,
+                                commandCallback,
+                                commandElement,
+                                pipeline))
+                        {
+                            continue;
+                        }
+
+                        return true;
+                    }
+                }
             }
 
             return false;
+        }
+
+        private bool IsPipelineCallbackExecutedBefore(
+            Ast first,
+            CommandAst firstCallbackCommand,
+            Ast firstElement,
+            Ast second,
+            CommandAst secondCallbackCommand,
+            Ast secondElement,
+            PipelineAst pipeline)
+        {
+            int firstPhase = GetPipelineCallbackExecutionPhase(first, firstCallbackCommand);
+            int secondPhase = GetPipelineCallbackExecutionPhase(second, secondCallbackCommand);
+            int firstElementIndex = GetPipelineElementIndex(pipeline, firstElement);
+            int secondElementIndex = GetPipelineElementIndex(pipeline, secondElement);
+            if (firstElementIndex < 0 || secondElementIndex < 0)
+            {
+                return false;
+            }
+
+            return firstPhase < secondPhase
+                || (firstElementIndex < secondElementIndex
+                    && (firstPhase == secondPhase
+                        || (firstPhase > secondPhase && secondPhase == 1)));
+        }
+
+        private int GetPipelineCallbackExecutionPhase(Ast ast, CommandAst callbackCommand)
+        {
+            Tuple<CommandAst, int, int> callback = GetForEachObjectExecutionPhases(ast)
+                .FirstOrDefault(candidate => candidate.Item1 == callbackCommand);
+            return callback?.Item2 ?? 1;
+        }
+
+        private bool IsEagerlyEvaluatedBeforeCallback(
+            FunctionDefinitionAst function,
+            CommandAst command,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            CommandAst callbackCommand = GetCallerScopedCallbackCommand(function, functionAnalysis);
+            if (callbackCommand == null)
+            {
+                return false;
+            }
+
+            for (Ast current = command.Parent; current != null; current = current.Parent)
+            {
+                if (current is ScriptBlockAst scope
+                    && (!IsDirectlyInvokedScriptBlock(scope)
+                        || (scope.Parent is ScriptBlockExpressionAst scriptBlock
+                            && GetScriptBlockCommand(scriptBlock) == callbackCommand)))
+                {
+                    return false;
+                }
+
+                if (current == callbackCommand)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private Ast GetPipelineElement(PipelineAst pipeline, Ast ast)
+        {
+            for (Ast current = ast; current != null && current != pipeline; current = current.Parent)
+            {
+                if (current.Parent == pipeline)
+                {
+                    return current;
+                }
+            }
+
+            return null;
+        }
+
+        private int GetPipelineElementIndex(PipelineAst pipeline, Ast element)
+        {
+            for (int i = 0; i < pipeline.PipelineElements.Count; i++)
+            {
+                if (pipeline.PipelineElements[i] == element)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private List<PipelineAst> GetContainingPipelines(Ast ast)
+        {
+            var pipelines = new List<PipelineAst>();
+            for (Ast parent = ast; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst && parent != ast)
+                {
+                    break;
+                }
+
+                if (parent is PipelineAst pipeline)
+                {
+                    pipelines.Add(pipeline);
+                }
+            }
+
+            return pipelines;
+        }
+
+        private bool TryGetForStatementExecutionPhase(
+            Ast function,
+            Ast command,
+            out int functionPhase,
+            out int commandPhase)
+        {
+            functionPhase = -1;
+            commandPhase = -1;
+            for (Ast parent = function; parent != null; parent = parent.Parent)
+            {
+                if (!(parent is ForStatementAst forStatement)
+                    || forStatement.Iterator == null)
+                {
+                    continue;
+                }
+
+                if (IsDescendantOf(function, forStatement.Body)
+                    && IsDescendantOf(command, forStatement.Iterator))
+                {
+                    functionPhase = 0;
+                    commandPhase = 1;
+                    return true;
+                }
+
+                if (IsDescendantOf(function, forStatement.Iterator)
+                    && IsDescendantOf(command, forStatement.Body))
+                {
+                    functionPhase = 1;
+                    commandPhase = 0;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private CommandAst GetFunctionScopeInvocation(FunctionDefinitionAst function, ScriptBlockAst functionScope)
+        {
+            CommandAst invocation = null;
+            for (Ast parent = function.Parent; parent != null && parent != functionScope; parent = parent.Parent)
+            {
+                if (!(parent is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    continue;
+                }
+
+                CommandAst command = GetScriptBlockCommand(scriptBlock);
+                if (command != null
+                    && (command.InvocationOperator == TokenKind.Ampersand
+                        || command.InvocationOperator == TokenKind.Dot)
+                    && command.CommandElements.Count > 0
+                    && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock)
+                {
+                    invocation = command;
+                }
+            }
+
+            return invocation;
+        }
+
+        private bool IsImmediatelyInvokedChildScope(
+            ScriptBlockAst commandScope,
+            ScriptBlockAst functionScope,
+            FunctionAnalysisContext functionAnalysis,
+            out CommandAst invocation)
+        {
+            invocation = null;
+            ScriptBlockAst currentScope = commandScope;
+            while (currentScope != functionScope)
+            {
+                if (!(currentScope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    return false;
+                }
+
+                CommandAst command = GetScriptBlockCommand(scriptBlock);
+                bool directlyInvoked = command != null
+                    && (command.InvocationOperator == TokenKind.Ampersand
+                        || command.InvocationOperator == TokenKind.Dot)
+                    && command.CommandElements.Count > 0
+                    && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
+                if (!directlyInvoked
+                    && !IsCallerScopedScriptBlock(currentScope, functionAnalysis)
+                    && !IsSynchronousInvokeCommandScriptBlock(currentScope, functionAnalysis))
+                {
+                    return false;
+                }
+
+                ScriptBlockAst parentScope = null;
+                for (Ast parent = currentScope.Parent; parent != null; parent = parent.Parent)
+                {
+                    if (parent is ScriptBlockAst scope)
+                    {
+                        parentScope = scope;
+                        break;
+                    }
+                }
+
+                if (parentScope == null)
+                {
+                    return false;
+                }
+
+                if (parentScope == functionScope)
+                {
+                    invocation = command;
+                    return true;
+                }
+
+                currentScope = parentScope;
+            }
+
+            return false;
+        }
+
+        private int GetNamedBlockExecutionPhase(
+            Ast ast,
+            FunctionAnalysisContext functionAnalysis,
+            out ScriptBlockAst containingExecutionBlock)
+        {
+            NamedBlockAst namedBlock = null;
+            containingExecutionBlock = null;
+            for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (current is NamedBlockAst block)
+                {
+                    namedBlock = block;
+                }
+
+                if (current != ast && current is FunctionDefinitionAst function)
+                {
+                    containingExecutionBlock = function.Body;
+                    break;
+                }
+
+                if (current is ScriptBlockAst scriptBlock
+                    && (scriptBlock.Parent == null
+                        || IsDirectlyInvokedScriptBlock(scriptBlock)
+                        || IsIsolatedRunspaceScriptBlock(scriptBlock, functionAnalysis)))
+                {
+                    containingExecutionBlock = scriptBlock;
+                    break;
+                }
+            }
+
+            if (namedBlock == null || containingExecutionBlock == null)
+            {
+                return -1;
+            }
+
+            switch (namedBlock.BlockKind)
+            {
+                case TokenKind.Dynamicparam:
+                    return 0;
+                case TokenKind.Begin:
+                    return 1;
+                case TokenKind.Process:
+                    return 2;
+                case TokenKind.End:
+                    return 3;
+                default:
+                    return String.Equals(
+                        namedBlock.BlockKind.ToString(),
+                        "Clean",
+                        StringComparison.OrdinalIgnoreCase) ? 4 : -1;
+            }
+        }
+
+        private bool IsDirectlyInvokedScriptBlock(ScriptBlockAst scope)
+        {
+            if (IsInBackgroundPipeline(scope)
+                || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst command = GetScriptBlockCommand(scriptBlock);
+            return command != null
+                && (command.InvocationOperator == TokenKind.Ampersand
+                    || command.InvocationOperator == TokenKind.Dot)
+                && command.CommandElements.Count > 0
+                && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
+        }
+
+        private bool IsInBackgroundPipeline(Ast ast)
+        {
+#if CORECLR
+            for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (current != ast && current is ScriptBlockAst)
+                {
+                    return false;
+                }
+
+                if (current is PipelineAst pipeline && pipeline.Background)
+                {
+                    return true;
+                }
+            }
+#endif
+            return false;
+        }
+
+        private bool TryGetNearestSharedForEachObjectExecutionPhase(
+            Ast first,
+            Ast second,
+            out int firstPhase,
+            out int secondPhase)
+        {
+            firstPhase = -1;
+            secondPhase = -1;
+            var firstCallbacks = new Dictionary<CommandAst, Tuple<int, int>>();
+            foreach (Tuple<CommandAst, int, int> callback in GetForEachObjectExecutionPhases(first))
+            {
+                firstCallbacks[callback.Item1] = Tuple.Create(callback.Item2, callback.Item3);
+            }
+
+            List<Tuple<CommandAst, int, int>> secondCallbacks = GetForEachObjectExecutionPhases(second);
+            int nearestDistance = Int32.MaxValue;
+            foreach (Tuple<CommandAst, int, int> secondCallback in secondCallbacks)
+            {
+                if (firstCallbacks.TryGetValue(secondCallback.Item1, out Tuple<int, int> firstCallback))
+                {
+                    int distance = firstCallback.Item2 + secondCallback.Item3;
+                    if (distance < nearestDistance)
+                    {
+                        firstPhase = firstCallback.Item1;
+                        secondPhase = secondCallback.Item2;
+                        nearestDistance = distance;
+                    }
+                }
+            }
+
+            return nearestDistance != Int32.MaxValue;
+        }
+
+        private List<Tuple<CommandAst, int, int>> GetForEachObjectExecutionPhases(Ast ast)
+        {
+            var callbacks = new List<Tuple<CommandAst, int, int>>();
+            int depth = 0;
+            for (Ast current = ast; current != null; current = current.Parent, depth++)
+            {
+                if (!(current is ScriptBlockAst scope)
+                    || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+                {
+                    continue;
+                }
+
+                CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+                if (commandAst == null
+                    || !IsForEachObjectCommand(GetCallbackCommandName(commandAst)))
+                {
+                    continue;
+                }
+
+                string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+                List<ScriptBlockExpressionAst> callbackScriptBlocks = GetForEachObjectCallbackScriptBlocks(commandAst);
+                bool inferPositionalPhases = callbackScriptBlocks.Count > 1
+                    && !HasExplicitForEachObjectBeginOrEnd(commandAst);
+                if (inferPositionalPhases && callbackScriptBlocks[0] == scriptBlock)
+                {
+                    parameterName = "Begin";
+                }
+                else if (inferPositionalPhases
+                    && callbackScriptBlocks.Count > 2
+                    && callbackScriptBlocks[callbackScriptBlocks.Count - 1] == scriptBlock)
+                {
+                    parameterName = "End";
+                }
+
+                if (IsParameter(parameterName, "Begin"))
+                {
+                    callbacks.Add(Tuple.Create(commandAst, 0, depth));
+                }
+                else if (IsParameter(parameterName, "Process"))
+                {
+                    callbacks.Add(Tuple.Create(commandAst, 1, depth));
+                }
+                else if (IsParameter(parameterName, "End"))
+                {
+                    callbacks.Add(Tuple.Create(commandAst, 3, depth));
+                }
+                else if (IsParameter(parameterName, "RemainingScripts"))
+                {
+                    callbacks.Add(Tuple.Create(commandAst, 2, depth));
+                }
+            }
+
+            return callbacks;
+        }
+
+        private List<ScriptBlockExpressionAst> GetForEachObjectCallbackScriptBlocks(CommandAst commandAst)
+        {
+            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, true)
+                .OfType<ScriptBlockExpressionAst>()
+                .Where(scriptBlock => IsForEachObjectCallbackScriptBlock(commandAst, scriptBlock))
+                .OrderBy(scriptBlock => scriptBlock.Extent.StartOffset)
+                .ToList();
+        }
+
+        private bool IsForEachObjectCallbackScriptBlock(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock)
+        {
+            if (IsNestedInScriptBlock(scriptBlock, commandAst))
+            {
+                return false;
+            }
+
+            string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+            return IsParameter(parameterName, "Process")
+                || IsParameter(parameterName, "RemainingScripts");
+        }
+
+        private bool IsNestedInScriptBlock(Ast ast, Ast ancestor)
+        {
+            for (Ast current = ast.Parent; current != null && current != ancestor; current = current.Parent)
+            {
+                if (current is ScriptBlockAst)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasExplicitForEachObjectBeginOrEnd(CommandAst commandAst)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            return parameters != null
+                && commandAst.CommandElements
+                    .OfType<CommandParameterAst>()
+                    .Any(parameter =>
+                    {
+                        string parameterName = ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                        return IsParameter(parameterName, "Begin") || IsParameter(parameterName, "End");
+                    });
+        }
+
+        private bool TryGetNearestSharedExecutionBlock(
+            Ast first,
+            Ast second,
+            FunctionAnalysisContext functionAnalysis,
+            out ScriptBlockAst executionBlock)
+        {
+            var firstBlocks = new Dictionary<ScriptBlockAst, int>();
+            int depth = 0;
+            for (Ast current = first; current != null; current = current.Parent, depth++)
+            {
+                if (current is ScriptBlockAst scope && IsExecutionBlock(scope, functionAnalysis))
+                {
+                    firstBlocks[scope] = depth;
+                }
+            }
+
+            executionBlock = null;
+            int nearestDistance = Int32.MaxValue;
+            depth = 0;
+            for (Ast current = second; current != null; current = current.Parent, depth++)
+            {
+                if (current is ScriptBlockAst scope
+                    && firstBlocks.TryGetValue(scope, out int firstDepth)
+                    && firstDepth + depth < nearestDistance)
+                {
+                    executionBlock = scope;
+                    nearestDistance = firstDepth + depth;
+                }
+            }
+
+            return executionBlock != null;
+        }
+
+        private bool IsExecutionBlock(ScriptBlockAst scope, FunctionAnalysisContext functionAnalysis)
+        {
+            return scope.Parent == null
+                || scope.Parent is FunctionDefinitionAst
+                || IsDirectlyInvokedScriptBlock(scope)
+                || IsCallerScopedScriptBlock(scope, functionAnalysis)
+                || IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis)
+                || IsIsolatedRunspaceScriptBlock(scope, functionAnalysis);
+        }
+
+        private int GetNamedBlockExecutionPhase(Ast ast, ScriptBlockAst executionBlock)
+        {
+            for (Ast current = ast; current != null && current != executionBlock; current = current.Parent)
+            {
+                if (current is NamedBlockAst namedBlock && namedBlock.Parent == executionBlock)
+                {
+                    return GetNamedBlockExecutionPhase(namedBlock);
+                }
+            }
+
+            return -1;
+        }
+
+        private int GetNamedBlockExecutionPhase(NamedBlockAst namedBlock)
+        {
+            switch (namedBlock.BlockKind)
+            {
+                case TokenKind.Dynamicparam:
+                    return 0;
+                case TokenKind.Begin:
+                    return 1;
+                case TokenKind.Process:
+                    return 2;
+                case TokenKind.End:
+                    return 3;
+                default:
+                    return String.Equals(
+                        namedBlock.BlockKind.ToString(),
+                        "Clean",
+                        StringComparison.OrdinalIgnoreCase) ? 4 : -1;
+            }
+        }
+
+        private CommandAst GetCallerScopedCallbackCommand(Ast ast, FunctionAnalysisContext functionAnalysis)
+        {
+            for (Ast current = ast; current != null; current = current.Parent)
+            {
+                if (current is ScriptBlockAst scope
+                    && scope.Parent is ScriptBlockExpressionAst scriptBlock)
+                {
+                    CommandAst command = GetScriptBlockCommand(scriptBlock);
+                    if (command != null && IsCallerScopedScriptBlock(scope, functionAnalysis))
+                    {
+                        return command;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsSynchronousInvokeCommandScriptBlock(
+            ScriptBlockAst scope,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
+                || !(GetScriptBlockCommand(scriptBlock) is CommandAst command))
+            {
+                return false;
+            }
+
+            return IsInvokeCommand(GetCallbackCommandName(command))
+                && IsParameter(GetScriptBlockParameterName(command, scriptBlock), "ScriptBlock")
+                && !IsScriptDefinedFunction(command, functionAnalysis)
+                && !IsRemoteInvokeCommand(command);
+        }
+
+        private FunctionAnalysisContext GetFunctionNameIndex(Ast ast)
+        {
+            FunctionDefinitionAst[] functionDefinitions = ast.FindAll(
+                candidate => candidate is FunctionDefinitionAst,
+                true).OfType<FunctionDefinitionAst>().ToArray();
+
+            var functionAnalysis = new FunctionAnalysisContext
+            {
+                FunctionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>>()
+            };
+
+            foreach (FunctionDefinitionAst function in functionDefinitions)
+            {
+                if (IsInConstantUnreachableBranch(function))
+                {
+                    continue;
+                }
+
+                ScriptBlockAst scope = GetNearestFunctionScope(function);
+                if (scope != null)
+                {
+                    AddFunctionToIndex(functionAnalysis.FunctionNameIndex, scope, function);
+                }
+            }
+
+            var previousScopes = new Dictionary<FunctionDefinitionAst, ScriptBlockAst>();
+            foreach (FunctionDefinitionAst function in functionDefinitions)
+            {
+                if (!IsInConstantUnreachableBranch(function))
+                {
+                    previousScopes[function] = GetNearestFunctionScope(function);
+                }
+            }
+
+            for (int iteration = 0; iteration <= previousScopes.Count; iteration++)
+            {
+                functionAnalysis.ClearCaches();
+                var functionNameIndex = new Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>>();
+                var currentScopes = new Dictionary<FunctionDefinitionAst, ScriptBlockAst>();
+                foreach (FunctionDefinitionAst function in previousScopes.Keys)
+                {
+                    ScriptBlockAst scope = GetFunctionScope(function, functionAnalysis);
+                    currentScopes[function] = scope;
+                    if (scope != null)
+                    {
+                        AddFunctionToIndex(functionNameIndex, scope, function);
+                        ScriptBlockAst initializationScope = GetJobInitializationScope(function, functionAnalysis, scope);
+                        if (initializationScope != null)
+                        {
+                            AddFunctionToIndex(functionNameIndex, initializationScope, function);
+                        }
+                    }
+                }
+
+                bool scopesChanged = previousScopes.Any(pair => currentScopes[pair.Key] != pair.Value);
+                functionAnalysis.FunctionNameIndex = functionNameIndex;
+                previousScopes = currentScopes;
+                if (!scopesChanged)
+                {
+                    break;
+                }
+            }
+
+            functionAnalysis.ClearCaches();
+            return functionAnalysis;
+        }
+
+        private void AddFunctionToIndex(
+            Dictionary<ScriptBlockAst, Dictionary<string, List<FunctionDefinitionAst>>> functionNameIndex,
+            ScriptBlockAst scope,
+            FunctionDefinitionAst function)
+        {
+            string functionName = Helper.Instance.FunctionNameWithoutScope(function.Name);
+            if (String.IsNullOrEmpty(functionName))
+            {
+                return;
+            }
+
+            if (!functionNameIndex.TryGetValue(
+                scope,
+                out Dictionary<string, List<FunctionDefinitionAst>> functionNames))
+            {
+                functionNames = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
+                functionNameIndex.Add(scope, functionNames);
+            }
+
+            if (functionNames.TryGetValue(functionName, out List<FunctionDefinitionAst> functionDefinitions))
+            {
+                functionDefinitions.Add(function);
+            }
+            else
+            {
+                functionNames.Add(functionName, new List<FunctionDefinitionAst> { function });
+            }
+        }
+
+        private ScriptBlockAst GetNearestFunctionScope(FunctionDefinitionAst function)
+        {
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope)
+                {
+                    return scope;
+                }
+            }
+
+            return null;
+        }
+
+        private ScriptBlockAst GetFunctionScope(
+            FunctionDefinitionAst function,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (function.Name.StartsWith("script:", StringComparison.OrdinalIgnoreCase)
+                || function.Name.StartsWith("global:", StringComparison.OrdinalIgnoreCase))
+            {
+                ScriptBlockAst scope = GetNearestFunctionScope(function);
+                ScriptBlockAst parentScope;
+                while (scope != null && TryGetInvokedParentScope(scope, functionAnalysis, out parentScope))
+                {
+                    scope = parentScope;
+                }
+
+                if (scope != null && scope != GetNearestFunctionScope(function))
+                {
+                    if (GetJobScriptBlockScope(scope, functionAnalysis) is ScriptBlockAst jobScriptBlock)
+                    {
+                        return jobScriptBlock;
+                    }
+
+                    return scope;
+                }
+            }
+
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope
+                    && GetJobScriptBlockScope(scope, functionAnalysis) is ScriptBlockAst jobScriptBlock)
+                {
+                    return jobScriptBlock;
+                }
+
+                if (parent is ScriptBlockAst functionScope
+                    && !IsCallerScopedScriptBlock(functionScope, functionAnalysis))
+                {
+                    return functionScope;
+                }
+            }
+
+            return null;
+        }
+
+        private bool TryGetInvokedParentScope(
+            ScriptBlockAst scope,
+            FunctionAnalysisContext functionAnalysis,
+            out ScriptBlockAst parentScope)
+        {
+            parentScope = null;
+            if (IsInBackgroundPipeline(scope))
+            {
+                return false;
+            }
+
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+            {
+                return false;
+            }
+
+            CommandAst command = GetScriptBlockCommand(scriptBlock);
+            bool directlyInvoked = command != null
+                && (command.InvocationOperator == TokenKind.Ampersand
+                    || command.InvocationOperator == TokenKind.Dot)
+                && command.CommandElements.Count > 0
+                && UnwrapParenthesizedExpression(command.CommandElements[0]) == scriptBlock;
+            if (!directlyInvoked
+                && !IsCallerScopedScriptBlock(scope, functionAnalysis)
+                && !IsSynchronousInvokeCommandScriptBlock(scope, functionAnalysis))
+            {
+                return false;
+            }
+
+            for (Ast parent = scope.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst enclosingScope)
+                {
+                    parentScope = enclosingScope;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ScriptBlockAst GetJobScriptBlockScope(
+            ScriptBlockAst scope,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock)
+                || !(GetScriptBlockCommand(scriptBlock) is CommandAst commandAst)
+                || !IsJobCommand(GetCallbackCommandName(commandAst))
+                || IsScriptDefinedFunction(commandAst, functionAnalysis)
+                || !IsParameter(
+                    GetScriptBlockParameterName(commandAst, scriptBlock),
+                    "InitializationScript"))
+            {
+                return null;
+            }
+
+            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, true)
+                .OfType<ScriptBlockExpressionAst>()
+                .Where(candidate => candidate != scriptBlock
+                    && IsParameter(
+                        GetScriptBlockParameterName(commandAst, candidate),
+                        "ScriptBlock"))
+                .Select(candidate => candidate.ScriptBlock)
+                .FirstOrDefault();
+        }
+
+        private ScriptBlockAst GetJobInitializationScope(
+            FunctionDefinitionAst function,
+            FunctionAnalysisContext functionAnalysis,
+            ScriptBlockAst jobScriptBlock)
+        {
+            if (jobScriptBlock == null)
+            {
+                return null;
+            }
+
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is ScriptBlockAst scope
+                    && GetJobScriptBlockScope(scope, functionAnalysis) == jobScriptBlock)
+                {
+                    return scope;
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsCallerScopedScriptBlock(
+        ScriptBlockAst scope,
+        FunctionAnalysisContext functionAnalysis)
+        {
+        if (functionAnalysis.CallerScopedScriptBlockCache.TryGetValue(scope, out bool? cachedResult))
+        {
+            return cachedResult.GetValueOrDefault();
+        }
+
+        functionAnalysis.CallerScopedScriptBlockCache[scope] = null;
+        bool result = false;
+        if (IsInBackgroundPipeline(scope)
+            || !(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+        {
+            functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+            return result;
+        }
+
+        CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+        if (commandAst == null || IsScriptDefinedFunction(commandAst, functionAnalysis))
+        {
+            functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+            return result;
+        }
+
+        if (commandAst.InvocationOperator == TokenKind.Dot
+            && commandAst.CommandElements.Count > 0
+            && UnwrapParenthesizedExpression(commandAst.CommandElements[0]) == scriptBlock)
+        {
+            result = true;
+        }
+        else
+        {
+            string commandName = GetCallbackCommandName(commandAst);
+            if (IsForEachObjectCommand(commandName))
+            {
+                if (HasCommandParameter(commandAst, "MemberName")
+                    || HasPositionalCommandParameter(commandAst, scriptBlock, "MemberName"))
+                {
+                    functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+                    return result;
+                }
+
+                string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+                result = !IsParameter(parameterName, "Parallel")
+                    && (IsParameter(parameterName, "Begin")
+                        || IsParameter(parameterName, "Process")
+                        || IsParameter(parameterName, "End")
+                        || IsParameter(parameterName, "RemainingScripts"));
+            }
+            else if (IsWhereObjectCommand(commandName))
+            {
+                result = IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "FilterScript");
+            }
+            else if (IsInvokeCommand(commandName)
+                && IsParameter(GetScriptBlockParameterName(commandAst, scriptBlock), "ScriptBlock"))
+            {
+                result = HasEnabledCommandParameter(commandAst, "NoNewScope")
+                    && !IsRemoteInvokeCommand(commandAst);
+            }
+            }
+
+        functionAnalysis.CallerScopedScriptBlockCache[scope] = result;
+        return result;
+        }
+
+        private Ast UnwrapParenthesizedExpression(Ast ast)
+        {
+            while (true)
+            {
+                if (ast is ConvertExpressionAst conversion
+                    && conversion.StaticType == typeof(ScriptBlock))
+                {
+                    ast = conversion.Child;
+                    continue;
+                }
+
+                PipelineAst pipeline;
+                if (ast is ParenExpressionAst parenthesizedExpression
+                    && parenthesizedExpression.Pipeline is PipelineAst parenthesizedPipeline)
+                {
+                    pipeline = parenthesizedPipeline;
+                }
+                else if (ast is SubExpressionAst subExpression
+                    && subExpression.SubExpression.Statements.Count == 1
+                    && subExpression.SubExpression.Statements[0] is PipelineAst subExpressionPipeline)
+                {
+                    pipeline = subExpressionPipeline;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (pipeline == null
+                    || pipeline.PipelineElements.Count != 1
+                    || !(pipeline.PipelineElements[0] is CommandExpressionAst commandExpression))
+                {
+                    break;
+                }
+
+                ast = commandExpression.Expression;
+            }
+
+            return ast;
+        }
+
+        private bool IsIsolatedRunspaceScriptBlock(
+        ScriptBlockAst scope,
+        FunctionAnalysisContext functionAnalysis)
+        {
+        if (functionAnalysis.IsolatedRunspaceScriptBlockCache.TryGetValue(scope, out bool? cachedResult))
+        {
+            return cachedResult.GetValueOrDefault();
+        }
+
+        functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = null;
+        bool result = false;
+        if (IsInBackgroundPipeline(scope))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = true;
+            return true;
+        }
+
+        if (IsNativeDscScriptPropertyValue(scope))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = true;
+            return true;
+        }
+
+        if (!(scope.Parent is ScriptBlockExpressionAst scriptBlock))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+            return result;
+        }
+
+        CommandAst commandAst = GetScriptBlockCommand(scriptBlock);
+        bool isDscScriptProperty = false;
+        if (commandAst == null)
+        {
+            commandAst = GetPrecedingDscScriptPropertyCommand(scriptBlock, functionAnalysis);
+            isDscScriptProperty = commandAst != null;
+        }
+        else
+        {
+            isDscScriptProperty = IsDscScriptPropertyCommand(commandAst, functionAnalysis);
+        }
+
+        if (commandAst == null
+            || (!isDscScriptProperty && IsScriptDefinedFunction(commandAst, functionAnalysis)))
+        {
+            functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+            return result;
+        }
+
+        string commandName = GetCallbackCommandName(commandAst);
+        string parameterName = GetScriptBlockParameterName(commandAst, scriptBlock);
+        if (IsForEachObjectCommand(commandName) && IsParameter(parameterName, "Parallel"))
+        {
+            result = true;
+        }
+        else if (IsJobCommand(commandName)
+            && (IsParameter(parameterName, "ScriptBlock")
+                || IsParameter(parameterName, "InitializationScript")))
+        {
+            result = true;
+        }
+        else if (String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase)
+            && IsParameter(parameterName, "ScriptBlock")
+            && IsRemoteInvokeCommand(commandAst))
+        {
+            result = true;
+        }
+        else if (String.Equals(commandName, "InlineScript", StringComparison.OrdinalIgnoreCase))
+        {
+            result = true;
+        }
+        else
+        {
+            result = isDscScriptProperty;
+        }
+
+        functionAnalysis.IsolatedRunspaceScriptBlockCache[scope] = result;
+        return result;
+        }
+
+        private bool IsNativeDscScriptPropertyValue(ScriptBlockAst scope)
+        {
+            for (Ast current = scope; current != null; current = current.Parent)
+            {
+                if (current != scope && current is ScriptBlockAst)
+                {
+                    return false;
+                }
+
+                if (!(current is HashtableAst hashtable)
+                    || !hashtable.KeyValuePairs.Any(pair =>
+                        pair.Item1 is StringConstantExpressionAst propertyName
+                        && IsDscScriptPropertyName(propertyName.Value)
+                        && IsDescendantOf(scope, pair.Item2)))
+                {
+                    continue;
+                }
+
+                for (Ast parent = hashtable.Parent; parent != null; parent = parent.Parent)
+                {
+                    if (parent is ScriptBlockAst)
+                    {
+                        break;
+                    }
+
+                    if (parent is DynamicKeywordStatementAst dynamicKeyword
+                        && dynamicKeyword.CommandElements.Count > 0
+                        && String.Equals(
+                            dynamicKeyword.CommandElements[0].ToString(),
+                            "Script",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDscScriptPropertyName(string propertyName)
+        {
+            return String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsDscScriptPropertyCommand(
+            CommandAst commandAst,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (commandAst.CommandElements.Count < 2
+                || !String.Equals(commandAst.CommandElements[1].ToString(), "=", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            string propertyName = commandAst.GetCommandName();
+            if (!String.Equals(propertyName, "GetScript", StringComparison.OrdinalIgnoreCase)
+                && !String.Equals(propertyName, "TestScript", StringComparison.OrdinalIgnoreCase)
+                && !String.Equals(propertyName, "SetScript", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            for (Ast parent = commandAst.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is CommandAst resource
+                    && String.Equals(resource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase)
+                    && IsDscScriptPropertyInResourceBody(commandAst, resource, functionAnalysis))
+                {
+                    return true;
+                }
+
+                if (parent is CommandExpressionAst bodyExpression
+                    && bodyExpression.Expression is ScriptBlockExpressionAst body)
+                {
+                    CommandAst followingLineResource = GetFollowingLineDscResourceDeclaration(body, functionAnalysis);
+                    if (followingLineResource != null
+                        && String.Equals(followingLineResource.GetCommandName(), "Script", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return IsDscScriptPropertyInResourceBody(commandAst, followingLineResource, functionAnalysis);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDscScriptPropertyInResourceBody(
+            CommandAst propertyCommand,
+            CommandAst resource,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            ScriptBlockExpressionAst body = GetDscResourceBody(resource);
+            if (body == null || !IsDscResourceCommand(resource, functionAnalysis))
+            {
+                return false;
+            }
+
+            for (Ast parent = propertyCommand.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent == body.ScriptBlock)
+                {
+                    return true;
+                }
+
+                if (parent is ScriptBlockAst)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsJobCommand(string commandName)
+        {
+            return String.Equals(commandName, "Start-Job", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(commandName, "Start-ThreadJob", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private CommandAst GetPrecedingDscScriptPropertyCommand(
+            ScriptBlockExpressionAst scriptBlock,
+            FunctionAnalysisContext functionAnalysis)
+        {
+        if (!(scriptBlock.Parent is CommandExpressionAst commandExpression)
+            || !(commandExpression.Parent is PipelineAst pipeline))
+        {
+            return null;
+        }
+
+        Ast statement = pipeline;
+        for (Ast parent = pipeline.Parent; parent != null; parent = parent.Parent)
+        {
+            var statements = (parent as NamedBlockAst)?.Statements
+                ?? (parent as StatementBlockAst)?.Statements;
+            if (statements == null)
+            {
+                statement = parent;
+                continue;
+            }
+
+            int index = statements.IndexOf(statement as StatementAst);
+            if (index <= 0
+                || !(statements[index - 1] is PipelineAst propertyPipeline)
+                || propertyPipeline.PipelineElements.Count != 1
+                || !(propertyPipeline.PipelineElements[0] is CommandAst propertyCommand)
+                || propertyCommand.CommandElements.Count != 2
+                || !String.Equals(propertyCommand.CommandElements[1].ToString(), "=", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return IsDscScriptPropertyCommand(propertyCommand, functionAnalysis) ? propertyCommand : null;
+        }
+
+        return null;
+        }
+
+        private CommandAst GetScriptBlockCommand(ScriptBlockExpressionAst scriptBlock)
+        {
+            Ast current = scriptBlock;
+            while (current.Parent != null)
+            {
+                if (current.Parent is CommandAst commandAst)
+                {
+                    return commandAst;
+                }
+
+                if (current.Parent is ArrayLiteralAst arrayLiteral)
+                {
+                    current = arrayLiteral;
+                    continue;
+                }
+
+                if (current.Parent is ArrayExpressionAst arrayExpression)
+                {
+                    current = arrayExpression;
+                    continue;
+                }
+
+                if (current.Parent is ConvertExpressionAst convertExpression
+                    && convertExpression.Child == current)
+                {
+                    if (convertExpression.StaticType == typeof(void))
+                    {
+                        return null;
+                    }
+
+                    current = convertExpression;
+                    continue;
+                }
+
+                if (current.Parent is ParenExpressionAst
+                    || current.Parent is SubExpressionAst
+                    || current.Parent is CommandExpressionAst
+                    || current.Parent is PipelineAst
+                    || current.Parent is StatementBlockAst)
+                {
+                    current = current.Parent;
+                    continue;
+                }
+
+                if (current.Parent is CommandParameterAst parameter
+                    && parameter.Argument == current)
+                {
+                    current = parameter;
+                    continue;
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+
+        private string GetCallbackCommandName(CommandAst commandAst)
+        {
+            string commandName = commandAst.GetCommandName();
+            if (commandName == null)
+            {
+                return null;
+            }
+
+            const string coreModulePrefix = "Microsoft.PowerShell.Core\\";
+            if (commandName.StartsWith(coreModulePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                commandName = commandName.Substring(coreModulePrefix.Length);
+            }
+            else if (commandName.EndsWith("\\Start-ThreadJob", StringComparison.OrdinalIgnoreCase))
+            {
+                commandName = "Start-ThreadJob";
+            }
+            else if (commandName.IndexOf('\\') >= 0)
+            {
+                return null;
+            }
+
+            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(commandName);
+            return String.IsNullOrEmpty(cmdletName) ? commandName : cmdletName;
+        }
+
+        private string GetScriptBlockParameterName(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return null;
+            }
+
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
+
+            CommandParameterAst attachedParameter = commandAst.CommandElements
+                .OfType<CommandParameterAst>()
+                .FirstOrDefault(parameter => parameter.Argument != null
+                    && (parameter.Argument == scriptBlock
+                        || IsDescendantOf(scriptBlock, parameter.Argument)));
+            if (parameters == null)
+            {
+                return IsInvokeCommand(GetCallbackCommandName(commandAst))
+                    && attachedParameter != null
+                    && IsInvokeCommandScriptBlockParameter(attachedParameter.ParameterName)
+                        ? "ScriptBlock"
+                        : null;
+            }
+
+            if (attachedParameter != null)
+            {
+                return ResolveParameter(parameters, attachedParameter.ParameterName)?.Name;
+            }
+
+            if (IsWhereObjectCommand(GetCallbackCommandName(commandAst))
+                && commandAst.CommandElements
+                    .OfType<CommandParameterAst>()
+                    .Any(parameter => IsParameter(
+                        ResolveParameter(parameters, parameter.ParameterName)?.Name,
+                        "Property")))
+            {
+                return null;
+            }
+
+            CommandElementAst argumentElement = commandAst.CommandElements
+                .FirstOrDefault(element => element == scriptBlock
+                    || IsDescendantOf(scriptBlock, element));
+            int scriptBlockIndex = argumentElement == null
+                ? -1
+                : commandAst.CommandElements.IndexOf(argumentElement);
+            if (scriptBlockIndex < 0)
+            {
+                return null;
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i <= scriptBlockIndex; i++)
+            {
+                CommandElementAst commandElement = commandAst.CommandElements[i];
+                if (i == scriptBlockIndex)
+                {
+                    return GetPositionalScriptBlockParameter(parameters, positionalIndex)?.Name;
+                }
+
+                if (!(commandElement is CommandParameterAst parameter))
+                {
+                    positionalIndex++;
+                    continue;
+                }
+
+                ParameterMetadata parameterMetadata = ResolveParameter(parameters, parameter.ParameterName);
+                if (parameter.Argument != null
+                    || parameterMetadata?.ParameterType == typeof(SwitchParameter))
+                {
+                    continue;
+                }
+
+                if (i + 1 == scriptBlockIndex)
+                {
+                    return parameterMetadata?.Name;
+                }
+
+                if (i + 1 < scriptBlockIndex
+                    && !(commandAst.CommandElements[i + 1] is CommandParameterAst))
+                {
+                    i++;
+                }
+            }
+
+            return null;
+        }
+
+        private bool HasPositionalCommandParameter(
+            CommandAst commandAst,
+            ScriptBlockExpressionAst scriptBlock,
+            string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            if (parameters == null)
+            {
+                return false;
+            }
+
+            CommandElementAst argumentElement = commandAst.CommandElements
+                .FirstOrDefault(element => element == scriptBlock
+                    || IsDescendantOf(scriptBlock, element));
+            int scriptBlockIndex = argumentElement == null
+                ? -1
+                : commandAst.CommandElements.IndexOf(argumentElement);
+            if (scriptBlockIndex < 0)
+            {
+                return false;
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i < scriptBlockIndex; i++)
+            {
+                CommandElementAst commandElement = commandAst.CommandElements[i];
+                if (!(commandElement is CommandParameterAst parameter))
+                {
+                    if (IsPositionalParameter(parameters, positionalIndex, parameterName, commandElement))
+                    {
+                        return true;
+                    }
+
+                    positionalIndex++;
+                    continue;
+                }
+
+                ParameterMetadata metadata = ResolveParameter(parameters, parameter.ParameterName);
+                if (parameter.Argument != null || metadata?.ParameterType == typeof(SwitchParameter))
+                {
+                    continue;
+                }
+
+                if (i + 1 < scriptBlockIndex
+                    && !(commandAst.CommandElements[i + 1] is CommandParameterAst))
+                {
+                    i++;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsPositionalParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            int position,
+            string parameterName,
+            Ast argument)
+        {
+            ParameterMetadata targetParameter = parameters.Values.FirstOrDefault(parameter =>
+                String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase));
+            if (targetParameter == null)
+            {
+                return false;
+            }
+
+            Type argumentType = (argument as ExpressionAst)?.StaticType;
+            if (argumentType == null)
+            {
+                return false;
+            }
+
+            IEnumerable<ParameterAttribute> targetAttributes = targetParameter.Attributes
+                .OfType<ParameterAttribute>()
+                .Where(attribute => attribute.Position == position);
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                Type parameterType = parameter.ParameterType.IsArray
+                    ? parameter.ParameterType.GetElementType()
+                    : parameter.ParameterType;
+                if (!parameterType.IsAssignableFrom(argumentType))
+                {
+                    continue;
+                }
+
+                IEnumerable<string> parameterSets = parameter.Attributes
+                    .OfType<ParameterAttribute>()
+                    .Where(attribute => attribute.Position == position)
+                    .Select(attribute => attribute.ParameterSetName);
+                if (targetAttributes.Select(attribute => attribute.ParameterSetName)
+                    .Any(targetSet => parameterSets.Any(parameterSet =>
+                        String.IsNullOrEmpty(targetSet)
+                        || String.IsNullOrEmpty(parameterSet)
+                        || targetSet == "__AllParameterSets"
+                        || parameterSet == "__AllParameterSets"
+                        || String.Equals(targetSet, parameterSet, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ParameterMetadata ResolveParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            string parameterName)
+        {
+            if (String.IsNullOrEmpty(parameterName))
+            {
+                return null;
+            }
+
+            ParameterMetadata exactMatch = null;
+            var prefixMatches = new List<ParameterMetadata>();
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                if (String.Equals(parameter.Name, parameterName, StringComparison.OrdinalIgnoreCase)
+                    || parameter.Aliases.Contains(parameterName, StringComparer.OrdinalIgnoreCase))
+                {
+                    exactMatch = parameter;
+                    break;
+                }
+
+                if (parameter.Name.StartsWith(parameterName, StringComparison.OrdinalIgnoreCase)
+                    || parameter.Aliases.Any(alias => alias.StartsWith(parameterName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    prefixMatches.Add(parameter);
+                }
+            }
+
+            return exactMatch ?? (prefixMatches.Count == 1 ? prefixMatches[0] : null);
+        }
+
+        private ParameterMetadata GetPositionalScriptBlockParameter(
+            Dictionary<string, ParameterMetadata> parameters,
+            int position)
+        {
+            ParameterMetadata match = null;
+            ParameterMetadata remainingScriptsParameter = null;
+            foreach (ParameterMetadata parameter in parameters.Values)
+            {
+                Type parameterType = parameter.ParameterType;
+                if (parameterType.IsArray)
+                {
+                    parameterType = parameterType.GetElementType();
+                }
+
+                if (!typeof(ScriptBlock).IsAssignableFrom(parameterType))
+                {
+                    continue;
+                }
+
+                IEnumerable<ParameterAttribute> parameterAttributes = parameter.Attributes.OfType<ParameterAttribute>();
+                if (parameterAttributes.Any(attribute => attribute.Position == position))
+                {
+                    if (match != null)
+                    {
+                        return null;
+                    }
+
+                    match = parameter;
+                }
+
+                if (parameterAttributes.Any(attribute => attribute.ValueFromRemainingArguments))
+                {
+                    if (remainingScriptsParameter != null)
+                    {
+                        return null;
+                    }
+
+                    remainingScriptsParameter = parameter;
+                }
+            }
+
+            return match ?? remainingScriptsParameter;
+        }
+
+        private bool HasCommandParameter(CommandAst commandAst, string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
+            return commandAst.CommandElements
+                .OfType<CommandParameterAst>()
+                .Any(parameter =>
+                {
+                    string resolvedName = parameters == null
+                        ? null
+                        : ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                    return resolvedName?.Equals(parameterName, StringComparison.OrdinalIgnoreCase) == true
+                        || (resolvedName == null
+                            && IsInvokeCommand(GetCallbackCommandName(commandAst))
+                            && IsInvokeCommandParameter(parameter.ParameterName, parameterName));
+                });
+        }
+
+        private bool HasEnabledCommandParameter(CommandAst commandAst, string parameterName)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            Dictionary<string, ParameterMetadata> parameters = commandInfo == null
+                ? null
+                : GetCommandParameters(commandInfo);
+            foreach (CommandParameterAst parameter in commandAst.CommandElements.OfType<CommandParameterAst>())
+            {
+                string resolvedName = parameters == null
+                    ? null
+                    : ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                if (!String.Equals(resolvedName, parameterName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (parameter.Argument == null)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    return LanguagePrimitives.IsTrue(parameter.Argument.SafeGetValue());
+                }
+                catch (InvalidOperationException)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsRemoteInvokeCommand(CommandAst commandAst)
+        {
+            CommandInfo commandInfo = Helper.Instance.GetCommandInfo(GetCallbackCommandName(commandAst));
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            Dictionary<string, ParameterMetadata> parameters = GetCommandParameters(commandInfo);
+            if (parameters == null)
+            {
+                return false;
+            }
+
+            string[] remoteTargetParameters =
+            {
+                "ComputerName",
+                "Session",
+                "ConnectionUri",
+                "HostName",
+                "VMId",
+                "VMName",
+                "ContainerId",
+                "SSHConnection"
+            };
+
+            foreach (CommandParameterAst parameter in commandAst.CommandElements.OfType<CommandParameterAst>())
+            {
+                string parameterName = ResolveParameter(parameters, parameter.ParameterName)?.Name;
+                if (remoteTargetParameters.Contains(parameterName, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            int positionalIndex = 0;
+            for (int i = 1; i < commandAst.CommandElements.Count; i++)
+            {
+                CommandElementAst element = commandAst.CommandElements[i];
+                if (element is CommandParameterAst parameter)
+                {
+                    ParameterMetadata metadata = ResolveParameter(parameters, parameter.ParameterName);
+                    if (parameter.Argument == null
+                        && metadata?.ParameterType != typeof(SwitchParameter)
+                        && (i + 1 < commandAst.CommandElements.Count
+                            && !(commandAst.CommandElements[i + 1] is CommandParameterAst)))
+                    {
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                bool isScriptBlock = UnwrapParenthesizedExpression(element) is ScriptBlockExpressionAst;
+                if (!isScriptBlock
+                    && remoteTargetParameters.Any(name =>
+                        parameters.TryGetValue(name, out ParameterMetadata metadata)
+                        && metadata.Attributes.OfType<ParameterAttribute>()
+                            .Any(attribute => attribute.Position == positionalIndex)))
+                {
+                    return true;
+                }
+
+                positionalIndex++;
+            }
+
+            return false;
+        }
+
+        private Dictionary<string, ParameterMetadata> GetCommandParameters(CommandInfo commandInfo)
+        {
+            if ((commandInfo.CommandType & CommandTypes.Application) != 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                return commandInfo.Parameters;
+            }
+            catch (InvalidOperationException)
+            {
+                return GetCommandParametersWithoutCache(commandInfo);
+            }
+            catch (NotSupportedException)
+            {
+                return GetCommandParametersWithoutCache(commandInfo);
+            }
+        }
+
+        private Dictionary<string, ParameterMetadata> GetCommandParametersWithoutCache(CommandInfo commandInfo)
+        {
+            try
+            {
+                return Helper.Instance.GetCommandInfo(commandInfo.Name, bypassCache: true)?.Parameters;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+        }
+
+        private bool IsInvokeCommand(string commandName)
+        {
+            return String.Equals(commandName, "Invoke-Command", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInvokeCommandScriptBlockParameter(string parameterName)
+        {
+            return String.Equals(parameterName, "ScriptBlock", StringComparison.OrdinalIgnoreCase)
+                || String.Equals(parameterName, "Command", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInvokeCommandParameter(string parameterName, string expectedName)
+        {
+            if (String.Equals(expectedName, "ScriptBlock", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsInvokeCommandScriptBlockParameter(parameterName);
+            }
+
+            if (String.Equals(expectedName, "ComputerName", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Equals(parameterName, "ComputerName", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(parameterName, "Cn", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (String.Equals(expectedName, "Session", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Equals(parameterName, "Session", StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(parameterName, "PSSession", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private bool IsParameter(string parameter, string parameterName)
+        {
+            return String.Equals(parameter, parameterName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsForEachObjectCommand(string commandName)
+        {
+            return String.Equals(commandName, "ForEach-Object", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsWhereObjectCommand(string commandName)
+        {
+            return String.Equals(commandName, "Where-Object", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInConstantUnreachableBranch(FunctionDefinitionAst function)
+        {
+            for (Ast parent = function.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent is WhileStatementAst whileStatement
+                    && IsDescendantOf(function, whileStatement.Body)
+                    && IsConstantFalseCondition(whileStatement.Condition))
+                {
+                    return true;
+                }
+
+                if (parent is ForStatementAst forStatement
+                    && (IsDescendantOf(function, forStatement.Body)
+                        || (forStatement.Iterator != null
+                            && IsDescendantOf(function, forStatement.Iterator)))
+                    && forStatement.Condition != null
+                    && IsConstantFalseCondition(forStatement.Condition))
+                {
+                    return true;
+                }
+
+                if (!(parent is IfStatementAst ifStatement))
+                {
+                    continue;
+                }
+
+                int containingClauseIndex = -1;
+                for (int i = 0; i < ifStatement.Clauses.Count; i++)
+                {
+                    Tuple<PipelineBaseAst, StatementBlockAst> clause = ifStatement.Clauses[i];
+                    bool inCondition = IsDescendantOf(function, clause.Item1);
+                    bool inBody = IsDescendantOf(function, clause.Item2);
+                    if (inCondition || inBody)
+                    {
+                        if (inBody && IsConstantFalseCondition(clause.Item1))
+                        {
+                            return true;
+                        }
+
+                        containingClauseIndex = i;
+                        break;
+                    }
+                }
+
+                if (containingClauseIndex >= 0
+                    && ifStatement.Clauses.Take(containingClauseIndex)
+                        .Any(clause => IsConstantTrueCondition(clause.Item1)))
+                {
+                    return true;
+                }
+
+                if (ifStatement.ElseClause != null
+                    && IsDescendantOf(function, ifStatement.ElseClause)
+                    && ifStatement.Clauses.Any(clause => IsConstantTrueCondition(clause.Item1)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDescendantOf(Ast ast, Ast ancestor)
+        {
+            for (Ast parent = ast.Parent; parent != null; parent = parent.Parent)
+            {
+                if (parent == ancestor)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsConstantFalseCondition(PipelineBaseAst condition)
+        {
+            ExpressionAst expression = condition.GetPureExpression();
+            if (expression == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return !LanguagePrimitives.IsTrue(expression.SafeGetValue());
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private bool IsConstantTrueCondition(PipelineBaseAst condition)
+        {
+            ExpressionAst expression = condition.GetPureExpression();
+            if (expression == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return LanguagePrimitives.IsTrue(expression.SafeGetValue());
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private ScriptBlockExpressionAst GetDscResourceBody(CommandAst cmdAst)

@@ -20,6 +20,10 @@ name, doing so reduces code readability and maintainability.
 PowerShell also supports implicit aliases. When a cmdlet name isn't found, PowerShell appends
 `Get-` to the command as a fallback. For example, typing `verb` executes `Get-Verb`.
 
+Functions declared in the script are not implicit aliases. In DSC configurations, resource
+declarations are also excluded from implicit alias correction, while executable script blocks
+passed to script-defined functions are still analyzed.
+
 Aliases create inconsistency across codebases because different authors learn and use different
 aliases. Aliases can potentially make code difficult to read and understand in collaborative
 environments. It can also cause issues with script portability and availability.
