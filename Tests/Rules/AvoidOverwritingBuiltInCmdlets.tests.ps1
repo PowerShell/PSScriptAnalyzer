@@ -102,4 +102,41 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
         }
     }
 
+    context 'Write-Log is not a built-in command in PowerShell 6.1 profiles (#2146)' {
+        BeforeAll {
+            $writeLogScript = @'
+function Write-Log {
+}
+
+function Get-ChildItem {
+}
+'@
+        }
+
+        it 'should only flag Get-ChildItem with default settings (PowerShellVersion not specified)' {
+            $s = @{ IncludeRules = @($ruleName) }
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $writeLogScript -Settings $s
+            $violations.Message | Should -BeLike '*Get-ChildItem*'
+            $violations.Message | Should -Not -BeLike '*Write-Log*'
+            @($violations).Count | Should -Be 1
+        }
+
+        it 'should only flag Get-ChildItem for <profile>' -TestCases @(
+            @{ profile = 'core-6.1.0-windows' }
+            @{ profile = 'core-6.1.0-linux' }
+            @{ profile = 'core-6.1.0-linux-arm' }
+            @{ profile = 'core-6.1.0-macos' }
+        ) {
+            param($profile)
+            $s = @{
+                IncludeRules = @($ruleName)
+                Rules = @{ $ruleName = @{ PowerShellVersion = @($profile) } }
+            }
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $writeLogScript -Settings $s
+            $violations.Count | Should -Be 1
+            $violations.Message | Should -BeLike '*Get-ChildItem*'
+            $violations.Message | Should -Not -BeLike '*Write-Log*'
+        }
+    }
+
 }
