@@ -1389,11 +1389,6 @@
           "ParameterSets": "[[-ConfigurationData] <hashtable>] [<CommonParameters>]"
         },
         {
-          "Name": "Write-Log",
-          "CommandType": "Function",
-          "ParameterSets": "[-message] <string> [-WhatIf] [-Confirm] [<CommonParameters>]"
-        },
-        {
           "Name": "Write-MetaConfigFile",
           "CommandType": "Function",
           "ParameterSets": "[[-ConfigurationName] <string>] [[-mofNode] <string>] [[-mofNodeHash] <Dictionary[string,string]>]"
