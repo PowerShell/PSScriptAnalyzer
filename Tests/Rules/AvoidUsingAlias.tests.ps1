@@ -342,6 +342,15 @@ gci -Path C:\
             Invoke-Formatter -ScriptDefinition $Target -Settings $settings | Should -Be $Target
         }
 
+        It "resolves declarations in downstream begin callbacks before upstream process callbacks" {
+            $target = '1 | ForEach-Object -Process { Verb } | ForEach-Object -Begin { function Verb {} }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 0
+            $settings = @{ Rules = @{ PSAvoidUsingCmdletAliases = @{ Enable = $true } } }
+            Invoke-Formatter -ScriptDefinition $target -Settings $settings | Should -Be $target
+        }
+
         It "resolves declarations in positional callbacks before downstream begin" {
             $target = '1 | ForEach-Object { function Verb {} } { $_ } | ForEach-Object -Begin { Verb }'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
@@ -366,6 +375,15 @@ gci -Path C:\
 
         It "does not infer callback phases from script blocks passed as input data" {
             $target = 'ForEach-Object -Process { function Verb {} } -InputObject { 1 } | ForEach-Object -Begin { Verb }'
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not index script blocks discarded by consuming commands in callback arguments" {
+            $target = '1 | ForEach-Object -Process $({ function Verb {} } | Out-Null; { $_ }); Verb'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1
@@ -661,6 +679,15 @@ Script Test {
 . { function Verb {} } &
 Verb
 '@
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
+        It "does not find enclosing functions from bare background commands" -skip:($PSVersionTable.PSVersion.Major -lt 7) {
+            $target = 'function Verb {}; Verb &'
             $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName)
 
             $violations.Count | Should -Be 1

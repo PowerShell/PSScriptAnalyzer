@@ -372,6 +372,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ScriptBlockAst currentScope = null;
             for (Ast parent = cmdAst.Parent; parent != null; parent = parent.Parent)
             {
+#if CORECLR
+                if (parent is PipelineAst pipeline && pipeline.Background)
+                {
+                    break;
+                }
+#endif
+
                 if (parent is ScriptBlockAst scope)
                 {
                     if (currentScope == null && !IsCallerScopedScriptBlock(scope, functionAnalysis))
@@ -520,6 +527,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return functionPhase > commandPhase;
             }
 
+            if (IsFunctionDeclaredBeforeCommandInPipelineCallbacks(function, cmdAst, functionAnalysis))
+            {
+                return false;
+            }
+
             int commandExecutionOffset = immediateInvocation == null || sharesExecutionBlock
                 ? cmdAst.Extent.StartOffset
                 : immediateInvocation.Extent.StartOffset;
@@ -536,6 +548,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 ? functionScopeInvocation.Extent.StartOffset
                 : function.Extent.StartOffset;
             return functionExecutionOffset > commandExecutionOffset;
+        }
+
+        private bool IsFunctionDeclaredBeforeCommandInPipelineCallbacks(
+            FunctionDefinitionAst function,
+            CommandAst command,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            CommandAst functionCallback = GetCallerScopedCallbackCommand(function, functionAnalysis);
+            CommandAst commandCallback = GetCallerScopedCallbackCommand(command, functionAnalysis);
+            if (functionCallback == null || commandCallback == null)
+            {
+                return false;
+            }
+
+            List<PipelineAst> commandPipelines = GetContainingPipelines(commandCallback);
+            foreach (PipelineAst pipeline in GetContainingPipelines(functionCallback))
+            {
+                if (!commandPipelines.Contains(pipeline))
+                {
+                    continue;
+                }
+
+                Ast functionElement = GetPipelineElement(pipeline, functionCallback);
+                Ast commandElement = GetPipelineElement(pipeline, commandCallback);
+                if (functionElement != null
+                    && commandElement != null
+                    && functionElement != commandElement)
+                {
+                    return IsPipelineCallbackExecutedBefore(
+                        function,
+                        functionCallback,
+                        functionElement,
+                        command,
+                        commandCallback,
+                        commandElement,
+                        pipeline);
+                }
+            }
+
+            return false;
         }
 
         private bool IsFunctionDeclaredInSamePipelineCallback(
@@ -1776,10 +1828,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                if (current.Parent is PipelineAst pipeline)
+                {
+                    if (!IsValuePreservingExpressionPipeline(pipeline))
+                    {
+                        return null;
+                    }
+
+                    current = pipeline;
+                    continue;
+                }
+
                 if (current.Parent is ParenExpressionAst
                     || current.Parent is SubExpressionAst
                     || current.Parent is CommandExpressionAst
-                    || current.Parent is PipelineAst
                     || current.Parent is StatementBlockAst)
                 {
                     current = current.Parent;
@@ -1797,6 +1859,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private bool IsValuePreservingExpressionPipeline(PipelineAst pipeline)
+        {
+#if CORECLR
+            if (pipeline.Background)
+            {
+                return false;
+            }
+#endif
+
+            return pipeline.PipelineElements.Count == 1
+                && pipeline.PipelineElements[0] is CommandExpressionAst commandExpression
+                && commandExpression.Redirections.Count == 0;
         }
 
         private string GetCallbackCommandName(CommandAst commandAst)
