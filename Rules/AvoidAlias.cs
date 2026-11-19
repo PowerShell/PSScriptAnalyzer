@@ -32,11 +32,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public Dictionary<ScriptBlockAst, bool?> IsolatedRunspaceScriptBlockCache { get; } = new Dictionary<ScriptBlockAst, bool?>();
 
+            public Dictionary<FunctionDefinitionAst, bool> PipelineOutputBeforeFunctionCache { get; } = new Dictionary<FunctionDefinitionAst, bool>();
+
             public void ClearCaches()
             {
                 ScriptDefinedFunctionCache.Clear();
                 CallerScopedScriptBlockCache.Clear();
                 IsolatedRunspaceScriptBlockCache.Clear();
+                PipelineOutputBeforeFunctionCache.Clear();
             }
         }
 
@@ -454,6 +457,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
+            if (IsFunctionDeclaredAfterPipelineOutput(function, cmdAst, functionAnalysis))
+            {
+                return true;
+            }
+
             if (IsEagerlyEvaluatedBeforeCallback(function, cmdAst, functionAnalysis))
             {
                 return true;
@@ -548,6 +556,134 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 ? functionScopeInvocation.Extent.StartOffset
                 : function.Extent.StartOffset;
             return functionExecutionOffset > commandExecutionOffset;
+        }
+
+        private bool IsFunctionDeclaredAfterPipelineOutput(
+            FunctionDefinitionAst function,
+            CommandAst command,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            CommandAst functionCallback = GetCallerScopedCallbackCommand(function, functionAnalysis);
+            CommandAst commandCallback = GetCallerScopedCallbackCommand(command, functionAnalysis);
+            if (functionCallback == null
+                || commandCallback == null
+                || !IsForEachObjectCommand(GetCallbackCommandName(functionCallback)))
+            {
+                return false;
+            }
+
+            List<PipelineAst> commandPipelines = GetContainingPipelines(commandCallback);
+            foreach (PipelineAst pipeline in GetContainingPipelines(functionCallback))
+            {
+                if (!commandPipelines.Contains(pipeline))
+                {
+                    continue;
+                }
+
+                Ast functionElement = GetPipelineElement(pipeline, functionCallback);
+                Ast commandElement = GetPipelineElement(pipeline, commandCallback);
+                if (functionElement != null
+                    && commandElement != null
+                    && GetPipelineElementIndex(pipeline, functionElement)
+                        < GetPipelineElementIndex(pipeline, commandElement))
+                {
+                    return HasPipelineOutputBeforeFunction(function, functionCallback, functionAnalysis);
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasPipelineOutputBeforeFunction(
+            FunctionDefinitionAst function,
+            CommandAst callbackCommand,
+            FunctionAnalysisContext functionAnalysis)
+        {
+            if (functionAnalysis.PipelineOutputBeforeFunctionCache.TryGetValue(function, out bool cachedResult))
+            {
+                return cachedResult;
+            }
+
+            ScriptBlockExpressionAst functionScriptBlock = null;
+            for (Ast current = function; current != null; current = current.Parent)
+            {
+                if (current is ScriptBlockAst scope
+                    && scope.Parent is ScriptBlockExpressionAst scriptBlock
+                    && GetScriptBlockCommand(scriptBlock) == callbackCommand)
+                {
+                    functionScriptBlock = scriptBlock;
+                    break;
+                }
+            }
+
+            if (functionScriptBlock == null)
+            {
+                functionAnalysis.PipelineOutputBeforeFunctionCache[function] = false;
+                return false;
+            }
+
+            int functionPhase = GetPipelineCallbackExecutionPhase(function, callbackCommand);
+            List<ScriptBlockExpressionAst> positionalCallbacks = GetForEachObjectCallbackScriptBlocks(callbackCommand);
+            bool inferPositionalPhases = positionalCallbacks.Count > 1
+                && !HasExplicitForEachObjectBeginOrEnd(callbackCommand);
+            foreach (ScriptBlockExpressionAst scriptBlock in callbackCommand
+                .FindAll(ast => ast is ScriptBlockExpressionAst, false)
+                .OfType<ScriptBlockExpressionAst>())
+            {
+                string parameterName = GetScriptBlockParameterName(callbackCommand, scriptBlock);
+                if (inferPositionalPhases && positionalCallbacks[0] == scriptBlock)
+                {
+                    parameterName = "Begin";
+                }
+                else if (inferPositionalPhases
+                    && positionalCallbacks.Count > 2
+                    && positionalCallbacks[positionalCallbacks.Count - 1] == scriptBlock)
+                {
+                    parameterName = "End";
+                }
+
+                int callbackPhase = IsParameter(parameterName, "Begin") ? 0
+                    : IsParameter(parameterName, "Process") ? 1
+                    : IsParameter(parameterName, "RemainingScripts") ? 2
+                    : IsParameter(parameterName, "End") ? 3
+                    : Int32.MaxValue;
+                bool hasOutputBeforeFunction = scriptBlock == functionScriptBlock
+                    ? HasPotentialPipelineOutput(scriptBlock.ScriptBlock, function.Extent.StartOffset)
+                    : callbackPhase < functionPhase
+                        && HasPotentialPipelineOutput(scriptBlock.ScriptBlock, Int32.MaxValue);
+                if (hasOutputBeforeFunction)
+                {
+                    functionAnalysis.PipelineOutputBeforeFunctionCache[function] = true;
+                    return true;
+                }
+            }
+
+            functionAnalysis.PipelineOutputBeforeFunctionCache[function] = false;
+            return false;
+        }
+
+        private bool HasPotentialPipelineOutput(ScriptBlockAst scriptBlock, int beforeOffset)
+        {
+            return scriptBlock.FindAll(
+                ast => ast is PipelineAst pipeline
+                    && pipeline.Extent.StartOffset < beforeOffset
+                    && IsPipelineOutputStatement(pipeline, scriptBlock),
+                false).Any();
+        }
+
+        private bool IsPipelineOutputStatement(PipelineAst pipeline, ScriptBlockAst scriptBlock)
+        {
+            for (Ast current = pipeline.Parent; current != null && current != scriptBlock; current = current.Parent)
+            {
+                var statements = (current as NamedBlockAst)?.Statements
+                    ?? (current as StatementBlockAst)?.Statements;
+                if (statements != null)
+                {
+                    return statements.Contains(pipeline);
+                }
+            }
+
+            return false;
         }
 
         private bool IsFunctionDeclaredBeforeCommandInPipelineCallbacks(
@@ -1048,7 +1184,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private List<ScriptBlockExpressionAst> GetForEachObjectCallbackScriptBlocks(CommandAst commandAst)
         {
-            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, true)
+            return commandAst.FindAll(ast => ast is ScriptBlockExpressionAst, false)
                 .OfType<ScriptBlockExpressionAst>()
                 .Where(scriptBlock => IsForEachObjectCallbackScriptBlock(commandAst, scriptBlock))
                 .OrderBy(scriptBlock => scriptBlock.Extent.StartOffset)

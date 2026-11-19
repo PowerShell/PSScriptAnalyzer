@@ -400,6 +400,19 @@ gci -Path C:\
             $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
         }
 
+        It "does not resolve downstream callbacks invoked before an upstream declaration" -TestCases @(
+            @{ Target = '1 | ForEach-Object -Process { $_; function Verb {} } | ForEach-Object { Verb }' }
+            @{ Target = '1 | ForEach-Object -Process { $_ } -End { function Verb {} } | ForEach-Object { Verb }' }
+        ) {
+            param($Target)
+
+            $violations = @(Invoke-ScriptAnalyzer -ScriptDefinition $Target -IncludeRule $violationName)
+
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'Verb'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be 'Get-Verb'
+        }
+
         It "resolves declarations before commands nested in the same pipeline element" -TestCases @(
             @{ Target = 'Write-Output $(. { function Verb {} }; Verb)' }
             @{ Target = 'Write-Output (. { function Verb {} }) (Verb)' }
