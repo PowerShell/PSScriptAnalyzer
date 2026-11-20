@@ -404,13 +404,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
 
-            // switch parameters
-            IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
-
             if (exportMM == null)
             {
                 return exportedFunctions;
             }
+
+            // Export-ModuleMember has no dynamic parameters, so its static parameter metadata needs
+            // no runspace. CommandInfo.ResolveParameter would run on the runspace of the cached
+            // command, which other rule threads use at the same time.
+            Dictionary<string, ParameterMetadata> parameters = exportMM.Parameters;
+
+            // switch parameters
+            IEnumerable<ParameterMetadata> switchParams = parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
 
             foreach (CommandAst cmdAst in cmdAsts)
             {
@@ -429,7 +434,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     if (ceAst is CommandParameterAst)
                     {
                         var paramAst = ceAst as CommandParameterAst;
-                        var param = exportMM.ResolveParameter(paramAst.ParameterName);
+                        var param = ResolveParameter(parameters, paramAst.ParameterName);
 
                         if (param == null)
                         {
@@ -487,6 +492,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return exportedFunctions;
+        }
+
+        /// <summary>
+        /// Resolves a full, shortened or aliased parameter name against the parameters of a command,
+        /// as CommandInfo.ResolveParameter does for a command without dynamic parameters.
+        /// </summary>
+        /// <returns>The parameter, or null when no parameter or more than one parameter matches.</returns>
+        private static ParameterMetadata ResolveParameter(Dictionary<string, ParameterMetadata> parameters, string name)
+        {
+            ParameterMetadata exactMatch = parameters.Values.FirstOrDefault(pm =>
+                string.Equals(pm.Name, name, StringComparison.OrdinalIgnoreCase)
+                || pm.Aliases.Contains(name, StringComparer.OrdinalIgnoreCase));
+            if (exactMatch != null)
+            {
+                return exactMatch;
+            }
+
+            ParameterMetadata[] prefixMatches = parameters.Values.Where(pm =>
+                pm.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)
+                || pm.Aliases.Any(alias => alias.StartsWith(name, StringComparison.OrdinalIgnoreCase)))
+                .Take(2).ToArray();
+            return prefixMatches.Length == 1 ? prefixMatches[0] : null;
         }
 
         /// <summary>
